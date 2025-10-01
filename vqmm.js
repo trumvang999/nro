@@ -27,48 +27,58 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateWithdrawPreview() {
-    const server = withdrawServer.value;
-    const user = withdrawUser.value.trim();
-    const gold = parseInt(withdrawGold.value) || 0;
+    const server = document.getElementById("withdrawServer").value;
+    const user = document.getElementById("withdrawUser").value.trim();
+    const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
+
     const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
-    const balanceNum = parseInt(goldBalanceEl.textContent.replace(/\D/g, "")) || 0;
+    const balanceText = document.getElementById("gold-balance").textContent || "";
+    const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
 
     let preview = "Nhập thông tin để xem trước kết quả";
 
-    if (server && user && gold >= 100000000) {
-      if (gold > balanceNum) {
-        preview = `<span style="color:red;">Số vàng rút vượt quá số dư hiện tại!</span>`;
-      } else {
-        const remaining = balanceNum - gold;
-        preview = `
-          Tài khoản: <b>${username}</b>
-          - Số dư: <b style="color: #f90">${balanceNum.toLocaleString("vi-VN")} vàng</b><br>
-          Sẽ rút: <span style="color:red">${gold.toLocaleString("vi-VN")} vàng</span> - 
-          Còn lại: <span style="color:green">${remaining.toLocaleString("vi-VN")} vàng</span>
-        `;
-      }
-    }
-    withdrawPreview.innerHTML = preview;
+ if (server && user && gold >= 100000000) {
+  if (gold > balanceNum) {
+    preview = `<span style="color:red;">Số vàng rút vượt quá số dư hiện tại!</span>`;
+  } else {
+    const remaining = balanceNum - gold;
+    preview = `
+      Tài khoản: <b>${username}</b>
+      - Số dư: <b style="color: #f90"> ${balanceNum.toLocaleString("vi-VN")} vàng</b><br>
+      Sẽ rút: <span style="color:red;">${gold.toLocaleString("vi-VN")} vàng</span> - 
+      Còn lại: <span style="color:green;">${remaining.toLocaleString("vi-VN")} vàng</span>
+    `;
+  }
+}
+
+document.getElementById("withdrawPreview").innerHTML = preview;
+
   }
 
-  function confirmWithdraw() {
-    const server = withdrawServer.value;
-    const user = withdrawUser.value.trim();
-    const gold = parseInt(withdrawGold.value) || 0;
-    withdrawMessage.textContent = "";
-    const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
-    const balanceNum = parseInt(goldBalanceEl.textContent.replace(/\D/g, "")) || 0;
+ function confirmWithdraw() {
+  const server = document.getElementById("withdrawServer").value;
+  const user = document.getElementById("withdrawUser").value.trim();
+  const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
+  const messageDiv = document.getElementById("withdrawMessage"); // Dòng alert
 
-    if (!server || !user || gold < 100000000) {
-      withdrawMessage.textContent = "Vui lòng nhập đủ thông tin";
-      return;
-    }
-    if (gold > balanceNum) {
-      withdrawMessage.textContent = "Số vàng rút vượt quá số dư hiện tại!";
-      return;
-    }
+  messageDiv.textContent = ""; // Reset mỗi lần click
 
-    const message = `Yêu cầu rút vàng
+  if (!server || !user || gold < 100000000) {
+    messageDiv.textContent = "Vui lòng nhập đủ thông tin";
+    return;
+  }
+
+  const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
+  const balanceText = document.getElementById("gold-balance").textContent || "";
+  const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
+
+  if (gold > balanceNum) {
+    messageDiv.textContent = "Số vàng rút vượt quá số dư hiện tại!";
+    return;
+  }
+
+  const message =
+`Yêu cầu rút vàng
 ---------------------
 Tài khoản: ${username}
 Số vàng hiện tại: ${balanceNum.toLocaleString("vi-VN")} vàng
@@ -76,20 +86,24 @@ Server: ${server}
 Tên nhân vật: ${user}
 Số vàng muốn rút: ${gold.toLocaleString("vi-VN")} vàng`;
 
-    navigator.clipboard.writeText(message).then(() => {
-      withdrawMessage.style.color = "green";
-      alert("Đã copy thông tin rút vàng, dán vào tin nhắn Facebook để gửi!");
-      setTimeout(closeWithdrawModal, 3000);
-    });
-  }
+  navigator.clipboard.writeText(message).then(() => {
+    messageDiv.style.color = "green";
+    alert ("Đã copy thông tin rút vàng, dán vào tin nhắn Facebook để gửi!");
+    setTimeout(closeWithdrawModal, 3000);
+  });
+}
 
-  withdrawServer.addEventListener("change", updateWithdrawPreview);
-  withdrawUser.addEventListener("keyup", updateWithdrawPreview);
-  withdrawGold.addEventListener("keyup", updateWithdrawPreview);
+  // Preview auto update khi nhập
+  document.getElementById("withdrawServer").addEventListener("change", updateWithdrawPreview);
+  document.getElementById("withdrawUser").addEventListener("keyup", updateWithdrawPreview);
+  document.getElementById("withdrawGold").addEventListener("keyup", updateWithdrawPreview);
 
-  window.onclick = (e) => {
+  // Đóng modal khi click ngoài
+  window.onclick = function(e) {
     const modal = document.getElementById("withdrawModal");
-    if (e.target === modal) closeWithdrawModal();
+    if (e.target === modal) {
+      closeWithdrawModal();
+    }
   };
 
   // ===== Quay Vòng =====
