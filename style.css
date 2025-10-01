@@ -304,7 +304,8 @@ h1.post-title{font-size:18px;padding-bottom:10px;font-weight:500;line-height:1.4
 padding-top:5px;
     color: #111;
     width: 100%;}
-.inf span{font-size:13px;}
+.inf span{font-size:13px;line-height:18px;}
+.inf i{margin-right:5px;}
 .night-mode .inf{background:#111111cc;color:#fff;}
 .menu-container{display:inline-block;float:right;font-size:13px}
 .menu-container .like-box{display:inline-block;border-bottom:2px solid #aaaaaa;padding-bottom:8px}
