@@ -218,14 +218,18 @@
   // 5. Lịch sử mua nick
   // ========================
   window.togglePurchase = function () {
-    const box = document.getElementById("purchase-history-box");
-    if (box.style.display === "none") {
-      box.style.display = "block";
-      window.loadHistoryTable();
+    const box = document.getElementById(&quot;purchase-history-box&quot;);
+    const icon = document.getElementById(&quot;purchase-icon&quot;);
+
+    if (box.style.display === &quot;none&quot;) {
+      box.style.display = &quot;block&quot;;
+      icon.setAttribute(&quot;d&quot;, &quot;M288 384l192 192 192-192H288z&quot;);
+      loadHistoryTable();
     } else {
-      box.style.display = "none";
+      box.style.display = &quot;none&quot;;
+      icon.setAttribute(&quot;d&quot;, &quot;M480 672l192-192H288z&quot;);
     }
-  }
+  };
 
   window.loadHistoryTable = async function () {
     const username = localStorage.getItem("currentUser");
