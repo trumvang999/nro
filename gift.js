@@ -1,50 +1,50 @@
- const currentUser = localStorage.getItem(&quot;currentUser&quot;) || &quot;guest&quot;;
-  const giftKey     = &quot;gift_claimed_&quot; + currentUser;
-  const btn         = document.getElementById(&quot;claim-gift-btn&quot;);
-  const msgBox      = document.getElementById(&quot;gift-message&quot;);
-  const wrapper     = document.getElementById(&quot;gift-container&quot;);
+const currentUser = localStorage.getItem("currentUser") || "guest";
+const giftKey     = "gift_claimed_" + currentUser;
+const btn         = document.getElementById("claim-gift-btn");
+const msgBox      = document.getElementById("gift-message");
+const wrapper     = document.getElementById("gift-container");
 
-  const SCRIPT_URL = &quot;https://shop.nro2024.workers.dev/&quot;;
+const SCRIPT_URL = "https://shop.nro2024.workers.dev/";
 
-  window.addEventListener(&quot;DOMContentLoaded&quot;, () =&gt; {
-    if (currentUser === &quot;guest&quot;) {
-      btn.style.display   = &quot;inline-block&quot;;
-      msgBox.style.display= &quot;none&quot;;
-    } else if (localStorage.getItem(giftKey) === &quot;1&quot;) {
-      btn.style.display   = &quot;none&quot;;
-    } else {
-      btn.style.display   = &quot;inline-block&quot;;
-    }
-  });
+window.addEventListener("DOMContentLoaded", () => {
+  if (currentUser === "guest") {
+    btn.style.display   = "inline-block";
+    msgBox.style.display= "none";
+  } else if (localStorage.getItem(giftKey) === "1") {
+    btn.style.display   = "none";
+  } else {
+    btn.style.display   = "inline-block";
+  }
+});
 
-  btn.addEventListener(&quot;click&quot;, () =&gt; {
-    if (currentUser === &quot;guest&quot;) {
-      alert(&quot;Vui lòng đăng nhập để nhận quà!&quot;);
-      return;
-    }
-    if (localStorage.getItem(giftKey) === &quot;1&quot;) return;
+btn.addEventListener("click", () => {
+  if (currentUser === "guest") {
+    alert("Vui lòng đăng nhập để nhận quà!");
+    return;
+  }
+  if (localStorage.getItem(giftKey) === "1") return;
 
-    btn.disabled = true; // &#9989; Chặn spam click tại đây
+  btn.disabled = true; // ✅ Chặn spam click tại đây
 
-    fetch(SCRIPT_URL, {
-      method: &quot;POST&quot;,
-      headers: { &quot;Content-Type&quot;: &quot;application/x-www-form-urlencoded&quot; },
-      body: new URLSearchParams({
-        action:   &quot;claim_gift&quot;,
-        username: currentUser
-      })
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      action:   "claim_gift",
+      username: currentUser
     })
-    .then(r =&gt; r.text())
-    .then(msg =&gt; {
-      localStorage.setItem(giftKey, &quot;1&quot;);
-      msgBox.innerText     = msg;
-      btn.style.display    = &quot;none&quot;;
-      msgBox.style.display = &quot;block&quot;;
-      if (typeof loadBalance === &quot;function&quot;) loadBalance();
-      setTimeout(() =&gt; wrapper.remove(), 1000);
-    })
-    .catch(err =&gt; {
-      alert(&quot;Lỗi kết nối:\n&quot; + err);
-      btn.disabled = false; // 🔁 Cho phép click lại nếu lỗi
-    });
+  })
+  .then(r => r.text())
+  .then(msg => {
+    localStorage.setItem(giftKey, "1");
+    msgBox.innerText     = msg;
+    btn.style.display    = "none";
+    msgBox.style.display = "block";
+    if (typeof loadBalance === "function") loadBalance();
+    setTimeout(() => wrapper.remove(), 1000);
+  })
+  .catch(err => {
+    alert("Lỗi kết nối:\n" + err);
+    btn.disabled = false; // 🔁 Cho phép click lại nếu lỗi
   });
+});
