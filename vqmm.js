@@ -1,4 +1,23 @@
-function openWithdrawModal() {
+window.addEventListener("DOMContentLoaded", () => {
+  // ===== Biến & DOM =====
+  const wheel = document.getElementById("wheel");
+  const withdrawServer = document.getElementById("withdrawServer");
+  const withdrawUser = document.getElementById("withdrawUser");
+  const withdrawGold = document.getElementById("withdrawGold");
+  const withdrawPreview = document.getElementById("withdrawPreview");
+  const withdrawMessage = document.getElementById("withdrawMessage");
+  const btnSpin = document.getElementById("spin-btn");
+  const resultEl = document.getElementById("result");
+  const historyBody = document.getElementById("history-body");
+  const goldBalanceEl = document.getElementById("gold-balance");
+
+  let rotating = false;
+  let currentAngle = 0;
+  const apiSpin = "https://vongquay.nro2024.workers.dev/spin";
+  const apiUser = "https://vongquay.nro2024.workers.dev/user-info";
+
+  // ===== Modal Rút Vàng =====
+  function openWithdrawModal() {
     document.getElementById("withdrawModal").style.display = "block";
     updateWithdrawPreview();
   }
@@ -8,58 +27,48 @@ function openWithdrawModal() {
   }
 
   function updateWithdrawPreview() {
-    const server = document.getElementById("withdrawServer").value;
-    const user = document.getElementById("withdrawUser").value.trim();
-    const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
-
+    const server = withdrawServer.value;
+    const user = withdrawUser.value.trim();
+    const gold = parseInt(withdrawGold.value) || 0;
     const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
-    const balanceText = document.getElementById("gold-balance").textContent || "";
-    const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
+    const balanceNum = parseInt(goldBalanceEl.textContent.replace(/\D/g, "")) || 0;
 
     let preview = "Nhập thông tin để xem trước kết quả";
 
- if (server && user && gold >= 100000000) {
-  if (gold > balanceNum) {
-    preview = `<span style="color:red;">Số vàng rút vượt quá số dư hiện tại!</span>`;
-  } else {
-    const remaining = balanceNum - gold;
-    preview = `
-      Tài khoản: <b>${username}</b>
-      - Số dư: <b style="color: #f90"> ${balanceNum.toLocaleString("vi-VN")} vàng</b><br>
-      Sẽ rút: <span style="color:red;">${gold.toLocaleString("vi-VN")} vàng</span> - 
-      Còn lại: <span style="color:green;">${remaining.toLocaleString("vi-VN")} vàng</span>
-    `;
-  }
-}
-
-document.getElementById("withdrawPreview").innerHTML = preview;
-
+    if (server && user && gold >= 100000000) {
+      if (gold > balanceNum) {
+        preview = `<span style="color:red;">Số vàng rút vượt quá số dư hiện tại!</span>`;
+      } else {
+        const remaining = balanceNum - gold;
+        preview = `
+          Tài khoản: <b>${username}</b>
+          - Số dư: <b style="color: #f90">${balanceNum.toLocaleString("vi-VN")} vàng</b><br>
+          Sẽ rút: <span style="color:red">${gold.toLocaleString("vi-VN")} vàng</span> - 
+          Còn lại: <span style="color:green">${remaining.toLocaleString("vi-VN")} vàng</span>
+        `;
+      }
+    }
+    withdrawPreview.innerHTML = preview;
   }
 
- function confirmWithdraw() {
-  const server = document.getElementById("withdrawServer").value;
-  const user = document.getElementById("withdrawUser").value.trim();
-  const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
-  const messageDiv = document.getElementById("withdrawMessage"); // Dòng alert
+  function confirmWithdraw() {
+    const server = withdrawServer.value;
+    const user = withdrawUser.value.trim();
+    const gold = parseInt(withdrawGold.value) || 0;
+    withdrawMessage.textContent = "";
+    const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
+    const balanceNum = parseInt(goldBalanceEl.textContent.replace(/\D/g, "")) || 0;
 
-  messageDiv.textContent = ""; // Reset mỗi lần click
+    if (!server || !user || gold < 100000000) {
+      withdrawMessage.textContent = "Vui lòng nhập đủ thông tin";
+      return;
+    }
+    if (gold > balanceNum) {
+      withdrawMessage.textContent = "Số vàng rút vượt quá số dư hiện tại!";
+      return;
+    }
 
-  if (!server || !user || gold < 100000000) {
-    messageDiv.textContent = "Vui lòng nhập đủ thông tin";
-    return;
-  }
-
-  const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
-  const balanceText = document.getElementById("gold-balance").textContent || "";
-  const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
-
-  if (gold > balanceNum) {
-    messageDiv.textContent = "Số vàng rút vượt quá số dư hiện tại!";
-    return;
-  }
-
-  const message =
-`Yêu cầu rút vàng
+    const message = `Yêu cầu rút vàng
 ---------------------
 Tài khoản: ${username}
 Số vàng hiện tại: ${balanceNum.toLocaleString("vi-VN")} vàng
@@ -67,181 +76,169 @@ Server: ${server}
 Tên nhân vật: ${user}
 Số vàng muốn rút: ${gold.toLocaleString("vi-VN")} vàng`;
 
-  navigator.clipboard.writeText(message).then(() => {
-    messageDiv.style.color = "green";
-    alert ("Đã copy thông tin rút vàng, dán vào tin nhắn Facebook để gửi!");
-    setTimeout(closeWithdrawModal, 3000);
-  });
-}
+    navigator.clipboard.writeText(message).then(() => {
+      withdrawMessage.style.color = "green";
+      alert("Đã copy thông tin rút vàng, dán vào tin nhắn Facebook để gửi!");
+      setTimeout(closeWithdrawModal, 3000);
+    });
+  }
 
-  // Preview auto update khi nhập
-  document.getElementById("withdrawServer").addEventListener("change", updateWithdrawPreview);
-  document.getElementById("withdrawUser").addEventListener("keyup", updateWithdrawPreview);
-  document.getElementById("withdrawGold").addEventListener("keyup", updateWithdrawPreview);
+  withdrawServer.addEventListener("change", updateWithdrawPreview);
+  withdrawUser.addEventListener("keyup", updateWithdrawPreview);
+  withdrawGold.addEventListener("keyup", updateWithdrawPreview);
 
-  // Đóng modal khi click ngoài
-  window.onclick = function(e) {
+  window.onclick = (e) => {
     const modal = document.getElementById("withdrawModal");
-    if (e.target === modal) {
-      closeWithdrawModal();
-    }
+    if (e.target === modal) closeWithdrawModal();
   };
-const apiURL = "https://vongquay.nro2024.workers.dev/spin";
-let rotating = false;
-let currentAngle = 0;
 
-async function spinWheel() {
-  const username = localStorage.getItem("currentUser");
-  if (!username) {
-    alert("❌ Vui lòng đăng nhập trước khi quay.");
-    return;
-  }
-  if (rotating) return;
-  rotating = true;
+  // ===== Quay Vòng =====
+  async function spinWheel() {
+    const username = localStorage.getItem("currentUser");
+    if (!username) { alert("❌ Vui lòng đăng nhập trước khi quay."); return; }
+    if (rotating) return;
+    rotating = true;
 
-  const btn = document.getElementById("spin-btn");
-  btn.disabled = true;
-  document.getElementById("result").innerHTML = "<em>Đang quay...</em>";
+    btnSpin.disabled = true;
+    resultEl.innerHTML = "<em>Đang quay...</em>";
 
-  try {
-    const res = await fetch(apiURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
-    });
+    try {
+      const res = await fetch(apiSpin, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
 
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
+      const prizeName = data.prize;
+      const prizeDetail = data.detail;
+      const accInfo = data.acc || "";
+      const angleFromSheet = data.angle;
+      const noise = Math.random() * 6 - 3;
+      const targetAngle = angleFromSheet + noise;
 
-    const prizeName = data.prize;
-    const prizeDetail = data.detail;
-    const accInfo = data.acc || "";
-    const angleFromSheet = data.angle;
-    const noise = Math.random() * 6 - 3;
-    const targetAngle = angleFromSheet + noise;
+      currentAngle %= 360;
+      let delta = targetAngle - currentAngle;
+      if (delta < 0) delta += 360;
+      const spinRounds = 5;
+      const finalAngle = currentAngle + delta + 360 * spinRounds;
 
-    currentAngle = currentAngle % 360;
-    let delta = targetAngle - currentAngle;
-    if (delta < 0) delta += 360;
-    const spinRounds = 5;
-    const finalAngle = currentAngle + delta + 360 * spinRounds;
+      wheel.style.transition = "transform 4s ease-out";
+      wheel.style.transform = `rotate(${finalAngle}deg)`;
 
-    wheel.style.transition = "transform 4s ease-out";
-    wheel.style.transform = `rotate(${finalAngle}deg)`;
+      setTimeout(async () => {
+        try {
+          currentAngle = finalAngle % 360;
+          wheel.style.transition = "none";
+          wheel.style.transform = `rotate(${currentAngle}deg)`;
 
-   setTimeout(async () => {
-  currentAngle = finalAngle % 360;
-  wheel.style.transition = "none";
-  wheel.style.transform = `rotate(${currentAngle}deg)`;
+          resultEl.innerHTML =
+            "<marquee>Tiếp tục quay để tăng % may mắn, phần quà vip vẫn đang chờ bạn</marquee>";
+          showRewardPopup(prizeName, prizeDetail, accInfo);
 
-  document.getElementById("result").innerHTML =
-    "<marquee>Tiếp tục quay để tăng % may mắn, phần quà vip vẫn đang chờ bạn</marquee>";
-  showRewardPopup(prizeName, prizeDetail, accInfo);
+          if (data.gold_balance !== undefined) updateBalanceDisplay(data.gold_balance);
+          await loadUserData(username);
 
-  // Cập nhật số dư ngay lập tức
-  if (data.gold_balance !== undefined) updateBalanceDisplay(data.gold_balance);
+        } catch (e) { console.error(e); }
+        rotating = false;
+        btnSpin.disabled = false;
+      }, 4100);
 
-  // Load lại lịch sử từ backend
-  await loadUserData(username);
-
-  rotating = false;
-  btn.disabled = false;
-}, 4100);
-
-  } catch (err) {
-    alert("❌ Lỗi: " + err.message);
-    rotating = false;
-    btn.disabled = false;
-  }
-}
-
-function updateBalanceDisplay(gold) {
-  const el = document.getElementById("gold-balance");
-  if (el && gold !== undefined) {
-    el.textContent = `Số dư vàng: ${gold}`;
-  }
-}
-
-function showRewardPopup(prizeName, prizeDetail, accInfo) {
-  const overlay = document.createElement("div");
-  overlay.className = "reward-overlay";
-  overlay.onclick = () => document.body.removeChild(overlay);
-
-  const popup = document.createElement("div");
-  popup.className = "reward-popup";
-  popup.onclick = (e) => e.stopPropagation();
-
-  popup.innerHTML = `
-    <div class="popup-header">
-      <span class="popup-title">TRÚNG THƯỞNG</span>
-      <div class="popup-actions">
-        <p class="close-btn" style="color:#ccc;" onclick="document.body.removeChild(this.closest('.reward-overlay'))">&times;</p>
-      </div>
-    </div>
-    <div class="popup-content">
-      Chúc mừng bạn quay trúng:<br/> <p class="reward-name">${prizeName}</p>
-      <p class="reward-detail">${prizeDetail}</p>
-      ${accInfo ? `<div class="reward-acc"><code>${accInfo}</code></div>` : ""}
-      <button class="close-button">Đóng</button>
-    </div>
-  `;
-
-  popup.querySelector(".close-button").onclick = () => document.body.removeChild(overlay);
-  overlay.appendChild(popup);
-  document.body.appendChild(overlay);
-
-  setTimeout(() => popup.classList.add("show"), 50);
-}
-
-async function loadUserData(username) {
-  const historyBody = document.getElementById("history-body");
-  historyBody.innerHTML = `
-    <tr><td colspan="3" style="text-align:center;color:#888;">Đang tải lịch sử và số dư vàng...</td></tr>
-  `;
-
-  try {
-    const res = await fetch("https://vongquay.nro2024.workers.dev/user-info", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
-
-    updateBalanceDisplay(data.gold_balance);
-
-    const history = data.history || [];
-    historyBody.innerHTML = "";
-
-    if (history.length === 0) {
-      historyBody.innerHTML =
-        `<tr><td colspan="3" style="text-align:center;color:#aaa;">Chưa có lượt quay nào</td></tr>`;
-      return;
+    } catch (err) {
+      alert("❌ Lỗi: " + err.message);
+      rotating = false;
+      btnSpin.disabled = false;
     }
-
-    history.reverse().forEach(entry => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${entry.time}</td>
-        <td><strong>${entry.prize}</strong></td>
-        <td>
-          <button onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">Nhận thưởng</button>
-          <div class="detail-text" style="display:none;"><em>${entry.detail}</em>${entry.acc ? `<br><code>${entry.acc}</code>` : ""}</div>
-        </td>
-      `;
-      historyBody.appendChild(row);
-    });
-  } catch (err) {
-    console.error("❌ Lỗi tải dữ liệu:", err);
-    historyBody.innerHTML =
-      `<tr><td colspan="3" style="text-align:center;color:red;">❌ Lỗi tải dữ liệu</td></tr>`;
   }
-}
 
-// Auto load khi mở trang
-window.addEventListener("load", () => {
+  // ===== Cập nhật số dư =====
+  function updateBalanceDisplay(gold) {
+    if (gold !== undefined) goldBalanceEl.textContent = `Số dư vàng: ${gold}`;
+  }
+
+  // ===== Popup thưởng =====
+  function showRewardPopup(prizeName, prizeDetail, accInfo) {
+    const overlay = document.createElement("div");
+    overlay.className = "reward-overlay";
+    overlay.onclick = () => document.body.removeChild(overlay);
+
+    const popup = document.createElement("div");
+    popup.className = "reward-popup";
+    popup.onclick = e => e.stopPropagation();
+
+    popup.innerHTML = `
+      <div class="popup-header">
+        <span class="popup-title">TRÚNG THƯỞNG</span>
+        <div class="popup-actions">
+          <p class="close-btn" style="color:#ccc;" onclick="document.body.removeChild(this.closest('.reward-overlay'))">&times;</p>
+        </div>
+      </div>
+      <div class="popup-content">
+        Chúc mừng bạn quay trúng:<br/> <p class="reward-name">${prizeName}</p>
+        <p class="reward-detail">${prizeDetail}</p>
+        ${accInfo ? `<div class="reward-acc"><code>${accInfo}</code></div>` : ""}
+        <button class="close-button">Đóng</button>
+      </div>
+    `;
+
+    popup.querySelector(".close-button").onclick = () => document.body.removeChild(overlay);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => popup.classList.add("show"), 50);
+  }
+
+  // ===== Load lịch sử & số dư =====
+  async function loadUserData(username) {
+    historyBody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#888;">Đang tải lịch sử và số dư vàng...</td></tr>`;
+    try {
+      const res = await fetch(apiUser, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+
+      updateBalanceDisplay(data.gold_balance);
+
+      const history = data.history || [];
+      historyBody.innerHTML = "";
+      if (history.length === 0) {
+        historyBody.innerHTML =
+          `<tr><td colspan="3" style="text-align:center;color:#aaa;">Chưa có lượt quay nào</td></tr>`;
+        return;
+      }
+
+      history.reverse().forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${entry.time}</td>
+          <td><strong>${entry.prize}</strong></td>
+          <td>
+            <button onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">Nhận thưởng</button>
+            <div class="detail-text" style="display:none;"><em>${entry.detail}</em>${entry.acc ? `<br><code>${entry.acc}</code>` : ""}</div>
+          </td>
+        `;
+        historyBody.appendChild(row);
+      });
+
+    } catch (err) {
+      console.error("❌ Lỗi tải dữ liệu:", err);
+      historyBody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:red;">❌ Lỗi tải dữ liệu</td></tr>`;
+    }
+  }
+
+  // ===== Auto load khi mở trang =====
   const username = localStorage.getItem("currentUser");
-  if (username) {
-    loadUserData(username);
-  }
+  if (username) loadUserData(username);
+
+  // ===== Expose ra global =====
+  window.openWithdrawModal = openWithdrawModal;
+  window.closeWithdrawModal = closeWithdrawModal;
+  window.updateWithdrawPreview = updateWithdrawPreview;
+  window.confirmWithdraw = confirmWithdraw;
+  window.spinWheel = spinWheel;
+
 });
