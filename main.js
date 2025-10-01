@@ -95,7 +95,7 @@
             alert("Đăng nhập thành công!");
 localStorage.setItem("currentUser", u);
 localStorage.setItem("currentPass", p); 
-localStorage.setItem("expireTime", Date.now() + 30 * 60 * 1000); // 30 phút
+localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000); // 30 phút
 
             location.reload();
           } else {
