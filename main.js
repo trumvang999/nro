@@ -1,10 +1,9 @@
+//<![CDATA[
 (function(){
   const scriptURL = "https://shop.nro2024.workers.dev/";
   let isRegistering = false;
 
-  // ========================
   // 1. Delegated events
-  // ========================
   document.addEventListener("click", e => {
     const id = e.target.id;
     if (id === "done") {
@@ -30,9 +29,7 @@
     }
   });
 
-  // ========================
   // 2. Chuyển Đăng nhập ↔ Đăng ký
-  // ========================
   function switchMode() {
     isRegistering = !isRegistering;
     document.getElementById("form-title").innerText      = isRegistering ? "Đăng ký" : "Đăng nhập";
@@ -46,9 +43,7 @@
     document.getElementById("form-success").innerText = "";
   }
 
-  // ========================
   // 3. Xử lý đăng ký / đăng nhập
-  // ========================
   function handleSubmit() {
     const u       = document.getElementById("username").value.trim().toLowerCase();
     const p       = document.getElementById("password").value.trim();
@@ -61,6 +56,7 @@
     btn.disabled = true;
     btn.innerText = isRegistering ? "Đang đăng ký..." : "Đang đăng nhập...";
 
+    // validate
     if (u.length < 3 || p.length < 3) {
       msg.innerText = "Tài khoản và mật khẩu phải từ 3 ký tự.";
       return resetBtn();
@@ -74,18 +70,20 @@
       return resetBtn();
     }
 
+    // build params
     const data = new URLSearchParams();
     data.append("action", isRegistering ? "register" : "login");
     data.append("username", u);
     data.append("password", p);
     if (isRegistering) data.append("email", email);
 
+    // fetch
     fetch(scriptURL, { method: "POST", body: data })
       .then(r => r.text())
       .then(txt => {
         if (isRegistering) {
           if (txt.includes("✅")) {
-            alert("Đăng ký thành công!");
+			            alert("Đăng ký thành công!");
             success.innerText = "Đăng ký thành công! Vui lòng đăng nhập.";
             setTimeout(switchMode, 1000);
           } else {
@@ -93,10 +91,12 @@
           }
         } else {
           if (txt.includes("✅ Đăng nhập thành công")) {
+            // báo thành công rồi reload trang
             alert("Đăng nhập thành công!");
-            localStorage.setItem("currentUser", u);
-            localStorage.setItem("currentPass", p); 
-            localStorage.setItem("expireTime", Date.now() + 30 * 60 * 1000); // 30 phút
+localStorage.setItem("currentUser", u);
+localStorage.setItem("currentPass", p); 
+localStorage.setItem("expireTime", Date.now() + 30 * 60 * 1000); // 30 phút
+
             location.reload();
           } else {
             msg.innerText = txt;
@@ -112,203 +112,156 @@
     }
   }
 
-  // ========================
-  // 4. Balance + History hoạt động
-  // ========================
-  const itemsPerPage = 5;
-  let historyData = [];
-  let currentPage = 1;
+const itemsPerPage = 5;
+let historyData = [];
 
-  function renderUI() {
-    const u = localStorage.getItem("currentUser");
-    if (!u) return;
-    document.getElementById("form").style.display = "none";
-    document.getElementById("switch-link").style.display = "none";
-    document.getElementById("user-panel").style.display = "block";
-    document.getElementById("user-display").innerText = u;
-    document.getElementById("form-title").textContent = "Thông tin tài khoản";
-    loadBalance(u);
-  }
+function renderUI() {
+  const u = localStorage.getItem("currentUser");
+  if (!u) return;
 
-  function loadBalance(user) {
-    const container = document.getElementById("balance-container");
-    const historySection = document.getElementById("history-section");
+  document.getElementById("form").style.display = "none";
+  document.getElementById("switch-link").style.display = "none";
+  document.getElementById("user-panel").style.display = "block";
+  document.getElementById("user-display").innerText = u;
+  document.getElementById("form-title").textContent = "Thông tin tài khoản";
+  loadBalance(u);
 
-    container.classList.add("loading");
-    container.classList.remove("loaded");
+}
 
-    const params = new URLSearchParams();
-    params.append("action", "get_user");
-    params.append("username", user);
+function loadBalance(user) {
+  const container = document.getElementById("balance-container");
+  const historySection = document.getElementById("history-section");
+  const historyList = document.getElementById("history");
 
-    fetch(scriptURL, { method: "POST", body: params })
-      .then(r => r.json())
-      .then(info => {
-        document.getElementById("balance").innerText =
-          parseInt(info.balance, 10).toLocaleString() + " VNĐ";
+  container.classList.add("loading");
+  container.classList.remove("loaded");
 
-        historyData = (info.history || "")
-          .split("\n").filter(Boolean).reverse();
+  const params = new URLSearchParams();
+  params.append("action", "get_user");
+  params.append("username", user);
 
-        currentPage = 1;
-        renderHistory();
+  fetch(scriptURL, { method: "POST", body: params })
+    .then(r => r.json())
+    .then(info => {
+      document.getElementById("balance").innerText =
+        parseInt(info.balance, 10).toLocaleString() + " VNĐ";
 
-        setTimeout(() => {
-          container.classList.remove("loading");
-          container.classList.add("loaded");
-          if (historySection) historySection.style.display = "none";
-        }, 50);
-      })
-      .catch(err => {
-        console.error("loadBalance error:", err);
+      // Xử lý lịch sử và kiểm tra dữ liệu đầu vào
+      const raw = info.history || "";
+
+      historyData = raw
+        .split("\n") // tách từng dòng
+        .filter(Boolean) // bỏ dòng trống
+        .reverse(); // mới nhất lên đầu
+
+      window.historyData = historyData; // expose global để debug
+
+
+      currentPage = 1;
+      renderHistory();
+
+      setTimeout(() => {
         container.classList.remove("loading");
         container.classList.add("loaded");
-      });
-  }
-
-  function renderHistory() {
-    const historyList = document.getElementById("history");
-    const pagination = document.getElementById("pagination");
-    if (!historyList || !pagination) return;
-
-    historyList.innerHTML = "";
-    const totalPages = Math.ceil(historyData.length / itemsPerPage);
-    const start = (currentPage - 1) * itemsPerPage;
-    const pageItems = historyData.slice(start, start + itemsPerPage);
-
-    pageItems.forEach(line => {
-      const li = document.createElement("li");
-      li.textContent = line;
-      historyList.appendChild(li);
+        if (historySection) historySection.style.display = "none";
+      }, 50);
+    })
+    .catch(err => {
+      console.error("loadBalance error:", err);
+      container.classList.remove("loading");
+      container.classList.add("loaded");
     });
+}
 
-    pagination.innerHTML = "";
-    const center = document.createElement("center");
+function renderHistory() {
+  const historyList = document.getElementById("history");
+  const pagination = document.getElementById("pagination");
 
-    const prevBtn = document.createElement("button");
-    prevBtn.textContent = "<";
-    prevBtn.disabled = currentPage <= 1;
-    prevBtn.addEventListener("click", () => changePage(-1));
+  if (!historyList || !pagination) return;
 
-    const nextBtn = document.createElement("button");
-    nextBtn.textContent = ">";
-    nextBtn.disabled = currentPage >= totalPages;
-    nextBtn.addEventListener("click", () => changePage(1));
+  historyList.innerHTML = ""; // reset dữ liệu cũ
 
-    const pageInfo = document.createElement("span");
-    pageInfo.style.fontSize = "13px";
-    pageInfo.style.margin = "5px";
-    pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+  const totalPages = Math.ceil(window.historyData.length / itemsPerPage);
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const pageItems = historyData.slice(start, end);
 
-    center.appendChild(prevBtn);
-    center.appendChild(pageInfo);
-    center.appendChild(nextBtn);
-    pagination.appendChild(center);
+  pageItems.forEach(line => {
+    const li = document.createElement("li");
+    li.textContent = line;
+    historyList.appendChild(li);
+  });
+
+  pagination.innerHTML = ""; // reset phân trang
+
+  const center = document.createElement("center");
+
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = "<";
+  prevBtn.disabled = currentPage <= 1;
+  prevBtn.addEventListener("click", () => changePage(-1));
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = ">";
+  nextBtn.disabled = currentPage >= totalPages;
+  nextBtn.addEventListener("click", () => changePage(1));
+
+  const pageInfo = document.createElement("span");
+  pageInfo.style.fontSize = "13px";
+  pageInfo.style.margin = "5px";
+  pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
+
+  center.appendChild(prevBtn);
+  center.appendChild(pageInfo);
+  center.appendChild(nextBtn);
+
+  pagination.appendChild(center);
+}
+
+function changePage(step) {
+  const totalPages = Math.ceil(window.historyData.length / itemsPerPage);
+  const nextPage = currentPage + step;
+
+  console.log(`Đang ở trang ${currentPage}, muốn chuyển sang ${nextPage}`);
+
+  if (nextPage < 1 || nextPage > totalPages) return;
+
+  currentPage = nextPage;
+  renderHistory();
+}
+
+function toggleHistory() {
+  const box = document.getElementById("history-section");
+  const icon = document.getElementById("purchase-icon");
+
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    loadHistoryTable(); // gọi API mỗi khi mở
+  } else {
+    box.style.display = "none";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", function () {
+
+  const btn = document.getElementById("toggle-history");
+  if (btn) {
+    btn.addEventListener("click", toggleHistory);
   }
 
-  function changePage(step) {
-    const totalPages = Math.ceil(historyData.length / itemsPerPage);
-    const nextPage = currentPage + step;
-    if (nextPage < 1 || nextPage > totalPages) return;
-    currentPage = nextPage;
-    renderHistory();
-  }
+});
 
-  // ========================
-  // 5. Lịch sử mua nick
-  // ========================
-  window.togglePurchase = function () {
-    const box = document.getElementById(&quot;purchase-history-box&quot;);
-    const icon = document.getElementById(&quot;purchase-icon&quot;);
-
-    if (box.style.display === &quot;none&quot;) {
-      box.style.display = &quot;block&quot;;
-      icon.setAttribute(&quot;d&quot;, &quot;M288 384l192 192 192-192H288z&quot;);
-      loadHistoryTable();
-    } else {
-      box.style.display = &quot;none&quot;;
-      icon.setAttribute(&quot;d&quot;, &quot;M480 672l192-192H288z&quot;);
-    }
-  };
-
-  window.loadHistoryTable = async function () {
-    const username = localStorage.getItem("currentUser");
-    const password = localStorage.getItem("currentPass");
-    const SCRIPT_URL = "https://shop.nro2024.workers.dev";
-
-    const params = new URLSearchParams({
-      action: "get_history",
-      username,
-      password
-    });
-
-    try {
-      const res = await fetch(`${SCRIPT_URL}?${params}`);
-      const data = await res.json();
-      if (!data.success) throw new Error("Không load được lịch sử");
-
-      const tbody = document.querySelector("#purchase-table tbody");
-      tbody.innerHTML = "";
-      data.data.forEach(item => {
-        const tr = document.createElement("tr");
-        let timestamp = item.timestamp || "";
-        if (timestamp && !timestamp.includes(":")) {
-          const dateObj = new Date(timestamp);
-          if (!isNaN(dateObj)) {
-            const pad = n => (n < 10 ? "0" + n : n);
-            timestamp = `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())} ${pad(dateObj.getDate())}/${pad(dateObj.getMonth() + 1)}/${pad(dateObj.getFullYear()}`;
-          }
-        }
-        tr.innerHTML = `
-          <td>${item.id_acc}</td>
-          <td>${item.user}</td>
-          <td>${item.pass}</td>
-          <td>${Number(item.price).toLocaleString()}đ</td>
-          <td>${timestamp}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    } catch (err) {
-      console.error("Lỗi khi tải lịch sử:", err);
-      document.querySelector("#purchase-table tbody").innerHTML =
-        `<tr><td colspan='5' style='color:red;padding:10px;'>&#10060; Không tải được dữ liệu</td></tr>`;
-    }
-  }
-
-  // ========================
-  // 6. Toggle lịch sử hoạt động
-  // ========================
-  function toggleHistory() {
-    const box = document.getElementById("history-section");
-    if (box.style.display === "none") {
-      box.style.display = "block";
-      renderHistory();
-    } else {
-      box.style.display = "none";
-    }
-  }
-
-  // ========================
   // 7. Logout
-  // ========================
   function logoutHandler() {
-    localStorage.removeItem("expireTime");
-    localStorage.removeItem("currentPass");
+  localStorage.removeItem("expireTime");
+  localStorage.removeItem("currentPass");
     localStorage.removeItem("currentUser");
     location.reload();
   }
 
-  // ========================
   // 8. Khởi tạo
-  // ========================
-  window.addEventListener("DOMContentLoaded", () => {
-    const btn1 = document.getElementById("toggle-purchase");
-    if (btn1) btn1.addEventListener("click", window.togglePurchase);
-
-    const btn2 = document.getElementById("toggle-history");
-    if (btn2) btn2.addEventListener("click", toggleHistory);
-  });
-
   window.addEventListener("load", renderUI);
+})();
 
-})(); 
+
+//]]>
