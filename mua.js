@@ -1,47 +1,48 @@
-document.addEventListener(&quot;DOMContentLoaded&quot;, () =&gt; {
-  const status = document.getElementById(&quot;acc-status&quot;)?.dataset.status || &quot;&quot;;
+document.addEventListener("DOMContentLoaded", () => {
+  const status = document.getElementById("acc-status")?.dataset.status || "";
 
-  if (status.toLowerCase().includes(&quot;hết&quot;)) {
-    const btn = document.querySelector(&#39;#guideSection1 a.btn&#39;);
+  if (status.toLowerCase().includes("hết")) {
+    const btn = document.querySelector('#guideSection1 a.btn');
     if (btn) {
-      btn.textContent = &quot;ĐÃ BÁN&quot;;
-      btn.style.backgroundColor = &quot;#aaa&quot;;
-      btn.style.pointerEvents = &quot;none&quot;;
-      btn.style.opacity = &quot;0.7&quot;;
-      btn.setAttribute(&quot;aria-disabled&quot;, &quot;true&quot;);
+      btn.textContent = "ĐÃ BÁN";
+      btn.style.backgroundColor = "#aaa";
+      btn.style.pointerEvents = "none";
+      btn.style.opacity = "0.7";
+      btn.setAttribute("aria-disabled", "true");
     }
   }
-  const SCRIPT_URL = &quot;https://shop.nro2024.workers.dev&quot;;
 
-  const username   = localStorage.getItem(&quot;currentUser&quot;);
-  const password   = localStorage.getItem(&quot;currentPass&quot;);
-  const accNode    = document.querySelector(&quot;._pt a&quot;);
-  const accId      = accNode?.textContent.trim() || &quot;&quot;;
-  const infoBox    = document.getElementById(&quot;acc-info&quot;);
-  const confirmBtn = document.getElementById(&quot;confirm-buy&quot;);
+  const SCRIPT_URL = "https://shop.nro2024.workers.dev";
 
-  const serverEl = document.querySelector(&quot;.sv&quot;);
-  const planetEl = document.querySelector(&quot;.ht&quot;);
-  const typeEl   = document.querySelector(&quot;.dki&quot;);
-  const priceEl  = document.querySelector(&quot;.card&quot;);
+  const username   = localStorage.getItem("currentUser");
+  const password   = localStorage.getItem("currentPass");
+  const accNode    = document.querySelector("._pt a");
+  const accId      = accNode?.textContent.trim() || "";
+  const infoBox    = document.getElementById("acc-info");
+  const confirmBtn = document.getElementById("confirm-buy");
+
+  const serverEl = document.querySelector(".sv");
+  const planetEl = document.querySelector(".ht");
+  const typeEl   = document.querySelector(".dki");
+  const priceEl  = document.querySelector(".card");
 
   if (!accId) {
     infoBox.innerHTML = `<span style='color:red;'>Không lấy được acc ID</span>`;
     return;
   }
 
-  confirmBtn.style.display = &quot;inline-block&quot;;
-  confirmBtn.addEventListener(&quot;click&quot;, async () =&gt; {
+  confirmBtn.style.display = "inline-block";
+  confirmBtn.addEventListener("click", async () => {
     if (!username || !password) {
-      alert(&quot;Bạn chưa đăng nhập!&quot;);
+      alert("Bạn chưa đăng nhập!");
       return;
     }
 
     confirmBtn.disabled = true;
-    confirmBtn.textContent = &quot;Đang xử lý...&quot;;
+    confirmBtn.textContent = "Đang xử lý...";
 
     const buyParams = new URLSearchParams({
-      action:   &quot;buy_acc&quot;,
+      action:   "buy_acc",
       username,
       password,
       id_acc:   accId
@@ -50,46 +51,47 @@ document.addEventListener(&quot;DOMContentLoaded&quot;, () =&gt; {
     try {
       const res  = await fetch(`${SCRIPT_URL}?${buyParams}`);
       const text = await res.text();
-      const body = JSON.parse(text || &quot;{}&quot;);
+      const body = JSON.parse(text || "{}");
 
-      if (!body.success) throw new Error(body.message || &quot;Mua không thành công&quot;);
+      if (!body.success) throw new Error(body.message || "Mua không thành công");
 
-      infoBox.innerHTML = `<span style='color:green;'>${body.message || &quot;Mua thành công! Xem thông tin tài khoản mật khẩu tại lịch sử mua nick&quot;}</span>`;
+      infoBox.innerHTML = `<span style='color:green;'>${body.message || "Mua thành công! Xem thông tin tài khoản mật khẩu tại lịch sử mua nick"}</span>`;
 
       const record = {
         id_acc: accId,
-        server: serverEl?.textContent.trim() || &quot;&quot;,
-        planet: planetEl?.textContent.trim() || &quot;&quot;,
-        type:   typeEl?.textContent.trim() || &quot;&quot;,
-        price:  Number(priceEl?.textContent.replace(/\D/g, &quot;&quot;)) || 0
+        server: serverEl?.textContent.trim() || "",
+        planet: planetEl?.textContent.trim() || "",
+        type:   typeEl?.textContent.trim() || "",
+        price:  Number(priceEl?.textContent.replace(/\D/g, "")) || 0
       };
 
       await addToHistory(record);
       await loadHistoryTable();
-      confirmBtn.textContent = &quot;ĐÃ MUA&quot;;
-  // &#9989; Đổi nút &quot;ĐẶT MUA&quot; thành &quot;ĐÃ BÁN&quot;
-const datMuaBtn = document.querySelector(&#39;#guideSection1 a.btn&#39;);
-if (datMuaBtn) {
-  datMuaBtn.textContent = &quot;ĐÃ BÁN&quot;;
-  datMuaBtn.classList.add(&quot;disabled&quot;); // nếu có style sẵn
-  datMuaBtn.style.backgroundColor = &quot;#aaa&quot;; // đổi màu cho rõ
-  datMuaBtn.style.pointerEvents = &quot;none&quot;;   // chặn click
-  datMuaBtn.style.opacity = &quot;0.7&quot;;          // làm mờ nút
-  datMuaBtn.setAttribute(&quot;aria-disabled&quot;, &quot;true&quot;);
-}
+      confirmBtn.textContent = "ĐÃ MUA";
+
+      // ✅ Đổi nút "ĐẶT MUA" thành "ĐÃ BÁN"
+      const datMuaBtn = document.querySelector('#guideSection1 a.btn');
+      if (datMuaBtn) {
+        datMuaBtn.textContent = "ĐÃ BÁN";
+        datMuaBtn.classList.add("disabled");
+        datMuaBtn.style.backgroundColor = "#aaa";
+        datMuaBtn.style.pointerEvents = "none";
+        datMuaBtn.style.opacity = "0.7";
+        datMuaBtn.setAttribute("aria-disabled", "true");
+      }
 
     } catch (err) {
       infoBox.innerHTML = `<span style='color:red;'>${err.message}</span>`;
     } finally {
       confirmBtn.disabled = false;
-      if (confirmBtn.textContent !== &quot;ĐÃ MUA&quot;)
-        confirmBtn.textContent = &quot;XÁC NHẬN MUA&quot;;
+      if (confirmBtn.textContent !== "ĐÃ MUA")
+        confirmBtn.textContent = "XÁC NHẬN MUA";
     }
   });
 
   async function addToHistory({id_acc, server, planet, type, price}) {
     const params = new URLSearchParams({
-      action:   &quot;add_history&quot;,
+      action:   "add_history",
       username,
       password,
       id_acc,
@@ -98,26 +100,26 @@ if (datMuaBtn) {
       type,
       price
     });
-    await fetch(`${SCRIPT_URL}?${params}`, { headers: { Accept: &quot;application/json&quot; }});
+    await fetch(`${SCRIPT_URL}?${params}`, { headers: { Accept: "application/json" }});
   }
 
   window.togglePurchase = function () {
-    const box = document.getElementById(&quot;purchase-history-box&quot;);
-    const icon = document.getElementById(&quot;purchase-icon&quot;);
+    const box = document.getElementById("purchase-history-box");
+    const icon = document.getElementById("purchase-icon");
 
-    if (box.style.display === &quot;none&quot;) {
-      box.style.display = &quot;block&quot;;
-      icon.setAttribute(&quot;d&quot;, &quot;M288 384l192 192 192-192H288z&quot;);
+    if (box.style.display === "none") {
+      box.style.display = "block";
+      icon.setAttribute("d", "M288 384l192 192 192-192H288z");
       loadHistoryTable();
     } else {
-      box.style.display = &quot;none&quot;;
-      icon.setAttribute(&quot;d&quot;, &quot;M480 672l192-192H288z&quot;);
+      box.style.display = "none";
+      icon.setAttribute("d", "M480 672l192-192H288z");
     }
   };
 
   window.loadHistoryTable = async function () {
     const params = new URLSearchParams({
-      action: &quot;get_history&quot;,
+      action: "get_history",
       username,
       password
     });
@@ -125,24 +127,24 @@ if (datMuaBtn) {
     try {
       const res = await fetch(`${SCRIPT_URL}?${params}`);
       const data = await res.json();
-      if (!data.success) throw new Error(data.message || &quot;Không load được lịch sử&quot;);
+      if (!data.success) throw new Error(data.message || "Không load được lịch sử");
 
-      const tbody = document.querySelector(&quot;#purchase-table tbody&quot;);
-      tbody.innerHTML = &quot;&quot;;
-      data.data.forEach(item =&gt; {
-        const tr = document.createElement(&quot;tr&quot;);
+      const tbody = document.querySelector("#purchase-table tbody");
+      tbody.innerHTML = "";
+      data.data.forEach(item => {
+        const tr = document.createElement("tr");
         tr.innerHTML = `
           <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${item.id_acc}</td>
           <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${item.user}</td>
           <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${item.pass}</td>
           <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${Number(item.price).toLocaleString()}đ</td>
-          <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${item.timestamp || &quot;&quot;}</td>
+          <td style='border:1px solid #ccc; padding:8px 10px;width:100%;'>${item.timestamp || ""}</td>
         `;
         tbody.appendChild(tr);
       });
     } catch (err) {
-      console.error(&quot;Lỗi khi tải lịch sử:&quot;, err);
-      document.querySelector(&quot;#purchase-table tbody&quot;).innerHTML = `
+      console.error("Lỗi khi tải lịch sử:", err);
+      document.querySelector("#purchase-table tbody").innerHTML = `
         <tr><td colspan='5' style='color:red;padding:10px;'>&#10060; Không tải được dữ liệu</td></tr>`;
     }
   };
