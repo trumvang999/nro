@@ -162,19 +162,6 @@
   }
 
   // ===================== Toggle History / Purchase =====================
-  window.toggleHistory = function() { 
-    const box = document.getElementById("history-section"); 
-    if(!box) return;
-    box.style.display = box.style.display==="none"?"block":"none"; 
-    if(box.style.display==="block") renderHistory(); 
-  }
-
-  window.togglePurchase = function() {
-    const box = document.getElementById("purchase-history-box");
-    if(!box) return;
-    box.style.display = box.style.display==="none"?"block":"none";
-    if(box.style.display==="block") window.loadHistoryTable();
-  }
 
   window.loadHistoryTable = async function() {
     const username = localStorage.getItem("currentUser");
