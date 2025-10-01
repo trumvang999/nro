@@ -322,7 +322,6 @@ async function loadHistoryTable() {
     document.querySelector("#purchase-table tbody").innerHTML = `<tr><td colspan='5' style='color:red;padding:10px;'>&#10060; Không tải được dữ liệu</td></tr>`;
   }
 }
-<![CDATA[<script>
 $(function () {
   /* =====================
      TOGGLE NIGHT MODE
@@ -581,4 +580,3 @@ $(function () {
     });
   }
 });
-    //]]]]><![CDATA[></script>]]>
