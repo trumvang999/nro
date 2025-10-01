@@ -841,3 +841,126 @@ width:50%;
 }
  .copy-btn{       padding: 10px;
   }
+  
+  .btn-cl, .btn, input[type=&quot;submit&quot;] {
+    display: inline-block;
+    height: 35px;
+    line-height: 35px;
+    padding: 0 20px;
+    text-align: center;
+    white-space: nowrap;
+    outline: none !important;
+    cursor: pointer;
+    border: none;
+    border-radius: 0;
+    letter-spacing: 0;
+    -webkit-transition: background-color 0.1s ease-in;
+    -moz-transition: background-color 0.1s ease-in;
+    -ms-transition: background-color 0.1s ease-in;
+    -o-transition: background-color 0.1s ease-in;
+    transition: background-color 0.1s ease-in;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}  
+
+  .night-mode #vutru{color:#ff4b4b}
+  #vutru{color:#d00000}
+    .night-mode #vutru{color:#ff4b4b}
+
+ul.blog-posts, #vip{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 0;
+  list-style: none;
+}
+
+ul.blog-posts li.post, #dsvip{
+  width:100%!important;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 2px 4px 1px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.night-mode ul.blog-posts li.post,.night-mode #dsvip{
+  box-shadow: 0 2px 4px 1px rgba(255,255,255,0.2);
+  }
+ul.blog-posts li.post:hover,#dsvip:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+
+.btn {
+  border-radius: 8px !important;
+  background: linear-gradient(to right, #0facfe, #0098d3);
+  color: #fff !important;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* Khung bảng */
+#box00 {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* Tựa đề */
+#name .anticon:hover {
+  color: #007bff;
+}
+#name div[style*=&quot;background-color&quot;] {
+  border-radius: 2px;
+}
+
+/* Dòng top */
+.nick-top_item {
+  display: flex;
+  align-items: center;
+  padding: 7.5px 10px;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s ease;
+}
+.nick-top_item:hover {
+  background: #f8f9fa;
+}
+  .night-mode .nick-top_item:hover {
+  background: #222;
+}
+.night-mode .nick-top_item{border-color:#333}
+
+.nick-top_item--first  { background: #ffbe0b!important }
+.nick-top_item--second { background: gray!important; }
+.nick-top_item--third  { background: #cd7f32!important; }
+
+/* Tên người chơi */
+.nick-top_item--content span {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nick-top_item--price {
+  margin-left: auto;
+  font-weight: bold;
+}
+
+#thongbao i {
+  margin-left: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+/* Hiệu ứng nhấp nháy cho biểu tượng */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+  @media screen and (max-width:420px){.body-wrapper ul, ul.blog-posts,.random-posts{margin:0}
+  .post_thumb a, .PopularPosts .item-thumbnail a, .recentposts .post-thumb a, .randomposts .post-thumb a{padding-bottom:85%;}
+  .main-container{padding:0 10px;}
+}
