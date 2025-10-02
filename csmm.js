@@ -3,7 +3,8 @@ async function sendChat() {
   const msg = input.value.trim();
   if (!msg) return;
 
-  const user = localStorage.getItem("currentUser") || "Khách";
+  const user = localStorage.getItem("currentUser");
+  if (!user) {alert("Vui lòng đăng nhập")};
   const chatObj = { user, msg, time: new Date().toLocaleTimeString() };
 
   await fetch("https://doan-so.nro2024.workers.dev/chat/save", {
