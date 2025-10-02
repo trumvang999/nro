@@ -305,7 +305,7 @@ padding-top:5px;
     color: #111;
     width: 100%;}
 .inf span{font-size:13px;line-height:18px;}
-.inf i{margin-right:5px;}
+.inf i{margin-right:3px;}
 .night-mode .inf{background:#111111cc;color:#fff;}
 .menu-container{display:inline-block;float:right;font-size:13px}
 .menu-container .like-box{display:inline-block;border-bottom:2px solid #aaaaaa;padding-bottom:8px}
