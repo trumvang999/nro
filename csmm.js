@@ -3,8 +3,25 @@ async function sendChat() {
   const msg = input.value.trim();
   if (!msg) return;
 
-  const user = localStorage.getItem("currentUser") || "Khách";
-  const chatObj = { user, msg, time: new Date().toLocaleTimeString() };
+ // Lấy thông tin người dùng từ localStorage
+const user = localStorage.getItem("currentUser");
+
+// Nếu chưa có người dùng, thông báo và dừng
+if (!user) {
+  alert("Vui lòng đăng nhập");
+  throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
+}
+
+// Giả sử bạn đã có biến msg chứa nội dung chat
+const msg = document.querySelector("#inputChat").value; // ví dụ
+
+// Tạo object chat
+const chatObj = {
+  user,                   // tên user
+  msg,                    // tin nhắn
+  time: new Date().toLocaleTimeString() // thời gian hiện tại
+};
+
 
   await fetch("https://doan-so.nro2024.workers.dev/chat/save", {
     method: "POST",
