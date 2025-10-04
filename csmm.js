@@ -131,15 +131,15 @@ document.getElementById("toggleGoldBtn").addEventListener("click", () => {
     sb.style.marginTop = '20px';
 
     sb.innerHTML = `
-      <div style="text-align:center">
+      <div class="stabar">
         <div style="font-size:12px;color:#8fb4c9">Mã phiên</div>
         <div id="roundName" style="font-weight:700">—</div>
       </div>
-      <div style="text-align:center">
+      <div class="stabar">
         <div style="font-size:12px;color:#8fb4c9">Đếm ngược</div>
         <div id="countdown" style="font-weight:800;color:forestgreen">00:60</div>
       </div>
-      <div style="text-align:center">
+      <div class="stabar">
         <div style="font-size:12px;color:#8fb4c9">Kết quả trước</div>
         <div id="fetchedNumberSmall" style="font-weight:700;color:#ff7e00">—</div>
       </div>
