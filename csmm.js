@@ -734,31 +734,10 @@ placeBetBtn.addEventListener('click', async () => {
     alert("Bạn chưa chọn cửa cược nào.");
     return;
   }
-const typeToGroup = { 
-  even: 'parity',
-  odd: 'parity',
-  big: 'size',
-  small: 'size',
-  digit: 'digit'
-};
-  // Xác định nhóm được chọn
-  let groups = new Set();
-  actives.forEach(btn => {
-    const raw = btn.dataset.type || 'digit';
-    const canonical = mapType[raw] || raw;
-    const group = typeToGroup[canonical] || 'parity';
-    groups.add(group);
-  });
 
-  // Nếu chọn nhiều nhóm khác nhau
-  if (groups.size > 1) {
-    alert("Không được chọn nhiều nhóm cùng lúc (Chẵn/Lẻ, Tài/Xỉu hoặc Số).");
-    return;
-  }
-
-  // Nếu chọn >1 cửa trong cùng nhóm (vd vừa Tài vừa Xỉu)
+  // Nếu chọn nhiều hơn 1 → báo lỗi
   if (actives.length > 1) {
-    alert("Không được chọn 2 cửa cùng nhóm (ví dụ vừa Tài vừa Xỉu).");
+    alert("Chỉ được chọn 1 cửa mỗi lần cược!");
     return;
   }
 
