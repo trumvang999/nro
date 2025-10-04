@@ -12,9 +12,6 @@ if (!user) {
   throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
 }
 
-// Giả sử bạn đã có biến msg chứa nội dung chat
-const msg = document.querySelector("#inputChat").value; // ví dụ
-
 // Tạo object chat
 const chatObj = {
   user,                   // tên user
