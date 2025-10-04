@@ -203,9 +203,34 @@ const currentUser = localStorage.getItem("currentUser");
 
 // load balance cho user hiện tại
 function loadBalance(){
-  const raw = localStorage.getItem(`goldBalance_${currentUser}`);
-  balance = raw ? Number(raw) : 1000;   // mặc định 1000 nếu chưa có
+  if(!currentUser){
+    balance = 0;
+    renderBalance();
+    return;
+  }
+  try {
+    const raw = localStorage.getItem(`goldBalance_${currentUser}`);
+    balance = raw ? Number(raw) : 0; 
+  } catch(e){
+    balance = 0;
+  }
   renderBalance();
+}
+
+const VALID_GIFT_CODES = { "NRO2024": 1000 };
+
+function redeemGiftcode(code){
+  if(!currentUser){ alert("Vui lòng đăng nhập."); return; }
+  const normalized = code.trim().toUpperCase();
+  if(!VALID_GIFT_CODES[normalized]){ alert("Giftcode sai."); return; }
+
+  const keyRedeem = `giftRedeemed_${currentUser}_${normalized}`;
+  if(localStorage.getItem(keyRedeem)){ alert("Đã nhận rồi."); return; }
+
+  balance += VALID_GIFT_CODES[normalized];
+  saveBalance();
+  localStorage.setItem(keyRedeem, "1");
+  alert(`Nhận ${VALID_GIFT_CODES[normalized]} vàng!`);
 }
 
 // save balance cho user hiện tại
@@ -706,43 +731,84 @@ function savePendingBets(){
 
 
 placeBetBtn.addEventListener('click', async () => {
+  // Lấy các nút đang chọn
+  const actives = document.querySelectorAll('.bet-btn.active, .num.active');
+
+  if (actives.length === 0) {
+    alert("Bạn chưa chọn cửa cược nào.");
+    return;
+  }
+
+  // Xác định nhóm được chọn
+  let groups = new Set();
+  actives.forEach(btn => {
+    const raw = btn.dataset.type || 'digit';
+    const canonical = mapType[raw] || raw;
+    const group = typeToGroup[canonical] || 'parity';
+    groups.add(group);
+  });
+
+  // Nếu chọn nhiều nhóm khác nhau
+  if (groups.size > 1) {
+    alert("Không được chọn nhiều nhóm cùng lúc (Chẵn/Lẻ, Tài/Xỉu hoặc Số).");
+    return;
+  }
+
+  // Nếu chọn >1 cửa trong cùng nhóm (vd vừa Tài vừa Xỉu)
+  if (actives.length > 1) {
+    alert("Không được chọn 2 cửa cùng nhóm (ví dụ vừa Tài vừa Xỉu).");
+    return;
+  }
+
+  // Lấy thông tin cược
   const type = currentSelection.type;
   const digit = currentSelection.digit;
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
 
-  if (!type) { alert("Chưa chọn loại cược"); return; }
-  if (amount > balance) { alert("Không đủ vàng"); return; }
-  if (currentRem <= 3) { alert("Đã hết thời gian, vui lòng chờ phiên sau"); return; }
+  if (!type) { 
+    alert("Chưa chọn loại cược"); 
+    return; 
+  }
+  if (amount < 100) {
+    alert("Đặt tối thiểu 100 vàng.");
+    return;
+  }
+  if (amount > balance) {
+    alert("Không đủ vàng.");
+    return;
+  }
+  if (currentRem <= 3) { 
+    alert("Đã hết thời gian, vui lòng chờ phiên sau"); 
+    return; 
+  }
 
   // ✅ luôn lấy round từ backend
   const rn = await getCurrentRound();
-  if (!rn) { alert("Không lấy được phiên"); return; }
-
-  // --- Xử lý chống trùng phiên ---
-  const lastRound = betHistory.length > 0 ? betHistory[betHistory.length - 1].round : null;
-  let finalRound = rn;
- 
+  if (!rn) { 
+    alert("Không lấy được phiên"); 
+    return; 
+  }
 
   const id = makeId();
   balance -= amount;
   saveBalance();
 
- const placed = {
-  id,
-  type,
-  digit: type === 'digit' ? digit : null,
-  amount,
-  status: 'Chờ',
-  payout: 0,
-  round: null,   // ✅ chưa gắn round, để chờ phiên tiếp theo
-  time: Date.now()
-};
+  const placed = {
+    id,
+    type,
+    digit: type === 'digit' ? digit : null,
+    amount,
+    status: 'Chờ',
+    payout: 0,
+    round: null,   // ✅ chưa gắn round, để chờ phiên tiếp theo
+    time: Date.now()
+  };
 
   pendingBets.push(placed);
   savePendingBets();
   saveBetHistory();
-showBetNotice("Đặt cược thành công!");
 
+  showBetNotice("Đặt cược thành công!");
   renderPending();
   renderBetHistory();
 });
