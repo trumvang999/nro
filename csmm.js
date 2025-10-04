@@ -726,22 +726,41 @@ function savePendingBets(){
 }
 
 
+// map type
+const mapType = { chan:'even', le:'odd', tai:'big', xiu:'small' };
+let currentSelection = { type:null, digit:null };
+
+// --- xử lý cho nút chẵn/lẻ/tài/xỉu ---
+betButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    // clear hết tất cả trước
+    betButtons.forEach(b=>b.classList.remove('active'));
+    numButtons.forEach(n=>n.classList.remove('active'));
+
+    // chọn mới
+    btn.classList.add('active');
+    const raw = btn.dataset.type;
+    currentSelection.type = mapType[raw] || raw;
+    currentSelection.digit = null;
+  });
+});
+
+// --- xử lý cho nút số ---
+numButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    // clear hết tất cả trước
+    betButtons.forEach(b=>b.classList.remove('active'));
+    numButtons.forEach(n=>n.classList.remove('active'));
+
+    // chọn số mới
+    btn.classList.add('active');
+    currentSelection.type = 'digit';
+    currentSelection.digit = Number(btn.textContent.trim());
+  });
+});
+
+// --- xử lý đặt cược ---
 placeBetBtn.addEventListener('click', async () => {
-  // Lấy các nút đang chọn
-  const actives = document.querySelectorAll('.bet-btn.active, .num.active');
-
-  if (actives.length === 0) {
-    alert("Bạn chưa chọn cửa cược nào.");
-    return;
-  }
-
-  // Nếu chọn nhiều hơn 1 → báo lỗi
-  if (actives.length > 1) {
-    alert("Chỉ được chọn 1 cửa mỗi lần cược!");
-    return;
-  }
-
-  // Lấy thông tin cược
   const type = currentSelection.type;
   const digit = currentSelection.digit;
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
@@ -793,7 +812,6 @@ placeBetBtn.addEventListener('click', async () => {
   renderPending();
   renderBetHistory();
 });
-
 
 // helper describe bet
 function descBet(b){
