@@ -640,63 +640,44 @@ function startCountdown() {
     if(cd) cd.textContent = mm + ':' + ss;
   }
 
-// mapping dataset types to canonical types used in logic
 const mapType = { chan:'even', le:'odd', tai:'big', xiu:'small' };
-const typeToGroup = { even:'parity', odd:'parity', big:'size', small:'size' };
+const typeToGroup = { even:'parity', odd:'parity', big:'size', small:'size', digit:'digit' };
 
-// Khai báo currentSelection trước khi addEventListener
-let currentSelection = { type: null, digit: null, group: null };
+let currentSelection = { type:null, digit:null, group:null };
 
+// --- xử lý cho nút chẵn/lẻ/tài/xỉu ---
 betButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    const raw = btn.dataset.type;         // ví dụ 'chan','le','tai','xiu'
+    const raw = btn.dataset.type;         // 'chan','le','tai','xiu'
     const canonical = mapType[raw];
     const group = typeToGroup[canonical];
 
-    // Nếu đang có chọn trong cùng nhóm mà khác cửa → chặn
+    // Nếu đã chọn trong cùng nhóm mà khác cửa → chặn
     if (currentSelection.group === group && currentSelection.type !== canonical) {
       alert("Không được chọn");
       return;
     }
 
-    // Toggle bỏ chọn
-    if (btn.classList.contains('active')) {
-      btn.classList.remove('active');
-      currentSelection = { type:null, digit:null, group:null };
-      return;
-    }
+    // Clear tất cả trước
+    betButtons.forEach(b=>b.classList.remove('active'));
+    numButtons.forEach(n=>n.classList.remove('active'));
 
-    // Clear các nút trong cùng nhóm trước khi chọn
-    betButtons.forEach(b=>{
-      const r2 = b.dataset.type;
-      const c2 = mapType[r2];
-      const g2 = typeToGroup[c2];
-      if (g2 === group) b.classList.remove('active');
-    });
-
-    // Chọn mới
+    // chọn mới
     btn.classList.add('active');
     currentSelection = { type:canonical, digit:null, group };
   });
 });
 
-
-  numButtons.forEach(btn=>{
+// --- xử lý cho nút số ---
+numButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    // nếu đã chọn rồi thì hủy
-    if(btn.classList.contains('active')){
-      btn.classList.remove('active');
-      currentSelection.type = null;
-      currentSelection.digit = null;
-      return;
-    }
-
-    // nếu chưa thì chọn
+    // Clear tất cả trước
     betButtons.forEach(b=>b.classList.remove('active'));
     numButtons.forEach(n=>n.classList.remove('active'));
+
+    // chọn số mới
     btn.classList.add('active');
-    currentSelection.type = 'digit';
-    currentSelection.digit = Number(btn.textContent.trim());
+    currentSelection = { type:'digit', digit:Number(btn.textContent.trim()), group:'digit' };
   });
 });
 
@@ -726,41 +707,22 @@ function savePendingBets(){
 }
 
 
-// map type
-const mapType = { chan:'even', le:'odd', tai:'big', xiu:'small' };
-let currentSelection = { type:null, digit:null };
-
-// --- xử lý cho nút chẵn/lẻ/tài/xỉu ---
-betButtons.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    // clear hết tất cả trước
-    betButtons.forEach(b=>b.classList.remove('active'));
-    numButtons.forEach(n=>n.classList.remove('active'));
-
-    // chọn mới
-    btn.classList.add('active');
-    const raw = btn.dataset.type;
-    currentSelection.type = mapType[raw] || raw;
-    currentSelection.digit = null;
-  });
-});
-
-// --- xử lý cho nút số ---
-numButtons.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    // clear hết tất cả trước
-    betButtons.forEach(b=>b.classList.remove('active'));
-    numButtons.forEach(n=>n.classList.remove('active'));
-
-    // chọn số mới
-    btn.classList.add('active');
-    currentSelection.type = 'digit';
-    currentSelection.digit = Number(btn.textContent.trim());
-  });
-});
-
-// --- xử lý đặt cược ---
 placeBetBtn.addEventListener('click', async () => {
+  // Lấy các nút đang chọn
+  const actives = document.querySelectorAll('.bet-btn.active, .num.active');
+
+  if (actives.length === 0) {
+    alert("Bạn chưa chọn cửa cược nào.");
+    return;
+  }
+
+  // Nếu chọn nhiều hơn 1 → báo lỗi
+  if (actives.length > 1) {
+    alert("Chỉ được chọn 1 cửa mỗi lần cược!");
+    return;
+  }
+
+  // Lấy thông tin cược
   const type = currentSelection.type;
   const digit = currentSelection.digit;
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
@@ -812,6 +774,7 @@ placeBetBtn.addEventListener('click', async () => {
   renderPending();
   renderBetHistory();
 });
+
 
 // helper describe bet
 function descBet(b){
