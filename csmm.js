@@ -661,23 +661,30 @@ function startCountdown() {
   // mapping dataset types to canonical types used in logic
   const mapType = { 'chan':'even', 'le':'odd', 'tai':'big', 'xiu':'small' };
 
- betButtons.forEach(btn=>{
+// Khai báo currentSelection trước khi addEventListener
+let currentSelection = { type: null, digit: null };
+
+betButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     // nếu đã active rồi thì hủy chọn
-    if(btn.classList.contains('active')){
+    if (btn.classList.contains('active')) {
       btn.classList.remove('active');
       currentSelection.type = null;
       currentSelection.digit = null;
       return;
     }
 
-    // nếu chưa active thì chọn
+    // nếu chưa active thì clear hết group trước khi chọn
     betButtons.forEach(b=>b.classList.remove('active'));
     numButtons.forEach(n=>n.classList.remove('active'));
+
     btn.classList.add('active');
-    const raw = btn.dataset.type;
-    currentSelection.type = mapType[raw] || raw;
+    const raw = btn.dataset.type;   // ví dụ 'chan','le','tai','xiu'
+    currentSelection.type = mapType[raw] || raw; // map sang even/odd/big/small
     currentSelection.digit = null;
+  });
+});
+
   });
 });
 
@@ -738,7 +745,13 @@ placeBetBtn.addEventListener('click', async () => {
     alert("Bạn chưa chọn cửa cược nào.");
     return;
   }
-
+const typeToGroup = { 
+  even: 'parity',
+  odd: 'parity',
+  big: 'size',
+  small: 'size',
+  digit: 'digit'
+};
   // Xác định nhóm được chọn
   let groups = new Set();
   actives.forEach(btn => {
