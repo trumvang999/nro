@@ -25,14 +25,15 @@ function redeemGiftcode(code) {
   alert(`Nhận ${VALID_GIFT_CODES[normalized]} vàng!`);
 }
 
-  // expose
+// nếu muốn gọi từ HTML inline
 window.redeemGiftcode = redeemGiftcode;
 
-// attach
+// bắt sự kiện cho nút "Xác nhận"
 document.getElementById("redeemGiftBtn")?.addEventListener("click", () => {
-  const code = (document.getElementById("giftcodeInput") || {}).value?.trim() || "";
-  if (!code) return alert("Nhập giftcode");
+  const code = document.getElementById("giftcodeInput")?.value.trim();
+  if (!code) {
+    alert("Nhập giftcode");
+    return;
+  }
   redeemGiftcode(code);
 });
-
-    });
