@@ -137,11 +137,11 @@ document.getElementById("toggleGoldBtn").addEventListener("click", () => {
       </div>
       <div class="stabar">
         <div style="font-size:12px;color:#8fb4c9">Đếm ngược</div>
-        <div id="countdown" style="font-weight:800;color:forestgreen">00:60</div>
+        <div id="countdown" style="font-weight:800;color:#00fc0a">00:60</div>
       </div>
       <div class="stabar">
         <div style="font-size:12px;color:#8fb4c9">Kết quả trước</div>
-        <div id="fetchedNumberSmall" style="font-weight:700;color:#ff7e00">—</div>
+        <div id="fetchedNumberSmall" style="font-weight:700;color:#ffba00">—</div>
       </div>
     `;
   }
