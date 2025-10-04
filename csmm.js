@@ -19,6 +19,21 @@ const chatObj = {
   time: new Date().toLocaleTimeString() // thời gian hiện tại
 };
 
+const VALID_GIFT_CODES = { "NRO2024": 1000 };
+
+function redeemGiftcode(code){
+  if(!currentUser){ alert("Vui lòng đăng nhập."); return; }
+  const normalized = code.trim().toUpperCase();
+  if(!VALID_GIFT_CODES[normalized]){ alert("Giftcode sai."); return; }
+
+  const keyRedeem = `giftRedeemed_${currentUser}_${normalized}`;
+  if(localStorage.getItem(keyRedeem)){ alert("Đã nhận rồi."); return; }
+
+  balance += VALID_GIFT_CODES[normalized];
+  saveBalance();
+  localStorage.setItem(keyRedeem, "1");
+  alert(`Nhận ${VALID_GIFT_CODES[normalized]} vàng!`);
+}
 
   await fetch("https://doan-so.nro2024.workers.dev/chat/save", {
     method: "POST",
@@ -216,23 +231,6 @@ function loadBalance(){
   }
   renderBalance();
 }
-
-const VALID_GIFT_CODES = { "NRO2024": 1000 };
-
-function redeemGiftcode(code){
-  if(!currentUser){ alert("Vui lòng đăng nhập."); return; }
-  const normalized = code.trim().toUpperCase();
-  if(!VALID_GIFT_CODES[normalized]){ alert("Giftcode sai."); return; }
-
-  const keyRedeem = `giftRedeemed_${currentUser}_${normalized}`;
-  if(localStorage.getItem(keyRedeem)){ alert("Đã nhận rồi."); return; }
-
-  balance += VALID_GIFT_CODES[normalized];
-  saveBalance();
-  localStorage.setItem(keyRedeem, "1");
-  alert(`Nhận ${VALID_GIFT_CODES[normalized]} vàng!`);
-}
-
 // save balance cho user hiện tại
 function saveBalance(){
   try {
@@ -685,13 +683,6 @@ betButtons.forEach(btn=>{
   });
 });
 
-  });
-});
-
-
-  // track current selection in object so placeBet can read
-  let currentSelection = { type: null, digit: null };
-
   numButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     // nếu đã chọn rồi thì hủy
@@ -859,7 +850,7 @@ renderResultTable();
     const latest = resultHistory[resultHistory.length-1];
     startCountdown(latest.time + 50000); // 50s chạy ngầm, 10s show kết quả
   } else {
-    startCountdown(Date.now() + 50000);
+    startCountdown();
   }
 }
 
