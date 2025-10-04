@@ -640,33 +640,46 @@ function startCountdown() {
     if(cd) cd.textContent = mm + ':' + ss;
   }
 
-  // event handlers for UI choices
-  // mapping dataset types to canonical types used in logic
-  const mapType = { 'chan':'even', 'le':'odd', 'tai':'big', 'xiu':'small' };
+// mapping dataset types to canonical types used in logic
+const mapType = { chan:'even', le:'odd', tai:'big', xiu:'small' };
+const typeToGroup = { even:'parity', odd:'parity', big:'size', small:'size' };
 
 // Khai báo currentSelection trước khi addEventListener
-let currentSelection = { type: null, digit: null };
+let currentSelection = { type: null, digit: null, group: null };
 
 betButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    // nếu đã active rồi thì hủy chọn
-    if (btn.classList.contains('active')) {
-      btn.classList.remove('active');
-      currentSelection.type = null;
-      currentSelection.digit = null;
+    const raw = btn.dataset.type;         // ví dụ 'chan','le','tai','xiu'
+    const canonical = mapType[raw];
+    const group = typeToGroup[canonical];
+
+    // Nếu đang có chọn trong cùng nhóm mà khác cửa → chặn
+    if (currentSelection.group === group && currentSelection.type !== canonical) {
+      alert("Không được chọn");
       return;
     }
 
-    // nếu chưa active thì clear hết group trước khi chọn
-    betButtons.forEach(b=>b.classList.remove('active'));
-    numButtons.forEach(n=>n.classList.remove('active'));
+    // Toggle bỏ chọn
+    if (btn.classList.contains('active')) {
+      btn.classList.remove('active');
+      currentSelection = { type:null, digit:null, group:null };
+      return;
+    }
 
+    // Clear các nút trong cùng nhóm trước khi chọn
+    betButtons.forEach(b=>{
+      const r2 = b.dataset.type;
+      const c2 = mapType[r2];
+      const g2 = typeToGroup[c2];
+      if (g2 === group) b.classList.remove('active');
+    });
+
+    // Chọn mới
     btn.classList.add('active');
-    const raw = btn.dataset.type;   // ví dụ 'chan','le','tai','xiu'
-    currentSelection.type = mapType[raw] || raw; // map sang even/odd/big/small
-    currentSelection.digit = null;
+    currentSelection = { type:canonical, digit:null, group };
   });
 });
+
 
   numButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
