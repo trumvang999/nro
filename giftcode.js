@@ -1,42 +1,41 @@
-// đặt 1 lần ở scope global
-const VALID_GIFT_CODES = { "NRO2024": 1000 };
-
-function redeemGiftcode(code) {
+async function redeemGiftcode() {
   const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) {
-    alert("Vui lòng đăng nhập.");
-    return;
+  const code = document.getElementById("giftcodeInput")?.value?.trim();
+
+  if (!currentUser) return alert("Vui lòng đăng nhập");
+  if (!code) return alert("Nhập giftcode");
+
+  try {
+    const resp = await fetch("/gift/redeem", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ username: currentUser, code })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      if (data.error === "invalid_code") return alert("Giftcode sai.");
+      if (data.error === "already_redeemed") return alert("Bạn đã nhập mã này rồi.");
+      return alert("Có lỗi: " + data.error);
+    }
+
+    // Cộng vàng vào localStorage (hoặc gọi API khác để credit server-side)
+    const balKey = `goldBalance_${currentUser}`;
+    const curBal = Number(localStorage.getItem(balKey) || 0);
+    const newBal = curBal + data.amount;
+    localStorage.setItem(balKey, String(newBal));
+
+    // update UI
+    const span = document.getElementById('goldAmount');
+    if (span) span.textContent = 'Vàng: ' + new Intl.NumberFormat().format(newBal);
+
+    alert(`Nhận ${data.amount} vàng!`);
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi mạng, thử lại sau.");
   }
-  const normalized = (code || "").trim().toUpperCase();
-  if (!normalized) { alert("Nhập giftcode"); return; }
-  if (!VALID_GIFT_CODES[normalized]) {
-    alert("Giftcode sai.");
-    return;
-  }
-
-  const keyRedeem = `giftRedeemed_${currentUser}_${normalized}`;
-  if (localStorage.getItem(keyRedeem)) {
-    alert("Bạn đã nhận mã này rồi.");
-    return;
-  }
-
-  // cập nhật trực tiếp trong localStorage (không cần saveBalance)
-  const balKey = `goldBalance_${currentUser}`;
-  const raw = localStorage.getItem(balKey);
-  const curBal = raw ? Number(raw) : 0;
-  const newBal = curBal + VALID_GIFT_CODES[normalized];
-  localStorage.setItem(balKey, String(newBal));
-  localStorage.setItem(keyRedeem, "1");
-
-  // cập nhật UI nếu tồn tại element
-  const span = document.getElementById('goldAmount');
-  if (span) span.textContent = 'Vàng: ' + new Intl.NumberFormat().format(newBal);
-
-  alert(`Nhận ${VALID_GIFT_CODES[normalized]} vàng!`);
 }
 
-// gắn event cho nút
-document.getElementById("redeemGiftBtn")?.addEventListener("click", () => {
-  const code = document.getElementById("giftcodeInput")?.value?.trim() || "";
-  redeemGiftcode(code);
-});
+// gắn sự kiện nút
+document.getElementById("redeemGiftBtn")?.addEventListener("click", redeemGiftcode);
