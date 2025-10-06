@@ -6,7 +6,7 @@ async function redeemGiftcode() {
   if (!code) return alert("Nhập giftcode");
 
   try {
-    const resp = await fetch("/gift/redeem", {
+    const resp = await fetch("https://giftcode.nro2024.workers.dev/gift/redeem", {
       method: "POST",
       headers: { "Content-Type":"application/json" },
       body: JSON.stringify({ username: currentUser, code })
