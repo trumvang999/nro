@@ -35,7 +35,8 @@ async function redeemGiftcode() {
     const span = document.getElementById('goldAmount');
     if (span) span.textContent = 'Vàng: ' + new Intl.NumberFormat().format(newBal);
 
-    alert(`Nhận ${amount} vàng!`);
+    alert(`Nhận thành công ${amount} vàng!`);
+    location.reload();
   } catch (err) {
     console.error(err);
     alert("Lỗi mạng, thử lại sau.");
