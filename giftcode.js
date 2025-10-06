@@ -41,3 +41,4 @@ async function redeemGiftcode() {
     alert("Lỗi mạng, thử lại sau.");
   }
 }
+document.getElementById("redeemGiftBtn")?.addEventListener("click", redeemGiftcode);
