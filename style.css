@@ -1,4 +1,4 @@
-//ver1.1
+//ver1.2
 @media screen and (min-width:1200px){::-webkit-scrollbar {
   max-width: 8px;max-height:8px;
 }
@@ -146,12 +146,34 @@ font-size:15px;
 #backer .Label{display:inline-block;float:left;height:50px;margin-right:20px}
 svg:hover{fill:#000}
 .list-label-widget-content svg{width:20px;height:20px;margin-right:3px;fill:#0098d3!important}
-#backer .list-label-widget-content{background-color:#fafafa;position:fixed;top:0;bottom:0;left:0;right:auto;z-index:10;line-height:20px;padding:0;width:300px;max-width:300px;  height: 100vh; 
-  min-height: 100vh;overflow-x:hidden;overflow-y:hidden;box-shadow:0 1px 10px rgba(0,0,0,0.5);transition:
+#backer .list-label-widget-content {
+  background-color:#fafafa;
+  position:fixed;
+  top:0;
+  bottom:0;
+  left:0;
+  right:auto;
+  z-index:10;
+  width:300px;
+  max-width:300px;
+  height:100vh;
+  box-shadow:0 1px 10px rgba(0,0,0,0.5);
+  padding-top:50px;
+  transition:
     transform 300ms cubic-bezier(.2,.8,.2,1),
-    opacity 250ms ease,
-    max-height 350ms cubic-bezier(.2,.8,.2,1);
-  will-change: transform, opacity, max-height;padding-top:50px}
+    opacity 250ms ease;
+  will-change: transform, opacity;
+  overflow-y:auto;
+  transform: translateX(-100%); /* Ẩn ban đầu */
+  opacity: 0;
+}
+
+/* Khi mở */
+#backer.open .list-label-widget-content {
+  transform: translateX(0);
+  opacity: 1;
+}
+
 #backer .list-label-widget-content.invisible{-webkit-transition-timing-function:cubic-bezier(0.4,0,0.6,1);transition-timing-function:cubic-bezier(0.4,0,0.6,1);-webkit-transform:translateX(-284px);-ms-transform:translateX(-284px);transform:translateX(-300px)}
 /* ===== MENU ITEM ===== */
 #backer .list-label-widget-content li {
