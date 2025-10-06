@@ -660,7 +660,11 @@ h1.post-title{font-size:16px}
 .blog-posts .post, #related-posts ul li, .PopularPosts ul li, .recentposts ul li, .randomposts ul li, .body-wrapper ul li{width:100%;}.post-outer{width:calc(100% - 15px)}.body-wrapper ul, ul.blog-posts{margin:0 !important}
 .random-posts,ul.blog-posts, #vip{      grid-template-columns: repeat(1, 1fr)!important;}
 }
-@media screen and (max-width:350px){#backer .backer-right .widget, #backer .Label{margin-right:0}.tb{display:none}#video-wrapper{height:150px!important} form textarea, form[name=contact-form] textarea{height:auto}   iframe {max-height: 150px;}	#backer .main-container{overflow:hidden;}
+@media screen and (max-width:350px){
+	#backer .backer-right .widget, #backer .Label{margin-right:0}.tb{display:none}
+	#video-wrapper{height:150px!important} form textarea, form[name=contact-form] textarea{height:auto}   iframe {max-height: 150px;}	
+	#backer .main-container{overflow:hidden;}
+	.dds-menu{position:fixed;}
 }
 
   @media screen and (max-width:300px){.PopularPosts ul, .recentposts ul, .randomposts ul{margin:0}#popup-giua-man-hinh .popUpBannerContent{top:45%!important}
