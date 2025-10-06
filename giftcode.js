@@ -14,28 +14,30 @@ async function redeemGiftcode() {
 
     const data = await resp.json();
 
-    if (!resp.ok) {
+    // 🔴 check kết quả từ server
+    if (!data.ok) {
       if (data.error === "invalid_code") return alert("Giftcode sai.");
       if (data.error === "already_redeemed") return alert("Bạn đã nhập mã này rồi.");
-      return alert("Có lỗi: " + data.error);
+      if (data.error === "missing_user") return alert("Chưa đăng nhập.");
+      return alert("Có lỗi: " + (data.error || "unknown"));
     }
 
-    // Cộng vàng vào localStorage (hoặc gọi API khác để credit server-side)
+    // chỉ chạy khi ok:true
+    const amount = data.amount || 0;
+
+    // Cộng vàng vào localStorage
     const balKey = `goldBalance_${currentUser}`;
     const curBal = Number(localStorage.getItem(balKey) || 0);
-    const newBal = curBal + data.amount;
+    const newBal = curBal + amount;
     localStorage.setItem(balKey, String(newBal));
 
     // update UI
     const span = document.getElementById('goldAmount');
     if (span) span.textContent = 'Vàng: ' + new Intl.NumberFormat().format(newBal);
 
-    alert(`Nhận ${data.amount} vàng!`);
+    alert(`Nhận ${amount} vàng!`);
   } catch (err) {
     console.error(err);
     alert("Lỗi mạng, thử lại sau.");
   }
 }
-
-// gắn sự kiện nút
-document.getElementById("redeemGiftBtn")?.addEventListener("click", redeemGiftcode);
