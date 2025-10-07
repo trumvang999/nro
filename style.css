@@ -668,7 +668,6 @@ max-width: calc(25% - 7.5px)!important;
 
 .video_info{margin:15px 15px 0 15px}
 .blog-posts .post, .body-wrapper ul li{padding:10px}
- .blog-posts .post:hover,#dsvip:hover,.randomposts ul li:hover{border:2px solid #1492ff;padding:10px;margin-top:-1px}
 h1.post-title{font-size:16px}
 .subscribe_button{margin:12px 0}
 .subscribe_button a{border-radius:unset;background:none;color:red;padding:10px 0;font-size:13px}
