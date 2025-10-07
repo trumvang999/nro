@@ -109,7 +109,7 @@ Số vàng muốn rút: ${gold.toLocaleString("vi-VN")} vàng`;
   // ===== Quay Vòng =====
   async function spinWheel() {
     const username = localStorage.getItem("currentUser");
-    if (!username) { alert("❌ Vui lòng đăng nhập trước khi quay."); return; }
+    if (!username) { alert("Vui lòng đăng nhập."); return; }
     if (rotating) return;
     rotating = true;
 
