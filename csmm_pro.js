@@ -81,8 +81,8 @@ document.getElementById("chatText").addEventListener("keypress", e => {
 
 let goldHidden = false;
 
-function updateGold(balance) {
-  document.getElementById("goldAmount").textContent = fmt(balance);
+function updateGold(goldBalance) {
+  document.getElementById("goldAmount").textContent = fmt(goldBalance);
   // Khi ẩn thì chỉ update số thật, span *** vẫn giữ nguyên
 }
 
@@ -171,7 +171,7 @@ createAuxUI();
 
 
   // internal state
-  let balance = 0;
+  let goldBalance = 0;
   let pendingBets = []; // {id, type, amount, digit, placedAt}
   let resultHistory = []; // {time, number, lastDigit, classification}
   let betHistory = []; // {id,time,type,digit,amount,status,payout}
@@ -243,12 +243,12 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-// 🪙 Load balance cho user hiện tại (lấy từ bảng characters)
-async function loadBalance() {
+// 🪙 Load goldBalance cho user hiện tại (lấy từ bảng characters)
+async function loadgoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) {
-    balance = 0;
-    renderBalance();
+    goldBalance = 0;
+    rendergoldBalance();
     return;
   }
 
@@ -256,52 +256,52 @@ async function loadBalance() {
     // 1️⃣ Lấy từ localStorage cache trước
     const raw = localStorage.getItem(`goldBalance_${accountId}`);
     if (raw) {
-      balance = Number(raw);
+      goldBalance = Number(raw);
     } else {
       // 2️⃣ Nếu local chưa có → lấy trực tiếp từ bảng characters
       const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
       const data = await res.json();
 
-      balance = data.character?.balance ?? 0;
-      localStorage.setItem(`goldBalance_${accountId}`, String(balance)); // cache local
+      goldBalance = data.character?.goldBalance ?? 0;
+      localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance)); // cache local
     }
   } catch (e) {
-    console.warn("loadBalance error:", e);
-    balance = 0;
+    console.warn("loadgoldBalance error:", e);
+    goldBalance = 0;
   }
 
-  renderBalance();
+  rendergoldBalance();
 }
 
-// 💾 Save balance cho user hiện tại (update bảng characters)
-async function saveBalance() {
+// 💾 Save goldBalance cho user hiện tại (update bảng characters)
+async function savegoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) return;
 
   try {
-    localStorage.setItem(`goldBalance_${accountId}`, String(balance));
+    localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
   } catch (e) {
-    console.warn("local saveBalance failed", e);
+    console.warn("local savegoldBalance failed", e);
   }
 
   try {
-    await fetch(`${API_MAIN}/character/update-balance`, {
+    await fetch(`${API_MAIN}/character/update-goldBalance`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId, balance })
+      body: JSON.stringify({ accountId, goldBalance })
     });
-    console.log("[SYNC] balance updated to main DB");
+    console.log("[SYNC] goldBalance updated to main DB");
   } catch (e) {
-    console.warn("Server update balance failed", e);
+    console.warn("Server update goldBalance failed", e);
   }
 
-  renderBalance();
+  rendergoldBalance();
 }
 
-// 💡 Hiển thị balance ra UI
-function renderBalance() {
+// 💡 Hiển thị goldBalance ra UI
+function rendergoldBalance() {
   const span = document.getElementById("goldAmount");
-  if (span) span.textContent = fmt(balance);
+  if (span) span.textContent = fmt(goldBalance);
 }
 
 
@@ -330,10 +330,10 @@ document.querySelectorAll(".tab-link").forEach(btn => {
 document.getElementById("depositBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputDeposit").value, 10) || 0;
   if(amount > 0){
-    balance += amount;
-saveBalance();
+    goldBalance += amount;
+savegoldBalance();
 syncAllData();
-    renderBalance();
+    rendergoldBalance();
     addHistory("Nạp", amount);
     alert("Đã nạp " + amount + " vàng!");
   }
@@ -342,11 +342,11 @@ syncAllData();
 // rút vàng
 document.getElementById("withdrawBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
-  if(amount > 0 && balance >= amount){
-    balance -= amount;
-saveBalance();
+  if(amount > 0 && goldBalance >= amount){
+    goldBalance -= amount;
+savegoldBalance();
 syncAllData();
-    renderBalance();
+    rendergoldBalance();
     addHistory("Rút", amount);
     alert("Đã rút " + amount + " vàng!");
   } else {
@@ -628,11 +628,11 @@ async function handleNewResult(res){
     result: res.number
   });
 
-  if (win) balance += payout;
+  if (win) goldBalance += payout;
 }
 pendingBets = []; // ✅ sau khi xử lý thì xóa hết cược chờ
 
-saveBalance();
+savegoldBalance();
 syncAllData();
 
     while(betHistory.length > 20) betHistory.shift(); // giữ nhiều hơn 5 để an toàn
@@ -833,7 +833,7 @@ placeBetBtn.addEventListener('click', async () => {
     alert("Đặt tối thiểu 100 vàng.");
     return;
   }
-  if (amount > balance) {
+  if (amount > goldBalance) {
     alert("Không đủ vàng.");
     return;
   }
@@ -850,8 +850,8 @@ placeBetBtn.addEventListener('click', async () => {
   }
 
   const id = makeId();
-  balance -= amount;
-saveBalance();
+  goldBalance -= amount;
+savegoldBalance();
 syncAllData();
 
   const placed = {
@@ -882,7 +882,7 @@ function descBet(b){
 
 // ---------- Initial Load ----------
 async function init(){
-loadBalance();
+loadgoldBalance();
 await loadResultHistory();
 loadBetHistory();
 loadPendingBets();          // ✅ load pending trước
@@ -917,7 +917,7 @@ init().catch(err => console.error('init failed', err));
 
 
   // expose for debug
-  window._demo = { getState: ()=>({balance, pendingBets, resultHistory, betHistory}) };
+  window._demo = { getState: ()=>({goldBalance, pendingBets, resultHistory, betHistory}) };
 
 })();
  let canOpen = false; // chỉ cho mở khi countdown = 0:00
