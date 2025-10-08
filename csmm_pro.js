@@ -189,8 +189,8 @@ const API_MAIN = "https://index.nro2024.workers.dev";
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || "persist failed");
-    console.log(`[SYNC] ${key} saved to server`);
-  } catch (e) {
+
+      } catch (e) {
     console.warn(`[SYNC ERROR] ${key}:`, e.message);
   }
 }
@@ -214,7 +214,6 @@ const API_MAIN = "https://index.nro2024.workers.dev";
       }
     }
 
-    console.log("[SYNC] All user data synced.");
   } catch (err) {
     console.warn("syncAllData error:", err);
   }
@@ -287,7 +286,6 @@ async function savegoldBalance() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accountId, goldBalance })
     });
-    console.log("[SYNC] goldBalance updated to main DB");
   } catch (e) {
     console.warn("Server update goldBalance failed", e);
   }
