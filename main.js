@@ -256,6 +256,7 @@ window.addEventListener("DOMContentLoaded", function () {
   localStorage.removeItem("expireTime");
   localStorage.removeItem("currentPass");
     localStorage.removeItem("currentUser");
+	    localStorage.removeItem("accountId");
     location.reload();
   }
 
