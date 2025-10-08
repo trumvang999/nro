@@ -169,12 +169,8 @@ document.getElementById("toggleGoldBtn").addEventListener("click", () => {
 // chạy khi load trang
 createAuxUI();
 
-
-  // internal state
-  let goldBalance = 0;
-  let pendingBets = []; // {id, type, amount, digit, placedAt}
-  let resultHistory = []; // {time, number, lastDigit, classification}
-  let betHistory = []; // {id,time,type,digit,amount,status,payout}
+// internal state (only temporary UI state)
+let goldBalance = 0; // chỉ dùng để hiển thị UI hiện tại
 let roundName = null; 
 const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cuối
 const API_MAIN = "https://index.nro2024.workers.dev"; 
@@ -200,7 +196,7 @@ const API_MAIN = "https://index.nro2024.workers.dev";
   if (!accountId) return;
 
   try {
-    const keys = ["goldBalance", "pendingBets", "betHistory", "resultHistory", "giftUsed"];
+const keys = ["goldBalance", "giftUsed"];
 
     for (const key of keys) {
       let value;
@@ -258,7 +254,6 @@ async function loadgoldBalance() {
     goldBalance = data.character?.balance ?? 0;
     console.log("🟢 Load từ server:", goldBalance);
 
-    // Cập nhật lại localStorage cho vui thôi (không phụ thuộc)
     localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
   } catch (e) {
     console.warn("loadgoldBalance error:", e);
@@ -360,32 +355,11 @@ function addHistory(type, amount){
   ul.prepend(li);
 }
 
-function saveResultHistory() {
-  try {
-    localStorage.setItem(`resultHistory_${currentUser}`, JSON.stringify(resultHistory));
-  } catch (e) {
-    console.warn("local saveResultHistory failed", e);
-  }
-
-  const accountId = localStorage.getItem("accountId");
-  if (accountId) {
-    persistToServer(accountId, "resultHistory", resultHistory);
-  }
-}
-
-
-
-async function loadResultHistory(){ 
-  try {
-    const resp = await fetch(`${API_WORKER}/load?key=resultHistory`);
-    const data = await resp.json();
-    if (Array.isArray(data.value)) {
-      resultHistory = data.value.slice(-5);
-      renderResultTable();
-    }
-  } catch (e) {
-    console.error("Load resultHistory failed", e);
-  }
+async function loadResultHistory() {
+  const res = await fetch(`${API_WORKER}/history`);
+  const data = await res.json();
+  resultHistory = Array.isArray(data) ? data.slice(-5) : [];
+  renderResultTable();
 }
 
   // render pending text area (create if missing)
@@ -646,28 +620,6 @@ function statusClass(status) {
   return "status-cho";
 }
 
-// Bet History
-function loadBetHistory(){
-  try {
-    const raw = localStorage.getItem(`betHistory_${currentUser}`);
-    betHistory = raw ? JSON.parse(raw) : [];
-  } catch(e){
-    betHistory = [];
-  }
-}
-function saveBetHistory() {
-  try {
-    localStorage.setItem(`betHistory_${currentUser}`, JSON.stringify(betHistory));
-  } catch (e) {
-    console.warn("local saveBetHistory failed", e);
-  }
-
-  const accountId = localStorage.getItem("accountId");
-  if (accountId) {
-    persistToServer(accountId, "betHistory", betHistory);
-  }
-}
-
 
   // countdown aligned to minute
 let currentRem = 0;
@@ -777,27 +729,6 @@ async function getCurrentRound() {
     return null;
   }
 }
-// Pending Bets
-function loadPendingBets(){
-  try {
-    const raw = localStorage.getItem(`pendingBets_${currentUser}`);
-    pendingBets = raw ? JSON.parse(raw) : [];
-  } catch(e){
-    pendingBets = [];
-  }
-}
-function savePendingBets() {
-  try {
-    localStorage.setItem(`pendingBets_${currentUser}`, JSON.stringify(pendingBets));
-  } catch (e) {
-    console.warn("local savePendingBets failed", e);
-  }
-
-  const accountId = localStorage.getItem("accountId");
-  if (accountId) {
-    persistToServer(accountId, "pendingBets", pendingBets);
-  }
-}
 
 
 placeBetBtn.addEventListener('click', async () => {
@@ -876,14 +807,12 @@ function descBet(b){
 }
 
 // ---------- Initial Load ----------
-async function init(){
-loadgoldBalance();
-await loadResultHistory();
-loadBetHistory();
-loadPendingBets();          // ✅ load pending trước
-renderPending();            // ✅ rồi render
-renderBetHistory();
-renderResultTable();
+async function init() {
+  await loadgoldBalance();     // lấy số vàng từ D1
+  await loadResultHistory();   // lấy lịch sử kết quả từ doan-so worker
+  await renderPending();       // hiển thị cược đang chờ (nếu lấy từ D1)
+  await renderBetHistory();    // hiển thị lịch sử cược (nếu có API riêng)
+  renderResultTable();         // cập nhật bảng kết quả
 
   // load round hiện tại từ backend
   roundName = await loadRoundName();
