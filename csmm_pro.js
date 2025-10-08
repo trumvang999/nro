@@ -243,7 +243,7 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-// 🪙 Load balance cho user hiện tại
+// 🪙 Load balance cho user hiện tại (lấy từ bảng characters)
 async function loadBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) {
@@ -253,15 +253,16 @@ async function loadBalance() {
   }
 
   try {
-    // 1️⃣ Lấy từ localStorage trước
+    // 1️⃣ Lấy từ localStorage cache trước
     const raw = localStorage.getItem(`goldBalance_${accountId}`);
     if (raw) {
       balance = Number(raw);
     } else {
-      // 2️⃣ Nếu local chưa có → lấy từ server D1
-      const res = await fetch(`${API_MAIN}/persist?accountId=${accountId}&key=goldBalance`);
+      // 2️⃣ Nếu local chưa có → lấy trực tiếp từ bảng characters
+      const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
       const data = await res.json();
-      balance = data.value ?? 0;
+
+      balance = data.character?.balance ?? 0;
       localStorage.setItem(`goldBalance_${accountId}`, String(balance)); // cache local
     }
   } catch (e) {
@@ -272,8 +273,8 @@ async function loadBalance() {
   renderBalance();
 }
 
-// 💾 Save balance cho user hiện tại
-function saveBalance() {
+// 💾 Save balance cho user hiện tại (update bảng characters)
+async function saveBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) return;
 
@@ -283,7 +284,17 @@ function saveBalance() {
     console.warn("local saveBalance failed", e);
   }
 
-  persistToServer(accountId, "goldBalance", balance);
+  try {
+    await fetch(`${API_MAIN}/character/update-balance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId, balance })
+    });
+    console.log("[SYNC] balance updated to main DB");
+  } catch (e) {
+    console.warn("Server update balance failed", e);
+  }
+
   renderBalance();
 }
 
@@ -292,7 +303,6 @@ function renderBalance() {
   const span = document.getElementById("goldAmount");
   if (span) span.textContent = fmt(balance);
 }
-
 
 
 // mở popup
