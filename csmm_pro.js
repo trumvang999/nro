@@ -245,7 +245,8 @@ const currentUser = localStorage.getItem("currentUser");
 
 // 🪙 Load balance cho user hiện tại
 async function loadBalance() {
-  if (!currentUser) {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) {
     balance = 0;
     renderBalance();
     return;
@@ -253,15 +254,15 @@ async function loadBalance() {
 
   try {
     // 1️⃣ Lấy từ localStorage trước
-    const raw = localStorage.getItem(`goldBalance_${currentUser}`);
+    const raw = localStorage.getItem(`goldBalance_${accountId}`);
     if (raw) {
       balance = Number(raw);
     } else {
       // 2️⃣ Nếu local chưa có → lấy từ server D1
-const accountId = localStorage.getItem("accountId");
-const res = await fetch(`${API_MAIN}/persist?accountId=${accountId}&key=goldBalance`);
+      const res = await fetch(`${API_MAIN}/persist?accountId=${accountId}&key=goldBalance`);
       const data = await res.json();
       balance = data.value ?? 0;
+      localStorage.setItem(`goldBalance_${accountId}`, String(balance)); // cache local
     }
   } catch (e) {
     console.warn("loadBalance error:", e);
@@ -273,19 +274,16 @@ const res = await fetch(`${API_MAIN}/persist?accountId=${accountId}&key=goldBala
 
 // 💾 Save balance cho user hiện tại
 function saveBalance() {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) return;
+
   try {
-    // 1️⃣ Lưu local
-    localStorage.setItem(`goldBalance_${currentUser}`, String(balance));
+    localStorage.setItem(`goldBalance_${accountId}`, String(balance));
   } catch (e) {
     console.warn("local saveBalance failed", e);
   }
 
-  // 2️⃣ Đồng bộ lên server
-  const accountId = localStorage.getItem("accountId");
-  if (accountId) {
-    persistToServer(accountId, "goldBalance", balance);
-  }
-
+  persistToServer(accountId, "goldBalance", balance);
   renderBalance();
 }
 
@@ -294,6 +292,7 @@ function renderBalance() {
   const span = document.getElementById("goldAmount");
   if (span) span.textContent = fmt(balance);
 }
+
 
 
 // mở popup
