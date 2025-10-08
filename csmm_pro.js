@@ -728,7 +728,7 @@ async function loadBetHistory() {
 
 // ---------- Render bet history ----------
 function renderBetHistory(historyData = []) {
-  const table = document.getElementById("betHistoryTableBody");
+  const table = document.getElementById("betHistoryTable");
   if (!table) return;
 
   if (historyData.length === 0) {
