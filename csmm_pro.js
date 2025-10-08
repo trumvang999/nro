@@ -258,7 +258,8 @@ async function loadBalance() {
       balance = Number(raw);
     } else {
       // 2️⃣ Nếu local chưa có → lấy từ server D1
-      const res = await fetch(`${API_MAIN}/persist?accountId=${currentUser}&key=goldBalance`);
+const accountId = localStorage.getItem("accountId");
+const res = await fetch(`${API_MAIN}/persist?accountId=${accountId}&key=goldBalance`);
       const data = await res.json();
       balance = data.value ?? 0;
     }
