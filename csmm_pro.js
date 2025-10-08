@@ -727,24 +727,22 @@ async function loadBetHistory() {
 }
 
 // ---------- Render bet history ----------
-function renderBetHistory(historyData = []) {
-  const table = document.getElementById("betHistoryTable");
+function renderBetHistory(historyData) {
+  const table = document.querySelector("#betHistoryTable tbody");
   if (!table) return;
-
-  if (historyData.length === 0) {
-    table.innerHTML = `<tr><td colspan="4">Chưa có lịch sử cược</td></tr>`;
-    return;
-  }
 
   table.innerHTML = historyData.map(b => `
     <tr>
       <td>${b.round}</td>
       <td>${b.type === "digit" ? `Số ${b.digit}` : b.type}</td>
       <td>${b.amount.toLocaleString()}</td>
-      <td>${new Date(b.created_at).toLocaleTimeString()}</td>
+      <td>${b.status === "win" ? "Thắng" : b.status === "lose" ? "Thua" : "—"}</td>
+      <td>${b.status === "win" ? "✅" : b.status === "lose" ? "❌" : "Đang xử lý"}</td>
+      <td>${b.payout ? b.payout.toLocaleString() : ""}</td>
     </tr>
   `).join('');
 }
+
 
 // ---------- Place bet ----------
 placeBetBtn.addEventListener('click', async () => {
