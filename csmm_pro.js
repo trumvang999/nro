@@ -537,22 +537,21 @@ function renderRound(){
   if(rn) rn.textContent = roundName || '—';
 }
 
-// handle new round
-async function handleNewResult(res){
-  // Nếu chưa truyền res (fetch), lấy từ backend
-  if(!res) res = await fetchResult();
+// ---------- Handle new round ----------
+async function handleNewResult(res) {
+  if (!res) res = await fetchResult();
 
-  const numStr = String(res.number).replace(/[^0-9]/g,'');
+  const numStr = String(res.number).replace(/[^0-9]/g, '');
   const lastDigit = numStr ? Number(numStr.slice(-1)) : null;
-  const cls = lastDigit != null ? classifyLastDigit(lastDigit) : {bigSmall:'—', oddEven:'—'};
+  const cls = lastDigit != null 
+    ? classifyLastDigit(lastDigit) 
+    : { bigSmall: '—', oddEven: '—' };
 
-  // ⚡ Hiệu ứng hiển thị kết quả
-  setTimeout(()=>{
-    showResultOnDisk(res.number);  
-    setTimeout(()=>{ canOpen = true; }, 1200);
+  setTimeout(() => {
+    showResultOnDisk(res.number);
+    setTimeout(() => { canOpen = true; }, 1200);
   }, 0);
 
-  // Lưu kết quả mới vào lịch sử hiển thị
   resultHistory.push({
     time: res.time,
     round: res.round,
@@ -561,57 +560,33 @@ async function handleNewResult(res){
     classification: `${cls.bigSmall}/${cls.oddEven}`
   });
   while (resultHistory.length > 5) resultHistory.shift();
-  saveResultHistory();
   renderResultTable();
 
-  // cập nhật roundName từ backend luôn
   roundName = res.round;
   renderRound();
 
-  // settle pending bets theo round hiện tại
-  if (pendingBets.length > 0) {
-    const stillPending = [];
+  try {
+    const resp = await fetch(`${API_MAIN}/settle-round`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        round: res.round,
+        lastDigit,
+        classification: `${cls.bigSmall}/${cls.oddEven}`
+      })
+    });
+    const data = await resp.json();
 
- for (const p of pendingBets) {
-  // ✅ nếu chưa gắn round thì gắn round hiện tại
-  if (!p.round) {
-    p.round = res.round;
-    p.time = res.time;
-  }
-
-  // giờ tất cả đều thuộc round hiện tại → xử lý luôn
-  const win = checkBet(p.type, lastDigit, p.digit);
-  let payout = 0;
-  if (win) {
-    if (['big','small','odd','even'].includes(p.type)) {
-      payout = Math.floor(p.amount * 1.95);
-    } else if (p.type === 'digit') {
-      payout = Math.floor(p.amount * 8);
+    if (data.ok) {
+      console.log(`✅ Round ${res.round} settled (${data.settled} bets)`);
+    } else {
+      console.warn("⚠️ Settle failed:", data.error);
     }
-  }
-
-  betHistory.push({
-    ...p,
-    status: win ? 'Thắng' : 'Thua',
-    payout,
-    result: res.number
-  });
-
-  if (win) goldBalance += payout;
-}
-pendingBets = []; // ✅ sau khi xử lý thì xóa hết cược chờ
-
-savegoldBalance();
-syncAllData();
-
-    while(betHistory.length > 20) betHistory.shift(); // giữ nhiều hơn 5 để an toàn
-    saveBetHistory();
-    savePendingBets();
-
-    renderPending();
-    renderBetHistory();
+  } catch (err) {
+    console.error("❌ Lỗi khi gọi settle-round:", err);
   }
 }
+
 function statusClass(status) {
   if (!status) return "status-cho";
   const s = status.toLowerCase();
@@ -719,124 +694,132 @@ numButtons.forEach(btn=>{
   });
 });
 
+// ---------- Get current round ----------
 async function getCurrentRound() {
   try {
     const resp = await fetch(API_URL + "/random", { cache: "no-cache" });
     const data = await resp.json();
-    return data.round; // ✅ lấy round từ backend
+    return data; // ✅ trả nguyên object {round, time, number,...}
   } catch (e) {
     console.error("getCurrentRound error", e);
     return null;
   }
 }
 
+// ---------- Load bet history from server ----------
+async function loadBetHistory() {
+  try {
+    const accountId = localStorage.getItem("accountId");
+    if (!accountId) return;
 
+    const res = await fetch(`${API_MAIN}/bet/history?accountId=${accountId}`);
+    const data = await res.json();
+
+    if (data.ok && Array.isArray(data.data)) {
+      renderBetHistory(data.data);
+    } else {
+      console.warn("Không có dữ liệu cược từ server");
+      renderBetHistory([]);
+    }
+  } catch (err) {
+    console.error("Không load được lịch sử cược:", err);
+  }
+}
+
+// ---------- Render bet history ----------
+function renderBetHistory(historyData = []) {
+  const table = document.getElementById("betHistoryTableBody");
+  if (!table) return;
+
+  if (historyData.length === 0) {
+    table.innerHTML = `<tr><td colspan="4">Chưa có lịch sử cược</td></tr>`;
+    return;
+  }
+
+  table.innerHTML = historyData.map(b => `
+    <tr>
+      <td>${b.round}</td>
+      <td>${b.type === "digit" ? `Số ${b.digit}` : b.type}</td>
+      <td>${b.amount.toLocaleString()}</td>
+      <td>${new Date(b.created_at).toLocaleTimeString()}</td>
+    </tr>
+  `).join('');
+}
+
+// ---------- Place bet ----------
 placeBetBtn.addEventListener('click', async () => {
-  // Lấy các nút đang chọn
   const actives = document.querySelectorAll('.bet-btn.active, .num.active');
+  if (actives.length === 0) return alert("Bạn chưa chọn cửa cược nào.");
+  if (actives.length > 1) return alert("Chỉ được chọn 1 cửa mỗi lần cược!");
 
-  if (actives.length === 0) {
-    alert("Bạn chưa chọn cửa cược nào.");
-    return;
-  }
-
-  // Nếu chọn nhiều hơn 1 → báo lỗi
-  if (actives.length > 1) {
-    alert("Chỉ được chọn 1 cửa mỗi lần cược!");
-    return;
-  }
-
-  // Lấy thông tin cược
   const type = currentSelection.type;
   const digit = currentSelection.digit;
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
+  if (!type) return alert("Chưa chọn loại cược");
+  if (amount < 100) return alert("Đặt tối thiểu 100 vàng.");
+  if (amount > goldBalance) return alert("Không đủ vàng.");
+  if (currentRem <= 3) return alert("Đã hết thời gian, vui lòng chờ phiên sau");
 
-  if (!type) { 
-    alert("Chưa chọn loại cược"); 
-    return; 
-  }
-  if (amount < 100) {
-    alert("Đặt tối thiểu 100 vàng.");
-    return;
-  }
-  if (amount > goldBalance) {
-    alert("Không đủ vàng.");
-    return;
-  }
-  if (currentRem <= 3) { 
-    alert("Đã hết thời gian, vui lòng chờ phiên sau"); 
-    return; 
-  }
-
-  // ✅ luôn lấy round từ backend
   const rn = await getCurrentRound();
-  if (!rn) { 
-    alert("Không lấy được phiên"); 
-    return; 
-  }
+  if (!rn?.round) return alert("Không lấy được phiên");
 
-  const id = makeId();
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) return alert("Chưa đăng nhập");
+
   goldBalance -= amount;
-savegoldBalance();
-syncAllData();
+  savegoldBalance();
 
-  const placed = {
-    id,
-    type,
-    digit: type === 'digit' ? digit : null,
-    amount,
-    status: 'Chờ',
-    payout: 0,
-    round: null,   // ✅ chưa gắn round, để chờ phiên tiếp theo
-    time: Date.now()
-  };
+  // Gửi cược lên server
+  const res = await fetch(`${API_MAIN}/bet/place`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      accountId,
+      round: rn.round,
+      type,
+      digit,
+      amount
+    })
+  });
+  const data = await res.json();
 
-  pendingBets.push(placed);
-  savePendingBets();
-  saveBetHistory();
-
-  showBetNotice("Đặt cược thành công!");
-  renderPending();
-  renderBetHistory();
+  if (data.ok) {
+    showBetNotice("Đặt cược thành công!");
+    await loadBetHistory(); // ✅ tải lại lịch sử từ server
+  } else {
+    alert("Lỗi khi đặt cược: " + (data.error || "Không xác định"));
+  }
 });
-
-
-// helper describe bet
-function descBet(b){
-  return `${labelType(b.type,b.digit)}`
-}
 
 // ---------- Initial Load ----------
 async function init() {
   await loadgoldBalance();     // lấy số vàng từ D1
   await loadResultHistory();   // lấy lịch sử kết quả từ doan-so worker
-  await renderPending();       // hiển thị cược đang chờ (nếu lấy từ D1)
-  await renderBetHistory();    // hiển thị lịch sử cược (nếu có API riêng)
+  await loadBetHistory();      // ✅ lấy lịch sử cược từ DB server
   renderResultTable();         // cập nhật bảng kết quả
 
   // load round hiện tại từ backend
-  roundName = await loadRoundName();
-  renderRound(); // show mã phiên
+  const rn = await getCurrentRound();
+  roundName = rn?.round || "—";
+  renderRound();
 
   // show latest result ngay nếu có
-  if(resultHistory.length > 0){
-    const latest = resultHistory[resultHistory.length-1];
+  if (resultHistory.length > 0) {
+    const latest = resultHistory[resultHistory.length - 1];
     resultEl.textContent = latest.number;
     const small = document.getElementById('fetchedNumberSmall');
-    if(small) small.textContent = latest.number;
+    if (small) small.textContent = latest.number;
   }
 
   // start countdown dựa trên backend
-  if(resultHistory.length > 0){
-    const latest = resultHistory[resultHistory.length-1];
+  if (resultHistory.length > 0) {
+    const latest = resultHistory[resultHistory.length - 1];
     startCountdown(latest.time + 50000); // 50s chạy ngầm, 10s show kết quả
   } else {
     startCountdown();
   }
 }
 
-
-// gọi init (bắt lỗi để dễ debug)
 init().catch(err => console.error('init failed', err));
 
 
