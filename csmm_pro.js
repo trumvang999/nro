@@ -333,8 +333,8 @@ syncAllData();
 document.getElementById("withdrawBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
   if(amount > 0 && goldBalance >= amount){
-    goldBalance -= amount;
-savegoldBalance();
+goldBalance -= amount;
+await savegoldBalance();
 syncAllData();
     rendergoldBalance();
     addHistory("Rút", amount);
