@@ -334,7 +334,7 @@ document.getElementById("withdrawBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
   if(amount > 0 && goldBalance >= amount){
 goldBalance -= amount;
-await savegoldBalance();
+savegoldBalance();
 syncAllData();
     rendergoldBalance();
     addHistory("Rút", amount);
@@ -767,8 +767,7 @@ placeBetBtn.addEventListener('click', async () => {
   if (!accountId) return alert("Chưa đăng nhập");
 
   goldBalance -= amount;
-  savegoldBalance();
-
+ await savegoldBalance();
   // Gửi cược lên server
   const res = await fetch(`${API_MAIN}/bet/place`, {
     method: "POST",
