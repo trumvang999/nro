@@ -262,7 +262,7 @@ async function loadgoldBalance() {
       const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
       const data = await res.json();
 
-      goldBalance = data.character?.goldBalance ?? 0;
+      goldBalance = data.character?.balance ?? 0;
       localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance)); // cache local
     }
   } catch (e) {
