@@ -57,8 +57,7 @@ async function loadChat() {
 // Khi trang load thì load chat
 window.addEventListener("load", () => {
   loadChat();
-  // Auto refresh chat mỗi 3 giây
-  setInterval(loadChat, 3000);
+  setInterval(loadChat, 60000);
 });
 // Gắn sự kiện cho nút gửi
 document.getElementById("chatSendBtn").addEventListener("click", sendChat);
@@ -238,7 +237,6 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-// 🪙 Load goldBalance luôn từ server D1
 async function loadgoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) {
@@ -252,7 +250,6 @@ async function loadgoldBalance() {
     const data = await res.json();
 
     goldBalance = data.character?.balance ?? 0;
-    console.log("🟢 Load từ server:", goldBalance);
 
     localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
   } catch (e) {
