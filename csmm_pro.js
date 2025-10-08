@@ -243,7 +243,7 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-// 🪙 Load goldBalance cho user hiện tại (lấy từ bảng characters)
+// 🪙 Load goldBalance luôn từ server D1
 async function loadgoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) {
@@ -253,18 +253,14 @@ async function loadgoldBalance() {
   }
 
   try {
-    // 1️⃣ Lấy từ localStorage cache trước
-    const raw = localStorage.getItem(`goldBalance_${accountId}`);
-    if (raw) {
-      goldBalance = Number(raw);
-    } else {
-      // 2️⃣ Nếu local chưa có → lấy trực tiếp từ bảng characters
-      const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
-      const data = await res.json();
+    const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
+    const data = await res.json();
 
-      goldBalance = data.character?.balance ?? 0;
-      localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance)); // cache local
-    }
+    goldBalance = data.character?.balance ?? 0;
+    console.log("🟢 Load từ server:", goldBalance);
+
+    // Cập nhật lại localStorage cho vui thôi (không phụ thuộc)
+    localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
   } catch (e) {
     console.warn("loadgoldBalance error:", e);
     goldBalance = 0;
@@ -272,6 +268,7 @@ async function loadgoldBalance() {
 
   rendergoldBalance();
 }
+
 
 // 💾 Save goldBalance cho user hiện tại (update bảng characters)
 async function savegoldBalance() {
