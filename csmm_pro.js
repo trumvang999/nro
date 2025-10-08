@@ -195,6 +195,31 @@ const API_MAIN = "https://index.nro2024.workers.dev";
   }
 }
 
+  async function syncAllData() {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) return;
+
+  try {
+    const keys = ["goldBalance", "pendingBets", "betHistory", "resultHistory", "giftUsed"];
+
+    for (const key of keys) {
+      let value;
+      try {
+        value = localStorage.getItem(`${key}_${accountId}`);
+        if (value) value = JSON.parse(value);
+      } catch { value = null; }
+
+      if (value !== null) {
+        await persistToServer(accountId, key, value);
+      }
+    }
+
+    console.log("[SYNC] All user data synced.");
+  } catch (err) {
+    console.warn("syncAllData error:", err);
+  }
+}
+
 // lấy round trực tiếp từ backend
 async function loadRoundName() {
   try {
@@ -296,7 +321,8 @@ document.getElementById("depositBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputDeposit").value, 10) || 0;
   if(amount > 0){
     balance += amount;
-    saveBalance();
+saveBalance();
+syncAllData();
     renderBalance();
     addHistory("Nạp", amount);
     alert("Đã nạp " + amount + " vàng!");
@@ -308,7 +334,8 @@ document.getElementById("withdrawBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
   if(amount > 0 && balance >= amount){
     balance -= amount;
-    saveBalance();
+saveBalance();
+syncAllData();
     renderBalance();
     addHistory("Rút", amount);
     alert("Đã rút " + amount + " vàng!");
@@ -595,7 +622,8 @@ async function handleNewResult(res){
 }
 pendingBets = []; // ✅ sau khi xử lý thì xóa hết cược chờ
 
-    saveBalance();
+saveBalance();
+syncAllData();
 
     while(betHistory.length > 20) betHistory.shift(); // giữ nhiều hơn 5 để an toàn
     saveBetHistory();
@@ -813,7 +841,8 @@ placeBetBtn.addEventListener('click', async () => {
 
   const id = makeId();
   balance -= amount;
-  saveBalance();
+saveBalance();
+syncAllData();
 
   const placed = {
     id,
