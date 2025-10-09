@@ -237,25 +237,31 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-async function loadgoldBalance() {
+let goldBalance = 0;
+
+async function loadGoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) {
     goldBalance = 0;
-    rendergoldBalance();
+    renderGoldBalance();
     return;
   }
 
   try {
-    const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
+    const res = await fetch(`https://index.nro2024.workers.dev/character/load?account=${accountId}`);
     const data = await res.json();
-
     goldBalance = data.character?.balance ?? 0;
-  } catch (e) {
-    console.warn("loadgoldBalance error:", e);
+  } catch (err) {
+    console.warn("loadGoldBalance error:", err);
     goldBalance = 0;
   }
 
-  rendergoldBalance();
+  renderGoldBalance();
+}
+
+function renderGoldBalance() {
+  const el = document.getElementById("goldAmount");
+  if (el) el.textContent = new Intl.NumberFormat().format(goldBalance);
 }
 
 
@@ -281,12 +287,6 @@ async function savegoldBalance() {
   }
 
   rendergoldBalance();
-}
-
-// 💡 Hiển thị goldBalance ra UI
-function rendergoldBalance() {
-  const span = document.getElementById("goldAmount");
-  if (span) span.textContent = fmt(goldBalance);
 }
 
 
@@ -570,15 +570,8 @@ async function handleNewResult(res) {
         classification: `${cls.bigSmall}/${cls.oddEven}`
       })
     });
-    const data = await resp.json();
-
-    if (data.ok) {
-      console.log(`✅ Round ${res.round} settled (${data.settled} bets)`);
-    } else {
-      console.warn("⚠️ Settle failed:", data.error);
-    }
   } catch (err) {
-    console.error("❌ Lỗi khi gọi settle-round:", err);
+    console.error("Lỗi khi gọi settle-round:", err);
   }
 }
 
@@ -750,36 +743,50 @@ placeBetBtn.addEventListener('click', async () => {
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
   if (!type) return alert("Chưa chọn loại cược");
   if (amount < 100) return alert("Đặt tối thiểu 100 vàng.");
-  if (amount > goldBalance) return alert("Không đủ vàng.");
   if (currentRem <= 3) return alert("Đã hết thời gian, vui lòng chờ phiên sau");
-
-  const rn = await getCurrentRound();
-  if (!rn?.round) return alert("Không lấy được phiên");
 
   const accountId = localStorage.getItem("accountId");
   if (!accountId) return alert("Chưa đăng nhập");
 
-  goldBalance -= amount;
- await savegoldBalance();
-  // Gửi cược lên server
-  const res = await fetch(`${API_MAIN}/bet/place`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      accountId,
-      round: rn.round,
-      type,
-      digit,
-      amount
-    })
-  });
-  const data = await res.json();
+  // Lấy số dư trực tiếp từ server trước khi trừ
+  await loadGoldBalance();
+  if (amount > goldBalance) return alert("Không đủ vàng.");
 
-  if (data.ok) {
-    showBetNotice("Đặt cược thành công!");
-    await loadBetHistory(); // ✅ tải lại lịch sử từ server
-  } else {
-    alert("Lỗi khi đặt cược: " + (data.error || "Không xác định"));
+  try {
+    // Trừ số dư và update server
+    goldBalance -= amount;
+    await fetch(`${API_MAIN}/character/update-goldBalance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId, goldBalance })
+    });
+
+    // Gửi cược lên server
+    const res = await fetch(`${API_MAIN}/bet/place`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        accountId,
+        round: roundName || (await getCurrentRound()).round,
+        type,
+        digit,
+        amount
+      })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      showBetNotice("Đặt cược thành công!");
+      await loadBetHistory(); // ✅ tải lại lịch sử từ server
+      renderGoldBalance();
+    } else {
+      alert("Lỗi khi đặt cược: " + (data.error || "Không xác định"));
+      await loadGoldBalance(); // rollback nếu lỗi
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi khi đặt cược: " + err.message);
+    await loadGoldBalance(); // rollback nếu lỗi
   }
 });
 
