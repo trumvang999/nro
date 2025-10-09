@@ -250,8 +250,6 @@ async function loadgoldBalance() {
     const data = await res.json();
 
     goldBalance = data.character?.balance ?? 0;
-
-    localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
   } catch (e) {
     console.warn("loadgoldBalance error:", e);
     goldBalance = 0;
