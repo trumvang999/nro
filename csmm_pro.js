@@ -55,10 +55,7 @@ async function loadChat() {
 }
 
 // Khi trang load thì load chat
-window.addEventListener("load", () => {
-  loadChat();
-  setInterval(loadChat, 60000);
-});
+
 // Gắn sự kiện cho nút gửi
 document.getElementById("chatSendBtn").addEventListener("click", sendChat);
 
@@ -259,18 +256,13 @@ async function loadgoldBalance() {
 }
 
 
-// 💾 Save goldBalance cho user hiện tại (update bảng characters)
+// 💾 Cập nhật goldBalance của user lên server (bỏ localStorage)
 async function savegoldBalance() {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) return;
 
   try {
-    localStorage.setItem(`goldBalance_${accountId}`, String(goldBalance));
-  } catch (e) {
-    console.warn("local savegoldBalance failed", e);
-  }
-
-  try {
+    // Gửi lên server để cập nhật (nguồn dữ liệu thật)
     await fetch(`${API_MAIN}/character/update-goldBalance`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -280,6 +272,7 @@ async function savegoldBalance() {
     console.warn("Server update goldBalance failed", e);
   }
 
+  // Cập nhật lại hiển thị UI
   rendergoldBalance();
 }
 
@@ -740,8 +733,8 @@ function renderBetHistory(historyData) {
 
 
 // ---------- Place bet ----------
-placeBetBtn.addEventListener('click', async () => {
-  const actives = document.querySelectorAll('.bet-btn.active, .num.active');
+placeBetBtn.addEventListener("click", async () => {
+  const actives = document.querySelectorAll(".bet-btn.active, .num.active");
   if (actives.length === 0) return alert("Bạn chưa chọn cửa cược nào.");
   if (actives.length > 1) return alert("Chỉ được chọn 1 cửa mỗi lần cược!");
 
@@ -759,29 +752,42 @@ placeBetBtn.addEventListener('click', async () => {
   const accountId = localStorage.getItem("accountId");
   if (!accountId) return alert("Chưa đăng nhập");
 
-  goldBalance -= amount;
- await savegoldBalance();
-  // Gửi cược lên server
-  const res = await fetch(`${API_MAIN}/bet/place`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      accountId,
-      round: rn.round,
-      type,
-      digit,
-      amount
-    })
-  });
-  const data = await res.json();
+  try {
+    // 🪙 Gửi cược lên server — server sẽ trừ vàng và trả lại số dư mới
+    const res = await fetch(`${API_MAIN}/bet/place`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        accountId,
+        round: rn.round,
+        type,
+        digit,
+        amount
+      })
+    });
 
-  if (data.ok) {
-    showBetNotice("Đặt cược thành công!");
-    await loadBetHistory(); // ✅ tải lại lịch sử từ server
-  } else {
-    alert("Lỗi khi đặt cược: " + (data.error || "Không xác định"));
+    const data = await res.json();
+
+    if (data.ok) {
+      // ✅ Cập nhật vàng từ server (newBalance)
+      if (typeof data.newBalance !== "undefined") {
+        goldBalance = data.newBalance;
+        rendergoldBalance();
+      } else {
+        await loadgoldBalance();
+      }
+
+      showBetNotice("Đặt cược thành công!");
+      await loadBetHistory();
+    } else {
+      alert("❌ Lỗi đặt cược: " + (data.error || "Không xác định"));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi mạng, vui lòng thử lại.");
   }
 });
+
 
 // ---------- Initial Load ----------
 async function init() {
