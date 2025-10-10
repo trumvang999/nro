@@ -782,7 +782,8 @@ if (rem <= 0) {
   // 3️⃣ Thiết lập countdown vòng mới
   nextTickAt = rn.time + 60000;     
 }
-
+tick(); 
+  }
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
