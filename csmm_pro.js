@@ -747,6 +747,7 @@ function startCountdown() {
   // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
+  let isHandling = false; // flag khóa
   async function tick() {
     const now = Date.now();
     let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
@@ -768,19 +769,23 @@ function startCountdown() {
       }
     }
 // Khi countdown về 0 → fetch kết quả + update dữ liệu 
-    if (rem === 0) { 
-      rn = await getCurrentRound(); // fetch round mới 
+if (rem === 0 && !isHandling) { 
+    isHandling = true; // khóa để không chạy lại
+    try {
+      rn = await getCurrentRound(); // fetch round mới
       roundName = rn.round; 
       renderRound(); 
-      await handleNewResult(rn); // show kết quả 
-      await loadgoldBalance(); // cập nhật số dư 
-      await loadBetHistory(); // cập nhật pending + history 
-                   // thiết lập vòng tiếp theo theo backend 
-                   nextTickAt = rn.time + 60000; // 60s tiếp theo 
-                  } 
-                   setTimeout(tick, 1000); 
+      await handleNewResult(rn); 
+      await loadgoldBalance(); 
+      await loadBetHistory(); 
+      nextTickAt = rn.time + 60000; 
+    } finally {
+      isHandling = false; // mở khóa
+    }
   } 
-  tick(); 
+  setTimeout(tick, 1000);
+}
+tick();
 }
 
   function updateCountdownOnce(nextTickAt){
