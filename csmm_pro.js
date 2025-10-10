@@ -592,10 +592,7 @@ function statusClass(status) {
 let currentRem = 0;
 let nextTickAt = 0;
 
-function startCountdown() {
-  // Đồng bộ mốc về phút chẵn + 60s + 2s delay
-  nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
-  let resultShown = false;
+let resultShown = false;
 
 async function startCountdown() {
   async function tick() {
@@ -615,8 +612,7 @@ async function startCountdown() {
       const cd = document.getElementById("countdown");
       if (cd) cd.textContent = mm + ":" + ss;
 
-      // 12s trước hết vòng → đóng cược
-      if (rem === 12) {
+      if (rem === 48) {
         closeDisk();
         canOpen = false;
       }
@@ -626,7 +622,7 @@ async function startCountdown() {
         resultShown = true;
         showResult(data.result); // hiển thị kết quả từ backend
 
-        // sau 10s → fetch phiên mới
+        // sau 10s → cho phép fetch phiên mới
         setTimeout(() => { resultShown = false; }, 10000);
       }
 
@@ -639,8 +635,6 @@ async function startCountdown() {
 
   tick();
 }
-
-
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
