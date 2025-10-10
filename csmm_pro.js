@@ -758,7 +758,7 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    if (rem === 50) {
+    if (rem === 48) {
       closeDisk();
       canOpen = false;
 
@@ -768,7 +768,7 @@ function startCountdown() {
       }
     }
 // Khi countdown về 0 → fetch kết quả + update dữ liệu 
-    if (rem <= 0) { 
+    if (rem === 0) { 
       rn = await getCurrentRound(); // fetch round mới 
       roundName = rn.round; 
       renderRound(); 
