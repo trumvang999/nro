@@ -644,7 +644,7 @@ let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
     // khi countdown = 0 → xử lý kết quả backend
     if (rem <= 0 && !resultShown) {
       resultShown = true;
-      showResult(data); // hiển thị kết quả backend
+  showResultOnDisk(data.number);
 
       // sau 2s → fetch phiên mới
       setTimeout(startCountdown, 2000);
