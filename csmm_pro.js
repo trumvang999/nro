@@ -758,7 +758,7 @@ function renderPending(pendingData) {
     <tr>
       <td>${b.round}</td>
       <td>${labelType(b.bet_type, b.bet_digit)}</td>
-      <td>${b.bet_amount.toLocaleString()}</td>
+<td>${b.amount.toLocaleString()}</td>
       <td>chờ</td>
     </tr>
   `).join('');
@@ -777,16 +777,16 @@ function renderBetHistory(historyData) {
     return;
   }
 
-  table.innerHTML = historyData.map(b => `
-    <tr>
-      <td>${b.round}</td>
-      <td>${labelType(b.bet_type, b.bet_digit)}</td>
-      <td>${b.bet_amount.toLocaleString()}</td>
-      <td>${b.result ?? "-"}</td>
-      <td class="${statusClass(b.status)}">${b.status}</td>
-      <td>${b.payout ? b.payout.toLocaleString() : ""}</td>
-    </tr>
-  `).join('');
+table.innerHTML = historyData.map(b => `
+  <tr>
+    <td>${b.round}</td>
+    <td>${labelType(b.bet_type, b.bet_digit)}</td>
+    <td>${b.amount.toLocaleString()}</td>
+    <td>${b.result_digit ?? "-"}</td>
+    <td class="${statusClass(b.status)}">${b.status}</td>
+    <td>${b.win_amount ? b.win_amount.toLocaleString() : ""}</td>
+  </tr>
+`).join('');
 }
 
 
