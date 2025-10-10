@@ -739,7 +739,6 @@ function statusClass(status) {
 }
 
 
-  // countdown aligned to minute
 let currentRem = 0;
 let nextTickAt = 0;
 
@@ -747,7 +746,9 @@ function startCountdown() {
   // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
-  let isHandling = false; // flag khóa
+  let hasClosedDisk = false;   // flag chỉ xoay disk 1 lần
+  let hasHandledResult = false; // flag chỉ handle result 1 lần
+
   async function tick() {
     const now = Date.now();
     let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
@@ -759,29 +760,40 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    if (rem === 48) {
+    // Đóng disk 1 lần khi rem = 48
+    if (rem === 48 && !hasClosedDisk) {
       closeDisk();
       canOpen = false;
+      hasClosedDisk = true;
 
       const small = document.getElementById("fetchedNumberSmall");
       if (small && resultHistory.length > 0) {
         small.textContent = resultHistory[resultHistory.length - 1].number;
       }
     }
-    
-if (rem <= 0) {
-  rn = await getCurrentRound(); // fetch round mới
-  roundName = rn.round;
-  renderRound();
-  await handleNewResult(rn); // show kết quả
-  await loadgoldBalance(); // cập nhật số dư
-  await loadBetHistory(); // cập nhật pending + history
-  nextTickAt = rn.time + 60000; // 60s tiếp theo
+
+    // Handle result 1 lần khi countdown về 0
+    if (rem <= 0 && !hasHandledResult) {
+      hasHandledResult = true; // khóa xử lý
+      rn = await getCurrentRound(); // fetch round mới
+      roundName = rn.round;
+      renderRound();
+      await handleNewResult(rn); // show kết quả
+      await loadgoldBalance();   // cập nhật số dư
+      await loadBetHistory();    // cập nhật pending + history
+
+      // thiết lập vòng tiếp theo
+      nextTickAt = rn.time + 60000;
+      hasClosedDisk = false;      // reset flag cho disk
+      hasHandledResult = false;   // reset flag cho result
+    }
+
+    setTimeout(tick, 1000);
+  }
+
+  tick();
 }
-setTimeout(tick, 1000);
-}
-tick();
-}
+
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
