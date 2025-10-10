@@ -743,26 +743,22 @@ let currentRem = 0;
 let nextTickAt = 0;
 
 function startCountdown() {
+  // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
-  let hasClosedDisk = false;   
-  let hasHandledResult = false;
+  let hasClosedDisk = false;   // flag chỉ xoay disk 1 lần
+  let hasHandledResult = false; // flag chỉ handle result 1 lần
 
   async function tick() {
     const now = Date.now();
     let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
     currentRem = rem;
 
-    // hiển thị countdown
+    // hiển thị countdown lên UI
     const mm = String(Math.floor(rem / 60)).padStart(2, "0");
     const ss = String(rem % 60).padStart(2, "0");
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
-
-    // reset flag disk khi bắt đầu vòng mới
-    if (rem === 60) {
-      hasClosedDisk = false;
-    }
 
     // Đóng disk 1 lần khi rem = 48
     if (rem === 48 && !hasClosedDisk) {
@@ -778,18 +774,18 @@ function startCountdown() {
 
     // Handle result 1 lần khi countdown về 0
     if (rem <= 0 && !hasHandledResult) {
-      hasHandledResult = true;
-      rn = await getCurrentRound();
+      hasHandledResult = true; // khóa xử lý
+      rn = await getCurrentRound(); // fetch round mới
       roundName = rn.round;
       renderRound();
-      await handleNewResult(rn);
-      await loadgoldBalance();
-      await loadBetHistory();
+      await handleNewResult(rn); // show kết quả
+      await loadgoldBalance();   // cập nhật số dư
+      await loadBetHistory();    // cập nhật pending + history
 
       // thiết lập vòng tiếp theo
       nextTickAt = rn.time + 60000;
-      hasHandledResult = false; // reset cho vòng sau
-      // **Không reset hasClosedDisk ở đây**
+      hasClosedDisk = false;      // reset flag cho disk
+      hasHandledResult = false;   // reset flag cho result
     }
 
     setTimeout(tick, 1000);
