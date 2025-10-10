@@ -767,24 +767,25 @@ function startCountdown() {
         small.textContent = resultHistory[resultHistory.length - 1].number;
       }
     }
+    // Khi countdown về 0 → fetch kết quả + update dữ liệu
+    if (rem <= 0) {
+      rn = await getCurrentRound();      // fetch round mới
+      roundName = rn.round;
+      renderRound();
 
-if (rem <= 0) {
-  // 1️⃣ Settle vòng cũ trước
-  await handleNewResult(rn);        // show kết quả
-  await loadgoldBalance();          // cập nhật số dư
-  await loadBetHistory();           // cập nhật pending + history
+      await handleNewResult(rn);        // show kết quả
+      await loadgoldBalance();          // cập nhật số dư
+      await loadBetHistory();           // cập nhật pending + history
 
-  // 2️⃣ Fetch round mới
-  rn = await getCurrentRound();     
-  roundName = rn.round;
-  renderRound();
+      // thiết lập vòng tiếp theo theo backend
+      nextTickAt = rn.time + 60000;     // 60s tiếp theo
+      hasClosedDisk = false;            // reset flag cho vòng mới
+    }
 
-  // 3️⃣ Thiết lập countdown vòng mới
-  nextTickAt = rn.time + 60000;     
-}
-setTimeout(tick, 1000); 
-  } 
-  tick(); 
+    setTimeout(tick, 1000);
+  }
+
+  tick();
 }
 
   function updateCountdownOnce(nextTickAt){
