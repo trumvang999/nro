@@ -742,7 +742,6 @@ function statusClass(status) {
   // countdown aligned to minute
 let currentRem = 0;
 let nextTickAt = 0;
-let hasClosedDisk = false; // khai báo bên ngoài tick()
 
 function startCountdown() {
   // Đồng bộ mốc về phút chẵn + 60s
@@ -759,7 +758,7 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    if (rem === 58) {
+    if (rem === 50) {
       closeDisk();
       canOpen = false;
 
@@ -769,26 +768,21 @@ function startCountdown() {
       }
     }
 
-   // Khi countdown về 0 → fetch kết quả + update dữ liệu
-    if (rem <= 0) {
-      rn = await getCurrentRound();      // fetch round mới
-      roundName = rn.round;
-      renderRound();
+if (rem <= 0) {
+  // 1️⃣ Settle vòng cũ trước
+  await handleNewResult(rn);        // show kết quả
+  await loadgoldBalance();          // cập nhật số dư
+  await loadBetHistory();           // cập nhật pending + history
 
-      await handleNewResult(rn);        // show kết quả
-      await loadgoldBalance();          // cập nhật số dư
-      await loadBetHistory();           // cập nhật pending + history
-  hasClosedDisk = true;  // đánh dấu là đã chạy rồi
+  // 2️⃣ Fetch round mới
+  rn = await getCurrentRound();     
+  roundName = rn.round;
+  renderRound();
 
-      // thiết lập vòng tiếp theo theo backend
-      nextTickAt = rn.time + 60000;     // 60s tiếp theo
-    }
-
-    setTimeout(tick, 1000);
-  }
-
-  tick();
+  // 3️⃣ Thiết lập countdown vòng mới
+  nextTickAt = rn.time + 60000;     
 }
+
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
