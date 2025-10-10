@@ -630,30 +630,37 @@ let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // 12s trước hết vòng → đóng cược
-    if (rem === 48) {
-      closeDisk();
-      canOpen = false;
+// 12s trước hết vòng → đóng cược
+if (rem === 48) {
+  closeDisk();
+  canOpen = false;
 
-      const small = document.getElementById("fetchedNumberSmall");
-      if (small && resultHistory.length > 0) {
-        small.textContent = resultHistory[resultHistory.length - 1].number;
-      }
-    }
-if rem===0{
-    showResultOnDisk(data.number); // xoay đĩa 1 lần
+  const small = document.getElementById("fetchedNumberSmall");
+  if (small && resultHistory.length > 0) {
+    small.textContent = resultHistory[resultHistory.length - 1].number;
+  }
 }
-  if (rem <= 0 && !resultShown) {
-  resultShown = true;
-  canOpen = false;  // tạm khóa cover
 
+// khi countdown = 0 → xử lý kết quả 1 lần
+if (rem <= 0 && !resultShown) {
+  resultShown = true;  // đảm bảo chỉ chạy 1 lần
+  canOpen = false;     // khóa cover
 
-    // lặp lại mỗi giây
-    setTimeout(tick, 1000);
-  };
+  showResultOnDisk(data.number); // xoay đĩa + hiển thị số
 
-  tick();
+  // sau 2s → bắt đầu round mới
+  setTimeout(() => {
+    resultShown = false;
+    canOpen = true;
+    startCountdown(); // round mới
+  }, 2000);
+
+  return; // dừng tick hiện tại
 }
+
+// nếu countdown > 0 → tiếp tục tick
+setTimeout(tick, 1000);
+
 
 // Start countdown khi page load
 document.addEventListener("DOMContentLoaded", () => {
