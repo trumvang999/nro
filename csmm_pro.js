@@ -587,14 +587,13 @@ function statusClass(status) {
 
 let currentRem = 0;
 let nextTickAt = 0;
-let tickTimeout = null;
 
 function startCountdown() {
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
   let hasClosedDisk = false;
   let hasHandledResult = false;
-  let isHandling = false; // ngăn xử lý lặp
+  let isHandling = false;
 
   async function tick() {
     const now = Date.now();
@@ -606,10 +605,11 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    if (rem === 48 && !hasClosedDisk) {
+    // Đóng disk 1 lần khi rem <= 48
+    if (rem <= 48 && !hasClosedDisk) {
+      hasClosedDisk = true;
       closeDisk();
       canOpen = false;
-      hasClosedDisk = true;
 
       const small = document.getElementById("fetchedNumberSmall");
       if (small && resultHistory.length > 0) {
@@ -617,6 +617,7 @@ function startCountdown() {
       }
     }
 
+    // Xử lý kết quả khi countdown về 0
     if (rem <= 0 && !hasHandledResult && !isHandling) {
       isHandling = true;
       hasHandledResult = true;
@@ -639,7 +640,7 @@ function startCountdown() {
       }
     }
 
-    tickTimeout = setTimeout(tick, 1000);
+    setTimeout(tick, 1000);
   }
 
   tick();
