@@ -567,9 +567,11 @@ async function handleNewResult(res) {
     });
     const data = await resp.json();
 
-    if (data.ok) {
-      console.log(`✅ Round ${res.round} settled (${data.settled} bets)`);
-    } else {
+   if (data.ok) {
+  console.log(`✅ Round ${res.round} settled`);
+  await loadgoldBalance(); // ✅ cập nhật vàng mới
+}
+ else {
       console.warn("⚠️ Settle failed:", data.error);
     }
   } catch (err) {
@@ -591,8 +593,9 @@ let currentRem = 0;
 let nextTickAt = 0;
 
 function startCountdown() {
-  // Đồng bộ mốc về phút chẵn + 60s
+  // Đồng bộ mốc về phút chẵn + 60s + 2s delay
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
+  let resultShown = false; // flag kiểm soát
 
   async function tick() {
     const now = Date.now();
@@ -616,15 +619,16 @@ function startCountdown() {
       }
     }
 
-    // khi countdown về 0 → fetch kết quả + hiện 10s
-    if (rem <= 0) {
+    // khi countdown = 0 → chỉ xử lý 1 lần
+    if (rem === 0 && !resultShown) {
+      resultShown = true; // đánh dấu đã xử lý
       await handleNewResult();
 
-      // giữ kết quả trong 10 giây
-      await new Promise(r => setTimeout(r, 10000));
-
-      // đặt lại mốc vòng tiếp theo (50s còn lại)
-      nextTickAt = Date.now() + 50000;
+      // sau 10s thì reset sang vòng mới
+      setTimeout(() => {
+        nextTickAt = Date.now() + 50000; // sang vòng 50s tiếp theo
+        resultShown = false;             // reset flag
+      }, 10000);
     }
 
     // lặp lại mỗi giây
