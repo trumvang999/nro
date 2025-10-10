@@ -621,7 +621,7 @@ async function startCountdown() {
   // tick countdown dựa trên data.time backend
   const tick = () => {
     const now = Date.now();
-    let rem = Math.max(0, Math.round((data.time - now) / 1000));
+let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
     currentRem = rem;
 
     // hiển thị countdown
