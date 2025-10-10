@@ -740,55 +740,6 @@ async function loadBetHistory() {
   }
 }
 
-// ---------- Render bảng Đang Cược ----------
-function renderPending(pendingData) {
-  const table = document.querySelector("#pendingTable tbody");
-  if (!table) return;
-
-  if (pendingData.length === 0) {
-    table.innerHTML = `
-      <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
-        Chưa có cược chờ nào
-      </td></tr>`;
-    return;
-  }
-
-  table.innerHTML = pendingData.map(b => `
-    <tr>
-      <td>${b.round}</td>
-      <td>${labelType(b.bet_type, b.bet_digit)}</td>
-      <td>${b.bet_amount.toLocaleString()}</td>
-      <td>Đang xử lý</td>
-    </tr>
-  `).join('');
-}
-
-// ---------- Render bảng Lịch Sử Cược ----------
-function renderBetHistory(historyData) {
-  const table = document.querySelector("#betHistoryTable tbody");
-  if (!table) return;
-
-  if (historyData.length === 0) {
-    table.innerHTML = `
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
-        Chưa có lịch sử đặt cược
-      </td></tr>`;
-    return;
-  }
-
-  table.innerHTML = historyData.map(b => `
-    <tr>
-      <td>${b.round}</td>
-      <td>${labelType(b.bet_type, b.bet_digit)}</td>
-      <td>${b.bet_amount.toLocaleString()}</td>
-      <td>${b.result ?? "-"}</td>
-      <td class="${statusClass(b.status)}">${b.status}</td>
-      <td>${b.payout ? b.payout.toLocaleString() : ""}</td>
-    </tr>
-  `).join('');
-}
-
-
 
 // ---------- Place bet ----------
 placeBetBtn.addEventListener("click", async () => {
