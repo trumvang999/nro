@@ -595,55 +595,58 @@ function startCountdown() {
   let hasHandledResult = false;
   let isWaitingNextRound = false;
 
- async function tick() {
-  const now = Date.now();
-  let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
-  currentRem = rem;
+  async function tick() {
+    const now = Date.now();
+    let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
+    currentRem = rem;
 
-  const mm = String(Math.floor(rem / 60)).padStart(2, "0");
-  const ss = String(rem % 60).padStart(2, "0");
-  const cd = document.getElementById("countdown");
-  if (cd) cd.textContent = mm + ":" + ss;
+    // hiển thị countdown lên UI
+    const mm = String(Math.floor(rem / 60)).padStart(2, "0");
+    const ss = String(rem % 60).padStart(2, "0");
+    const cd = document.getElementById("countdown");
+    if (cd) cd.textContent = mm + ":" + ss;
 
-  // Đóng disk 1 lần khi rem <= 48
-  if (rem <= 48 && !hasClosedDisk) {
-    closeDisk();
-    canOpen = false;
-    hasClosedDisk = true;
+    // Đóng disk 1 lần khi rem <= 48
+    if (rem <= 48 && !hasClosedDisk) {
+      closeDisk();
+      canOpen = false;
+      hasClosedDisk = true;
 
-    const small = document.getElementById("fetchedNumberSmall");
-    if (small && resultHistory.length > 0) {
-      small.textContent = resultHistory[resultHistory.length - 1].number;
+      const small = document.getElementById("fetchedNumberSmall");
+      if (small && resultHistory.length > 0) {
+        small.textContent = resultHistory[resultHistory.length - 1].number;
+      }
     }
-  }
 
-  // Khi countdown về 0, show kết quả ngay
-  if (rem <= 0 && !hasHandledResult) {
-    hasHandledResult = true;
+    // Xử lý kết quả ngay khi countdown về 0
+    if (rem <= 0 && !hasHandledResult) {
+      hasHandledResult = true;
 
-    await handleNewResult(currentRoundData); // show kết quả phiên hiện tại
-    await loadgoldBalance();
-    await loadBetHistory();
+      await handleNewResult();     // show kết quả
+      await loadgoldBalance();     // cập nhật số dư
+      await loadBetHistory();      // cập nhật cược
 
-    // Bắt đầu chờ 10s để lấy phiên mới
-    if (!isWaitingNextRound) {
-      isWaitingNextRound = true;
-      setTimeout(async () => {
-        const rn = await getCurrentRound(); // fetch round mới
-        roundName = rn.round;
-        renderRound();
-        nextTickAt = rn.time + 60000;
+      // Sau 10 giây mới lấy phiên mới
+      if (!isWaitingNextRound) {
+        isWaitingNextRound = true;
 
-        // reset flags
-        hasClosedDisk = false;
-        hasHandledResult = false;
-        isWaitingNextRound = false;
-      }, 10000);
+        setTimeout(async () => {
+          const rn = await getCurrentRound(); // fetch round mới
+          roundName = rn.round;
+          renderRound();
+
+          nextTickAt = rn.time + 60000;
+
+          // reset flags
+          hasClosedDisk = false;
+          hasHandledResult = false;
+          isWaitingNextRound = false;
+        }, 10000);
+      }
     }
-  }
 
-  setTimeout(tick, 1000);
-}
+    setTimeout(tick, 1000);
+  }
 
   tick();
 }
