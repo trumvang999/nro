@@ -595,48 +595,51 @@ let nextTickAt = 0;
 function startCountdown() {
   // Đồng bộ mốc về phút chẵn + 60s + 2s delay
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
-  let resultShown = false; // flag kiểm soát
+  let resultShown = false;
 
+async function startCountdown() {
   async function tick() {
-    const now = Date.now();
-    let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
-    currentRem = rem;
+    try {
+      // Lấy thông tin phiên hiện tại từ backend
+      const resp = await fetch(`${API_WORKER}/random`, { cache: "no-cache" });
+      const data = await resp.json();
+      if (!data?.round) return;
 
-    // hiển thị countdown lên UI
-    const mm = String(Math.floor(rem / 60)).padStart(2, "0");
-    const ss = String(rem % 60).padStart(2, "0");
-    const cd = document.getElementById("countdown");
-    if (cd) cd.textContent = mm + ":" + ss;
+      const endTime = data.endTime || (Date.now() + 60000); // fallback
+      const now = Date.now();
+      let rem = Math.max(0, Math.round((endTime - now) / 1000));
 
-    // 12s trước khi hết vòng thì đóng cược
-    if (rem === 48) {
-      closeDisk();
-      canOpen = false;
+      // hiển thị countdown
+      const mm = String(Math.floor(rem / 60)).padStart(2,"0");
+      const ss = String(rem % 60).padStart(2,"0");
+      const cd = document.getElementById("countdown");
+      if (cd) cd.textContent = mm + ":" + ss;
 
-      const small = document.getElementById("fetchedNumberSmall");
-      if (small && resultHistory.length > 0) {
-        small.textContent = resultHistory[resultHistory.length - 1].number;
+      // 12s trước hết vòng → đóng cược
+      if (rem === 12) {
+        closeDisk();
+        canOpen = false;
       }
+
+      // khi countdown = 0 → xử lý kết quả
+      if (rem === 0 && !resultShown) {
+        resultShown = true;
+        showResult(data.result); // hiển thị kết quả từ backend
+
+        // sau 10s → fetch phiên mới
+        setTimeout(() => { resultShown = false; }, 10000);
+      }
+
+    } catch (e) {
+      console.error(e);
     }
 
-    // khi countdown = 0 → chỉ xử lý 1 lần
-    if (rem === 0 && !resultShown) {
-      resultShown = true; // đánh dấu đã xử lý
-      await handleNewResult();
-
-      // sau 10s thì reset sang vòng mới
-      setTimeout(() => {
-        nextTickAt = Date.now() + 50000; // sang vòng 50s tiếp theo
-        resultShown = false;             // reset flag
-      }, 10000);
-    }
-
-    // lặp lại mỗi giây
     setTimeout(tick, 1000);
   }
 
   tick();
 }
+
 
 
   function updateCountdownOnce(nextTickAt){
