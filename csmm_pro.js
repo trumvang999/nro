@@ -585,15 +585,15 @@ function statusClass(status) {
   return "status-cho";
 }
 
- let currentRem = 0;
+let currentRem = 0;
 let nextTickAt = 0;
 
 function startCountdown() {
-  // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
-  let hasClosedDisk = false;   // flag chỉ xoay disk 1 lần
-  let hasHandledResult = false; // flag chỉ handle result 1 lần
+  let hasClosedDisk = false;
+  let hasHandledResult = false;
+  let isWaitingNextRound = false;
 
   async function tick() {
     const now = Date.now();
@@ -606,7 +606,7 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // Đóng disk 1 lần khi rem = 48
+    // Đóng disk 1 lần khi rem <= 48
     if (rem <= 48 && !hasClosedDisk) {
       closeDisk();
       canOpen = false;
@@ -618,31 +618,26 @@ function startCountdown() {
       }
     }
 
-    // Handle result 1 lần khi countdown về 0
-    if (rem <= 0 && !hasHandledResult) {
-      hasHandledResult = true; // khóa xử lý
-      const rn = await getCurrentRound(); // fetch round mới
-      roundName = rn.round;
-      renderRound();
-      await handleNewResult(rn); // show kết quả
-      await loadgoldBalance();   // cập nhật số dư
-      await loadBetHistory();    // cập nhật pending + history
+    // Khi countdown về 0, bắt đầu chờ xử lý phiên mới
+    if (rem <= 0 && !isWaitingNextRound) {
+      isWaitingNextRound = true;
 
-      // thiết lập vòng tiếp theo
-      nextTickAt = rn.time + 60000;
+      setTimeout(async () => {
+        const rn = await getCurrentRound(); // fetch round mới
+        roundName = rn.round;
+        renderRound();
+        await handleNewResult(rn); // show kết quả
+        await loadgoldBalance();   // cập nhật số dư
+        await loadBetHistory();    // cập nhật pending + history
 
-      // Đợi đến khi rem > 48 mới reset flag
-      const waitUntilReset = () => {
-        const now = Date.now();
-        const remNow = Math.max(0, Math.round((nextTickAt - now) / 1000));
-        if (remNow > 48) {
-          hasClosedDisk = false;
-          hasHandledResult = false;
-        } else {
-          setTimeout(waitUntilReset, 1000);
-        }
-      };
-      waitUntilReset();
+        // thiết lập vòng tiếp theo
+        nextTickAt = rn.time + 60000;
+
+        // reset flags
+        hasClosedDisk = false;
+        hasHandledResult = false;
+        isWaitingNextRound = false;
+      }, 10000); // chờ 10 giây
     }
 
     setTimeout(tick, 1000);
