@@ -147,6 +147,10 @@ await loadCharacter();
 function closeBox() {
   document.getElementById("createCharBox").style.display = "none";
 }
+    await main();
+
+})();
+
 async function sendChat() {
   const input = document.getElementById("chatText");
   const msg = input.value.trim();
@@ -160,7 +164,7 @@ if (!user) {
   alert("Vui lòng đăng nhập");
   throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
 }
-})();
+
 
 // Tạo object chat
 const chatObj = {
