@@ -742,6 +742,7 @@ function statusClass(status) {
   // countdown aligned to minute
 let currentRem = 0;
 let nextTickAt = 0;
+let hasClosedDisk = false; // khai báo bên ngoài tick()
 
 function startCountdown() {
   // Đồng bộ mốc về phút chẵn + 60s
@@ -758,7 +759,6 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // 12s trước khi hết vòng thì đóng cược
     if (rem === 58) {
       closeDisk();
       canOpen = false;
@@ -778,6 +778,7 @@ function startCountdown() {
       await handleNewResult(rn);        // show kết quả
       await loadgoldBalance();          // cập nhật số dư
       await loadBetHistory();           // cập nhật pending + history
+  hasClosedDisk = true;  // đánh dấu là đã chạy rồi
 
       // thiết lập vòng tiếp theo theo backend
       nextTickAt = rn.time + 60000;     // 60s tiếp theo
