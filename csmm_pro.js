@@ -770,15 +770,20 @@ function startCountdown() {
     }
 
     // khi countdown về 0 → fetch kết quả + hiện 10s
-    if (rem <= 0) {
-      await handleNewResult();
+   if (rem <= 0) {
+  await handleNewResult();
 
-      // giữ kết quả trong 10 giây
-      await new Promise(r => setTimeout(r, 10000));
+  // ✅ Update ngay số dư + bảng cược
+  await loadgoldBalance();
+  rendergoldBalance();
+  await loadBetHistory(); // renderPending + renderBetHistory
 
-      // đặt lại mốc vòng tiếp theo (50s còn lại)
-      nextTickAt = Date.now() + 60000;
-    }
+  // giữ kết quả trong 10 giây
+  await new Promise(r => setTimeout(r, 10000));
+
+  // đặt lại mốc vòng tiếp theo (50s còn lại)
+  nextTickAt = Date.now() + 60000;
+}
 
     // lặp lại mỗi giây
     setTimeout(tick, 1000);
