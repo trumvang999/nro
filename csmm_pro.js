@@ -590,56 +590,79 @@ function statusClass(status) {
 let currentRem = 0;
 let resultShown = false;
 
-async function startCountdown() {
-  try {
-    const resp = await fetch(`${API_WORKER}/random`, { cache: "no-cache" });
-    const data = await resp.json();
-    if (!data?.round) return;
+// Hiển thị kết quả
+function showResult(roundData) {
+  const resultEl = document.getElementById("result");
+  if (!resultEl) return;
 
-    const tick = () => {
-      const now = Date.now();
-      // dùng thẳng time backend
-      let rem = Math.max(0, Math.round((data.time - now) / 1000));
-      currentRem = rem;
-
-      // hiển thị countdown
-      const mm = String(Math.floor(rem / 60)).padStart(2, "0");
-      const ss = String(rem % 60).padStart(2, "0");
-      const cd = document.getElementById("countdown");
-      if (cd) cd.textContent = mm + ":" + ss;
-
-      // đóng cược 12s trước hết vòng
-      if (rem === 12) {
-        closeDisk();
-        canOpen = false;
-      }
-
-      // khi countdown = 0 → hiển thị kết quả
-      if (rem <= 0 && !resultShown) {
-        resultShown = true;
-        showResult(data); // hiển thị kết quả backend
-
-        // fetch phiên mới sau 2s
-        setTimeout(startCountdown, 2000);
-        return;
-      }
-
-      setTimeout(tick, 1000);
-    };
-
-    tick();
-
-  } catch (e) {
-    console.error("Countdown error:", e);
-    setTimeout(startCountdown, 3000); // retry nếu lỗi
+  if (roundData.number !== null) {
+    resultEl.textContent = `Round ${roundData.round}: Number ${roundData.number} | Last Digit: ${roundData.lastDigit} | Type: ${roundData.classification}`;
+  } else {
+    resultEl.textContent = `Round ${roundData.round}: Chưa có kết quả`;
   }
 }
 
+// Countdown chính
+async function startCountdown() {
+  // Lấy phiên hiện tại từ backend
+  let data;
+  try {
+    const resp = await fetch(`${API_WORKER}/random`, { cache: "no-cache" });
+    data = await resp.json();
+    if (!data?.round) throw new Error("No round data");
+  } catch (e) {
+    console.error("Fetch round failed:", e);
+    setTimeout(startCountdown, 3000); // retry nếu lỗi
+    return;
+  }
+
+  resultShown = false;
+
+  // tick countdown dựa trên data.time backend
+  const tick = () => {
+    const now = Date.now();
+    let rem = Math.max(0, Math.round((data.time - now) / 1000));
+    currentRem = rem;
+
+    // hiển thị countdown
+    const mm = String(Math.floor(rem / 60)).padStart(2, "0");
+    const ss = String(rem % 60).padStart(2, "0");
+    const cd = document.getElementById("countdown");
+    if (cd) cd.textContent = mm + ":" + ss;
+
+    // 12s trước hết vòng → đóng cược
+    if (rem === 48) {
+      closeDisk();
+      canOpen = false;
+
+      const small = document.getElementById("fetchedNumberSmall");
+      if (small && resultHistory.length > 0) {
+        small.textContent = resultHistory[resultHistory.length - 1].number;
+      }
+    }
+
+    // khi countdown = 0 → xử lý kết quả backend
+    if (rem <= 0 && !resultShown) {
+      resultShown = true;
+      showResult(data); // hiển thị kết quả backend
+
+      // sau 2s → fetch phiên mới
+      setTimeout(startCountdown, 2000);
+      return; // dừng tick hiện tại
+    }
+
+    // lặp lại mỗi giây
+    setTimeout(tick, 1000);
+  };
+
+  tick();
+}
 
 // Start countdown khi page load
 document.addEventListener("DOMContentLoaded", () => {
   startCountdown();
 });
+
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
