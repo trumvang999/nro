@@ -621,7 +621,7 @@ async function startCountdown() {
   // tick countdown dựa trên data.time backend
   const tick = () => {
     const now = Date.now();
-let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
+let rem = Math.max(0, Math.round((data.time - Date.now()) / 1000));
     currentRem = rem;
 
     // hiển thị countdown
@@ -630,39 +630,33 @@ let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-// 12s trước hết vòng → đóng cược
-if (rem === 48) {
-  closeDisk();
-  canOpen = false;
+    // 12s trước hết vòng → đóng cược
+    if (rem === 48) {
+      closeDisk();
+      canOpen = false;
 
-  const small = document.getElementById("fetchedNumberSmall");
-  if (small && resultHistory.length > 0) {
-    small.textContent = resultHistory[resultHistory.length - 1].number;
-  }
-}
+      const small = document.getElementById("fetchedNumberSmall");
+      if (small && resultHistory.length > 0) {
+        small.textContent = resultHistory[resultHistory.length - 1].number;
+      }
+    }
 
-// khi countdown = 0 → xử lý kết quả 1 lần
-if (rem <= 0 && !resultShown) {
-  resultShown = true;  // đảm bảo chỉ chạy 1 lần
-  canOpen = false;     // khóa cover
+    // khi countdown = 0 → xử lý kết quả backend
+    if (rem <= 0 && !resultShown) {
+      resultShown = true;
+      showResult(data); // hiển thị kết quả backend
 
-  showResultOnDisk(data.number); // xoay đĩa + hiển thị số
+      // sau 2s → fetch phiên mới
+      setTimeout(startCountdown, 2000);
+      return; // dừng tick hiện tại
+    }
 
-  // sau 2s → bắt đầu round mới
-  setTimeout(() => {
-    resultShown = false;
-    canOpen = true;
-    startCountdown(); // round mới
-  }, 2000);
-
-  return; // dừng tick hiện tại
-}
-    // nếu countdown > 0 → tiếp tục tick
+    // lặp lại mỗi giây
     setTimeout(tick, 1000);
   };
 
   tick();
-};
+}
 
 // Start countdown khi page load
 document.addEventListener("DOMContentLoaded", () => {
