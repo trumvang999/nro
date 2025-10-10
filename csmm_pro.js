@@ -587,11 +587,7 @@ function statusClass(status) {
   return "status-cho";
 }
 
-
-  // countdown aligned to minute
 let currentRem = 0;
-let nextTickAt = 0;
-
 let resultShown = false;
 
 async function startCountdown() {
@@ -602,13 +598,14 @@ async function startCountdown() {
       const data = await resp.json();
       if (!data?.round) return;
 
-      const endTime = data.endTime || (Date.now() + 60000); // fallback
+      // Tính giây còn lại dựa trên timestamp backend
       const now = Date.now();
-      let rem = Math.max(0, Math.round((endTime - now) / 1000));
+      let rem = Math.max(0, Math.round((data.time - now) / 1000));
+      currentRem = rem;
 
       // hiển thị countdown
-      const mm = String(Math.floor(rem / 60)).padStart(2,"0");
-      const ss = String(rem % 60).padStart(2,"0");
+      const mm = String(Math.floor(rem / 60)).padStart(2, "0");
+      const ss = String(rem % 60).padStart(2, "0");
       const cd = document.getElementById("countdown");
       if (cd) cd.textContent = mm + ":" + ss;
 
@@ -617,24 +614,32 @@ async function startCountdown() {
         canOpen = false;
       }
 
-      // khi countdown = 0 → xử lý kết quả
+      // Khi countdown = 0 → xử lý kết quả 1 lần
       if (rem === 0 && !resultShown) {
         resultShown = true;
-        showResult(data.result); // hiển thị kết quả từ backend
 
-        // sau 10s → cho phép fetch phiên mới
-        setTimeout(() => { resultShown = false; }, 10000);
+        // Hiển thị kết quả backend nếu có
+        if (data.number !== null) {
+          showResult(data.number);
+        }
+
+        // Sau 2s → reset flag để fetch phiên mới
+        setTimeout(() => {
+          resultShown = false;
+        }, 2000);
       }
 
     } catch (e) {
-      console.error(e);
+      console.error("Countdown error:", e);
     }
 
+    // lặp lại mỗi giây
     setTimeout(tick, 1000);
   }
 
   tick();
 }
+
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
