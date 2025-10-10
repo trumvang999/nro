@@ -769,24 +769,30 @@ function startCountdown() {
       }
     }
 
- // countdown về 0 → settle round + fetch round mới
-  if(rem <= 0){
-    await handleNewResult(rn);        // settle & show kết quả
-    await loadgoldBalance();          // update số dư
-    await loadBetHistory();           // update bảng cược
+     // khi countdown về 0 → kết thúc vòng hiện tại
+    if (rem <= 0) {
+      // fetch kết quả vòng hiện tại (round cũ)
+      await handleNewResult(rn);
 
-    rn = await getCurrentRound();     // fetch round mới
-    roundName = rn.round;
-    renderRound();
+      // cập nhật UI liên quan
+      await loadgoldBalance();
+      await loadBetHistory();
 
-    nextTickAt = rn.time + 60000;
+      // fetch round mới từ backend
+      rn = await getCurrentRound();
+      roundName = rn.round;
+      renderRound();
+
+      // reset countdown dựa vào backend
+      nextTickAt = rn.time + 60000;
+    }
+
+    setTimeout(tick, 1000);
   }
-
-  setTimeout(tick, 1000);
-}
 
   tick();
 }
+
 
 
   function updateCountdownOnce(nextTickAt){
