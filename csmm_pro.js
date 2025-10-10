@@ -586,7 +586,7 @@ function statusClass(status) {
   if (s.includes("thua")) return "status-thua";
   return "status-cho";
 }
-
+ 
 let currentRem = 0;
 let resultShown = false;
 
