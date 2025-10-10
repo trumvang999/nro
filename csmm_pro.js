@@ -589,82 +589,52 @@ function statusClass(status) {
 
 let currentRem = 0;
 let resultShown = false;
-let currentRound = null;
 
-// Hiển thị kết quả
-function showResult(roundData) {
-  const resultEl = document.getElementById("result");
-  if (!resultEl) return;
-
-  if (roundData.number !== null) {
-    resultEl.textContent = `Round ${roundData.round}: Number ${roundData.number} | Last Digit: ${roundData.lastDigit} | Type: ${roundData.classification}`;
-  } else {
-    resultEl.textContent = `Round ${roundData.round}: Chưa có kết quả`;
-  }
-}
-
-// Đóng cược
-function closeBetIfNeeded(rem) {
-  if (rem === 12) {
-    closeDisk();
-    canOpen = false;
-  }
-}
-
-// Lấy phiên mới từ backend
-async function fetchCurrentRound() {
+async function startCountdown() {
   try {
     const resp = await fetch(`${API_WORKER}/random`, { cache: "no-cache" });
     const data = await resp.json();
-    if (!data?.round) return null;
-    return data;
+    if (!data?.round) return;
+
+    const tick = () => {
+      const now = Date.now();
+      // dùng thẳng time backend
+      let rem = Math.max(0, Math.round((data.time - now) / 1000));
+      currentRem = rem;
+
+      // hiển thị countdown
+      const mm = String(Math.floor(rem / 60)).padStart(2, "0");
+      const ss = String(rem % 60).padStart(2, "0");
+      const cd = document.getElementById("countdown");
+      if (cd) cd.textContent = mm + ":" + ss;
+
+      // đóng cược 12s trước hết vòng
+      if (rem === 12) {
+        closeDisk();
+        canOpen = false;
+      }
+
+      // khi countdown = 0 → hiển thị kết quả
+      if (rem <= 0 && !resultShown) {
+        resultShown = true;
+        showResult(data); // hiển thị kết quả backend
+
+        // fetch phiên mới sau 2s
+        setTimeout(startCountdown, 2000);
+        return;
+      }
+
+      setTimeout(tick, 1000);
+    };
+
+    tick();
+
   } catch (e) {
-    console.error("Fetch round failed:", e);
-    return null;
+    console.error("Countdown error:", e);
+    setTimeout(startCountdown, 3000); // retry nếu lỗi
   }
 }
 
-// Countdown chính
-async function startCountdown() {
-  currentRound = await fetchCurrentRound();
-  if (!currentRound) {
-    // fallback nếu backend lỗi
-    setTimeout(startCountdown, 3000);
-    return;
-  }
-
-  resultShown = false;
-
-  const tick = () => {
-    const now = Date.now();
-    let rem = Math.max(0, Math.round((currentRound.time - now) / 1000));
-    currentRem = rem;
-
-    // hiển thị countdown
-    const mm = String(Math.floor(rem / 60)).padStart(2, "0");
-    const ss = String(rem % 60).padStart(2, "0");
-    const cd = document.getElementById("countdown");
-    if (cd) cd.textContent = mm + ":" + ss;
-
-    // đóng cược 12s trước hết vòng
-    closeBetIfNeeded(rem);
-
-    // Khi countdown = 0 → hiển thị kết quả 1 lần
-    if (rem <= 0 && !resultShown) {
-      resultShown = true;
-      showResult(currentRound);
-
-      // sau 2s → fetch phiên mới và restart countdown
-      setTimeout(startCountdown, 2000);
-      return; // dừng tick hiện tại
-    }
-
-    // lặp lại mỗi giây
-    setTimeout(tick, 1000);
-  };
-
-  tick();
-}
 
 // Start countdown khi page load
 document.addEventListener("DOMContentLoaded", () => {
