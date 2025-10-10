@@ -769,21 +769,19 @@ function startCountdown() {
       }
     }
 
-    // khi countdown về 0 → fetch kết quả + hiện 10s
-   if (rem <= 0) {
-  await handleNewResult();
+       // Khi countdown về 0 → fetch kết quả + update dữ liệu
+    if (rem <= 0) {
+      rn = await getCurrentRound();      // fetch round mới
+      roundName = rn.round;
+      renderRound();
 
-  // ✅ Update ngay số dư + bảng cược
-  await loadgoldBalance();
-  rendergoldBalance();
-  await loadBetHistory(); // renderPending + renderBetHistory
+      await handleNewResult(rn);        // show kết quả
+      await loadgoldBalance();          // cập nhật số dư
+      await loadBetHistory();           // cập nhật pending + history
 
-  // giữ kết quả trong 10 giây
-  await new Promise(r => setTimeout(r, 10000));
-
-  // đặt lại mốc vòng tiếp theo (50s còn lại)
-  nextTickAt = Date.now() + 60000;
-}
+      // thiết lập vòng tiếp theo theo backend
+      nextTickAt = rn.time + 60000;     // 60s tiếp theo
+    }
 
     // lặp lại mỗi giây
     setTimeout(tick, 1000);
