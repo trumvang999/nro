@@ -1,156 +1,3 @@
-(async function initApp() {
-const API = "https://index.nro2024.workers.dev";
-
-async function main() {
-  const status = document.getElementById("status");
-  const statusNv = document.getElementById("statusNv");
-  const balanceBox = document.getElementById("balanceInfo");
-  const avatar = document.getElementById("charAvatar");
-
-  let username = localStorage.getItem("currentUser");
-  let password = localStorage.getItem("currentPass");
-  let accountId = localStorage.getItem("accountId");
-
-  function getAvatar(planet) {
-    switch (planet) {
-      case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
-      case "Namek": return "https://forum.ngocrongonline.com/avatar/small3932.png";
-      case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
-      default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
-    }
-  }
-
-  async function loginOrCreate(user, pass) {
-    const res = await fetch(`${API}/account/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: user, password: pass })
-    });
-    const data = await res.json();
-    console.log("Kết quả login:", data);
-
-    // ✅ Nếu có accountId -> đăng nhập thành công
-    if (data.accountId) {
-      localStorage.setItem("currentUser", user);
-      localStorage.setItem("currentPass", pass);
-      localStorage.setItem("accountId", data.accountId);
-      await loadgoldBalance();  // <-- gọi ngay
-rendergoldBalance();
-      return { ok: true, created: false, accountId: data.accountId };
-    }
-
-// ✅ Nếu API trả "Invalid login" -> thử tạo mới
-if (data.error && data.error === "Invalid login") {
-  const createRes = await fetch(`${API}/account/register`, {  
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: user, password: pass })
-  });
-  const createData = await createRes.json();
-  console.log("Tạo tài khoản mới:", createData);
-
-  // Nếu tạo mới thành công -> lưu và tiếp tục
-  if (createData.accountId) {
-    localStorage.setItem("currentUser", user);
-    localStorage.setItem("currentPass", pass);
-    localStorage.setItem("accountId", createData.accountId);
-    return { ok: true, created: true, accountId: createData.accountId };
-  }
-
-  // Nếu tạo thất bại (vì user đã có thật sự) -> sai mật khẩu
-  if (createData.error && createData.error.includes("exists")) {
-    return { ok: false, error: "Sai thông tin đăng nhập." };
-  }
-
-  return { ok: false, error: createData.error || "Không thể tạo tài khoản mới." };
-}
-
-// fallback lỗi khác
-return { ok: false, error: data.error || "Lỗi không xác định." };
-
-  }
-
-  async function loadCharacter() {
-    if (!accountId) return;
-
-    const res = await fetch(`${API}/character/load?account=${accountId}`);
-    const data = await res.json();
-
-    if (!data.character) {
-      balanceBox.style.display = "none";
-      status.innerHTML = `<button id="openCreateBoxBtn" class="class-btn">Tạo nhân vật</button>`;
-      document.getElementById("openCreateBoxBtn").onclick = () => {
-        document.getElementById("createCharBox").style.display = "block";
-      };
-    } else {
-      const char = data.character;
-      status.innerHTML = "";
-      balanceBox.style.display = "flex";
-      document.getElementById("charNameDisplay").innerText = char.name;
-      document.getElementById("charIdDisplay").innerText = char.characterId.slice(0, 6);
-      document.getElementById("goldAmount").innerText = `${char.balance.toLocaleString()}`;
-      avatar.src = getAvatar(char.planet);
-    }
-  }
-
-  document.getElementById("createBtn").onclick = async () => {
-    const name = document.getElementById("charName").value.trim();
-    const planet = document.getElementById("charPlanet").value;
-
-    if (name.length < 3 || name.length > 8)
-      return alert("Tên nhân vật phải từ 3 đến 8 ký tự!");
-    if (!planet || planet === "Chọn hành tinh")
-      return alert("Vui lòng chọn hành tinh!");
-
-    const res = await fetch(`${API}/character/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId, name, planet })
-    });
-    const data = await res.json();
-
-    if (data.characterId) {
-      closeBox();
-      statusNv.style.color = "green";
-      statusNv.innerHTML = `Tạo nhân vật thành công!`;
-      window.location.reload();
-    } else {
-      statusNv.style.color = "red";
-      statusNv.innerHTML = `Lỗi: ${data.error}`;
-    }
-  };
-
-  document.getElementById("toggleGoldBtn").onclick = () => {
-    const gold = document.getElementById("goldAmount");
-    const hide = document.getElementById("goldAmountHide");
-    gold.style.display = gold.style.display !== "none" ? "none" : "inline";
-    hide.style.display = hide.style.display === "none" ? "inline" : "none";
-  };
-
-  if (username && password) {
-    const result = await loginOrCreate(username, password);
-    if (result.ok) {
-      accountId = result.accountId;
-      if (result.created) {
-        statusNv.style.color = "green";
-        statusNv.innerHTML = "Đã tạo tài khoản mới!";
-      }
-await loadCharacter();
-    } else {
-      status.innerHTML = result.error;
-    }
-  } else {
-    status.innerHTML = "Vui lòng đăng nhập.";
-  }
-}
-
-function closeBox() {
-  document.getElementById("createCharBox").style.display = "none";
-}
-    await main();
-
-})();
-
 async function sendChat() {
   const input = document.getElementById("chatText");
   const msg = input.value.trim();
@@ -607,7 +454,7 @@ function renderBetHistory(){
         <td>${b.round || "?"}</td>
         <td>${labelType(b.type,b.digit)}</td>
         <td>${b.amount}</td>
-        <td>${b.result ?? "-"}</td>
+        <td>${b.number ?? "-"}</td>
         <td class="${statusClass(b.status)}">${b.status}</td>
         <td>${b.payout}</td>
       </tr>
@@ -733,11 +580,11 @@ async function handleNewResult(res) {
 function statusClass(status) {
   if (!status) return "status-cho";
   const s = status.toLowerCase();
-  if (s.includes("thắng")) return "status-thang";
-  if (s.includes("thua")) return "status-thua";
+  if (s.includes("win")) return "status-thang";
+  if (s.includes("lose")) return "status-thua";
+  if (s.includes("chờ")) return "status-wait";
   return "status-cho";
 }
-
 
 let currentRem = 0;
 let nextTickAt = 0;
@@ -747,20 +594,21 @@ function startCountdown() {
 
   let hasClosedDisk = false;
   let hasHandledResult = false;
+  let isWaitingNextRound = false;
 
   async function tick() {
     const now = Date.now();
     let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
     currentRem = rem;
 
-    // hiển thị countdown
+    // hiển thị countdown lên UI
     const mm = String(Math.floor(rem / 60)).padStart(2, "0");
     const ss = String(rem % 60).padStart(2, "0");
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // Đóng disk 1 lần khi rem = 48
-    if (rem === 48 && !hasClosedDisk) {
+    // Đóng disk 1 lần khi rem <= 48
+    if (rem <= 48 && !hasClosedDisk) {
       closeDisk();
       canOpen = false;
       hasClosedDisk = true;
@@ -771,24 +619,31 @@ function startCountdown() {
       }
     }
 
-    // Handle result 1 lần khi countdown về 0
+    // Xử lý kết quả ngay khi countdown về 0
     if (rem <= 0 && !hasHandledResult) {
       hasHandledResult = true;
-      rn = await getCurrentRound();
-      roundName = rn.round;
-      renderRound();
-      await handleNewResult(rn);
-      await loadgoldBalance();
-      await loadBetHistory();
 
-      nextTickAt = rn.time + 60000;
-      hasHandledResult = false; // reset để vòng mới handle lại
-      // **Không reset hasClosedDisk ở đây**
-    }
+      await handleNewResult();     // show kết quả
+      await loadgoldBalance();     // cập nhật số dư
+      await loadBetHistory();      // cập nhật cược
 
-    // Khi countdown vừa bắt đầu vòng mới
-    if (rem === 60) {
-      hasClosedDisk = false; // reset flag cho disk
+      // Sau 10 giây mới lấy phiên mới
+      if (!isWaitingNextRound) {
+        isWaitingNextRound = true;
+
+        setTimeout(async () => {
+          const rn = await getCurrentRound(); // fetch round mới
+          roundName = rn.round;
+          renderRound();
+
+          nextTickAt = rn.time + 60000;
+
+          // reset flags
+          hasClosedDisk = false;
+          hasHandledResult = false;
+          isWaitingNextRound = false;
+        }, 10000);
+      }
     }
 
     setTimeout(tick, 1000);
@@ -796,7 +651,7 @@ function startCountdown() {
 
   tick();
 }
-
+  
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
     const mm = String(Math.floor(rem/60)).padStart(2,'0');
