@@ -657,10 +657,12 @@ if (rem <= 0 && !resultShown) {
 
   return; // dừng tick hiện tại
 }
+    // nếu countdown > 0 → tiếp tục tick
+    setTimeout(tick, 1000);
+  };
 
-// nếu countdown > 0 → tiếp tục tick
-setTimeout(tick, 1000);
-
+  tick();
+};
 
 // Start countdown khi page load
 document.addEventListener("DOMContentLoaded", () => {
