@@ -745,7 +745,7 @@ let nextTickAt = 0;
 function startCountdown() {
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
-  let hasClosedDisk = false;
+  let hasClosedDisk = false;   
   let hasHandledResult = false;
 
   async function tick() {
@@ -758,6 +758,11 @@ function startCountdown() {
     const ss = String(rem % 60).padStart(2, "0");
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
+
+    // reset flag disk khi bắt đầu vòng mới
+    if (rem === 60) {
+      hasClosedDisk = false;
+    }
 
     // Đóng disk 1 lần khi rem = 48
     if (rem === 48 && !hasClosedDisk) {
@@ -781,14 +786,10 @@ function startCountdown() {
       await loadgoldBalance();
       await loadBetHistory();
 
+      // thiết lập vòng tiếp theo
       nextTickAt = rn.time + 60000;
-      hasHandledResult = false; // reset để vòng mới handle lại
+      hasHandledResult = false; // reset cho vòng sau
       // **Không reset hasClosedDisk ở đây**
-    }
-
-    // Khi countdown vừa bắt đầu vòng mới
-    if (rem === 60) {
-      hasClosedDisk = false; // reset flag cho disk
     }
 
     setTimeout(tick, 1000);
@@ -796,6 +797,7 @@ function startCountdown() {
 
   tick();
 }
+
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
