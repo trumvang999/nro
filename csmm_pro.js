@@ -641,15 +641,20 @@ let rem = Math.max(0, 60 - Math.floor((Date.now() - data.time) / 1000));
       }
     }
 
-    // khi countdown = 0 → xử lý kết quả backend
-    if (rem <= 0 && !resultShown) {
-      resultShown = true;
-  showResultOnDisk(data.number);
+  if (rem <= 0 && !resultShown) {
+  resultShown = true;
+  canOpen = false;  // tạm khóa cover
 
-      // sau 2s → fetch phiên mới
-      setTimeout(startCountdown, 2000);
-      return; // dừng tick hiện tại
-    }
+  showResultOnDisk(data.number); // xoay đĩa 1 lần
+
+  // sau 1.2s (khi xoay xong), mở cover và fetch phiên mới
+  setTimeout(() => {
+    canOpen = true;
+    startCountdown(); // bắt đầu round mới
+  }, 1200);
+
+  return; // dừng tick hiện tại
+}
 
     // lặp lại mỗi giây
     setTimeout(tick, 1000);
