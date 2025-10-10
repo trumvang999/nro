@@ -454,7 +454,7 @@ function renderBetHistory(){
         <td>${b.round || "?"}</td>
         <td>${labelType(b.type,b.digit)}</td>
         <td>${b.amount}</td>
-        <td>${b.result ?? "-"}</td>
+        <td>${b.number ?? "-"}</td>
         <td class="${statusClass(b.status)}">${b.status}</td>
         <td>${b.payout}</td>
       </tr>
@@ -580,8 +580,8 @@ async function handleNewResult(res) {
 function statusClass(status) {
   if (!status) return "status-cho";
   const s = status.toLowerCase();
-  if (s.includes("thắng")) return "status-thang";
-  if (s.includes("thua")) return "status-thua";
+  if (s.includes("win")) return "status-thang";
+  if (s.includes("lose")) return "status-thua";
   return "status-cho";
 }
 
