@@ -738,7 +738,6 @@ function statusClass(status) {
   return "status-cho";
 }
 
-
 let currentRem = 0;
 let nextTickAt = 0;
 
@@ -793,7 +792,6 @@ function startCountdown() {
 
   tick();
 }
-
 
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
