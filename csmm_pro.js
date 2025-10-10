@@ -587,26 +587,25 @@ function statusClass(status) {
 
 let currentRem = 0;
 let nextTickAt = 0;
+let tickTimeout = null;
 
 function startCountdown() {
-  // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
 
-  let hasClosedDisk = false;   // flag chỉ xoay disk 1 lần
-  let hasHandledResult = false; // flag chỉ handle result 1 lần
+  let hasClosedDisk = false;
+  let hasHandledResult = false;
+  let isHandling = false; // ngăn xử lý lặp
 
   async function tick() {
     const now = Date.now();
     let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
     currentRem = rem;
 
-    // hiển thị countdown lên UI
     const mm = String(Math.floor(rem / 60)).padStart(2, "0");
     const ss = String(rem % 60).padStart(2, "0");
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // Đóng disk 1 lần khi rem = 48
     if (rem === 48 && !hasClosedDisk) {
       closeDisk();
       canOpen = false;
@@ -618,39 +617,34 @@ function startCountdown() {
       }
     }
 
-    // Handle result 1 lần khi countdown về 0
-    if (rem <= 0 && !hasHandledResult) {
-      hasHandledResult = true; // khóa xử lý
-      const rn = await getCurrentRound(); // fetch round mới
-      roundName = rn.round;
-      renderRound();
-      await handleNewResult(rn); // show kết quả
-      await loadgoldBalance();   // cập nhật số dư
-      await loadBetHistory();    // cập nhật pending + history
+    if (rem <= 0 && !hasHandledResult && !isHandling) {
+      isHandling = true;
+      hasHandledResult = true;
 
-      // thiết lập vòng tiếp theo
-      nextTickAt = rn.time + 60000;
+      try {
+        const rn = await getCurrentRound();
+        roundName = rn.round;
+        renderRound();
+        await handleNewResult(rn);
+        await loadgoldBalance();
+        await loadBetHistory();
 
-      // Đợi đến khi rem > 48 mới reset flag
-      const waitUntilReset = () => {
-        const now = Date.now();
-        const remNow = Math.max(0, Math.round((nextTickAt - now) / 1000));
-        if (remNow > 48) {
-          hasClosedDisk = false;
-          hasHandledResult = false;
-        } else {
-          setTimeout(waitUntilReset, 1000);
-        }
-      };
-      waitUntilReset();
+        nextTickAt = rn.time + 60000;
+        hasClosedDisk = false;
+        hasHandledResult = false;
+      } catch (err) {
+        console.error("Error handling result:", err);
+      } finally {
+        isHandling = false;
+      }
     }
 
-    setTimeout(tick, 1000);
+    tickTimeout = setTimeout(tick, 1000);
   }
 
   tick();
 }
-
+  
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
     const mm = String(Math.floor(rem/60)).padStart(2,'0');
