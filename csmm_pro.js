@@ -1,3 +1,4 @@
+(async function initApp() {
 const API = "https://index.nro2024.workers.dev";
 
 async function main() {
@@ -159,6 +160,7 @@ if (!user) {
   alert("Vui lòng đăng nhập");
   throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
 }
+})();
 
 // Tạo object chat
 const chatObj = {
