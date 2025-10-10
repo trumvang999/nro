@@ -768,10 +768,13 @@ function startCountdown() {
       }
     }
 // Khi countdown về 0 → fetch kết quả + update dữ liệu 
-    if (rem <= 0) { rn = await getCurrentRound(); // fetch round mới 
-                   roundName = rn.round; renderRound(); await handleNewResult(rn); // show kết quả 
-                   await loadgoldBalance(); // cập nhật số dư 
-                   xawait loadBetHistory(); // cập nhật pending + history 
+    if (rem <= 0) { 
+      rn = await getCurrentRound(); // fetch round mới 
+      roundName = rn.round; 
+      renderRound(); 
+      await handleNewResult(rn); // show kết quả 
+      await loadgoldBalance(); // cập nhật số dư 
+      await loadBetHistory(); // cập nhật pending + history 
                    // thiết lập vòng tiếp theo theo backend 
                    nextTickAt = rn.time + 60000; // 60s tiếp theo 
                   } 
