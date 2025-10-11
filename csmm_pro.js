@@ -314,42 +314,6 @@ document.querySelectorAll(".tab-link").forEach(btn => {
   });
 });
 
-// nạp vàng
-document.getElementById("depositBtn").addEventListener("click", () => {
-  const amount = parseInt(document.getElementById("goldInputDeposit").value, 10) || 0;
-  if(amount > 0){
-await fetch(`${API_MAIN}/transaction/request`, {
-  method: "POST",
-  headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({accountId, type:"deposit", amount})
-});
-alert("Đã gửi yêu cầu nạp, vui lòng chờ duyệt!");
-syncAllData();
-    rendergoldBalance();
-    addHistory("Nạp", amount);
-    alert("Đã nạp " + amount + " vàng!");
-  }
-});
-
-// rút vàng
-document.getElementById("withdrawBtn").addEventListener("click", () => {
-  const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
-  if(amount > 0 && goldBalance >= amount){
-await fetch(`${API_MAIN}/transaction/request`, {
-  method: "POST",
-  headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({accountId, type:"deposit", amount})
-});
-alert("Đã gửi yêu cầu rút, vui lòng chờ duyệt!");
-syncAllData();
-    rendergoldBalance();
-    addHistory("Rút", amount);
-    alert("Đã rút " + amount + " vàng!");
-  } else {
-    alert("Số vàng không hợp lệ hoặc không đủ!");
-  }
-});
-
 // thêm lịch sử
 function addHistory(type, amount){
   const ul = document.getElementById("goldHistory");
