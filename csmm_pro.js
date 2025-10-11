@@ -47,25 +47,27 @@ async function loadChat() {
 
   const chatMessages = document.getElementById("chatMessages");
   chatMessages.innerHTML = "";
-
   const myId = localStorage.getItem("accountId");
+
   const chats = Array.isArray(data.chat) ? data.chat : [];
 
   chats.forEach(c => {
+    const isSelf = c.userId === myId;
     const div = document.createElement("div");
-    div.className = "msg " + (c.userId === myId ? "self" : "other");
+    div.className = "msg " + (isSelf ? "self" : "other");
     div.innerHTML = `
       <div class="avatar">
         <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
       </div>
-      <div class="msg-box">
+      <div id="msg-self">
         <div class="sender">${c.name} <span style="color:#8fb4c9">(${c.planet})</span></div>
-        <div class="content">${c.msg}</div>
+        <div>${c.msg}</div>
         <span class="time">${c.time}</span>
       </div>
     `;
     chatMessages.appendChild(div);
   });
+
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
