@@ -577,12 +577,6 @@ betButtons.forEach(btn=>{
     const canonical = mapType[raw];
     const group = typeToGroup[canonical];
 
-    // Nếu đã chọn trong cùng nhóm mà khác cửa → chặn
-    if (currentSelection.group === group && currentSelection.type !== canonical) {
-      alert("Không được chọn");
-      return;
-    }
-
     // Clear tất cả trước
     betButtons.forEach(b=>b.classList.remove('active'));
     numButtons.forEach(n=>n.classList.remove('active'));
