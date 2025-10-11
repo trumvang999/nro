@@ -49,10 +49,11 @@ async function loadChat() {
   chatMessages.innerHTML = "";
 
   const myId = localStorage.getItem("accountId");
+  const chats = Array.isArray(data.chat) ? data.chat : [];
 
-  data.forEach(c => {
+  chats.forEach(c => {
     const div = document.createElement("div");
-    div.className = "msg " + (c.user === myId ? "self" : "other");
+    div.className = "msg " + (c.userId === myId ? "self" : "other");
     div.innerHTML = `
       <div class="avatar">
         <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
@@ -65,7 +66,6 @@ async function loadChat() {
     `;
     chatMessages.appendChild(div);
   });
-
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -181,41 +181,57 @@ const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cu
 const API_MAIN = "https://index.nro2024.workers.dev"; 
 
 
-  async function persistToServer(accountId, key, value) {
+ async function persistToServer(accountId, username, password, key, value) {
   try {
     const res = await fetch(`${API_MAIN}/persist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId, key, value })
+      body: JSON.stringify({
+        accountId,
+        username,
+        password,
+        key,
+        value
+      })
     });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || "persist failed");
 
-      } catch (e) {
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Persist failed");
+    }
+
+    console.log(`[SYNC OK] ${key} synced to server`);
+  } catch (e) {
     console.warn(`[SYNC ERROR] ${key}:`, e.message);
   }
 }
 
-  async function syncAllData() {
+async function syncAllData() {
   const accountId = localStorage.getItem("accountId");
-  if (!accountId) return;
-    
+  const currentUser = localStorage.getItem("currentUser");
+  const currentPass = localStorage.getItem("currentPass");
+
+  if (!accountId || !currentUser || !currentPass) {
+    console.warn("Sai thông tin");
+    return;
+  }
 
   try {
-const keys = ["goldBalance", "giftUsed"];
+    const keys = ["goldBalance", "giftUsed"];
 
     for (const key of keys) {
       let value;
       try {
-        value = localStorage.getItem(`${key}_${accountId}`);
-        if (value) value = JSON.parse(value);
-      } catch { value = null; }
+        const raw = localStorage.getItem(`${key}_${accountId}`);
+        value = raw ? JSON.parse(raw) : null;
+      } catch {
+        value = null;
+      }
 
       if (value !== null) {
-        await persistToServer(accountId, key, value);
+        await persistToServer(accountId, currentUser, currentPass, key, value);
       }
     }
-
   } catch (err) {
     console.warn("syncAllData error:", err);
   }
