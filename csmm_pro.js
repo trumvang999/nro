@@ -657,13 +657,14 @@ async function loadBetHistory() {
 }
 
 // ---------- Render bảng Đang Cược ----------
-function renderPending(pendingData) {
-  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
-const sliced = pendingData.slice(-rowsPerPage).reverse();
+function renderPending(pendingData = []) {
   const table = document.querySelector("#pendingTable tbody");
   if (!table) return;
 
-  if (pendingData.length === 0) {
+  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
+  const sliced = pendingData.slice(-rowsPerPage).reverse();
+
+  if (!sliced.length) {
     table.innerHTML = `
       <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
         Chưa có cược đang chờ nào
@@ -671,37 +672,42 @@ const sliced = pendingData.slice(-rowsPerPage).reverse();
     return;
   }
 
-  table.innerHTML = pendingData.map(b => `
+  table.innerHTML = sliced.map(b => `
     <tr>
       <td>${b.round}</td>
       <td>${labelType(b.bet_type, b.bet_digit)}</td>
-<td>${b.amount.toLocaleString()}</td>
-      <td>Chờ</td>
+      <td>${Number(b.amount).toLocaleString()}</td>
+      <td>${statusText(b.status)}</td>
     </tr>
-  `).join('');
+  `).join("");
 }
 
 // ---------- Render bảng Lịch Sử Cược ----------
-function renderBetHistory(historyData) {
+function renderBetHistory(historyData = []) {
   const table = document.querySelector("#betHistoryTable tbody");
   if (!table) return;
 
   const rowsPerPage = Number(document.getElementById("rowsPerPage").value || 5);
   const sliced = historyData.slice(-rowsPerPage).reverse();
 
-  table.innerHTML = sliced.length
-    ? sliced.map(b => `
-      <tr>
-        <td>${b.round}</td>
-        <td>${labelType(b.bet_type, b.bet_digit)}</td>
-        <td>${b.amount.toLocaleString()}</td>
-        <td>${b.result_digit ?? "-"}</td>
-        <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
-        <td>${b.win_amount ? b.win_amount.toLocaleString() : ""}</td>
-      </tr>`).join("")
-    : `<tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
+  if (!sliced.length) {
+    table.innerHTML = `
+      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
         Chưa có lịch sử đặt cược
       </td></tr>`;
+    return;
+  }
+
+  table.innerHTML = sliced.map(b => `
+    <tr>
+      <td>${b.round}</td>
+      <td>${labelType(b.bet_type, b.bet_digit)}</td>
+      <td>${Number(b.amount).toLocaleString()}</td>
+      <td>${b.result_digit ?? "-"}</td>
+      <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
+      <td>${b.win_amount ? Number(b.win_amount).toLocaleString() : "-"}</td>
+    </tr>
+  `).join("");
 }
 
 
