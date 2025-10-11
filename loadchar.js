@@ -87,6 +87,8 @@ return { ok: false, error: data.error || "Lỗi không xác định." };
       document.getElementById("charIdDisplay").innerText = char.characterId.slice(0, 6);
       document.getElementById("goldAmount").innerText = `${char.balance.toLocaleString()}`;
       avatar.src = getAvatar(char.planet);
+    localStorage.setItem("characterName", char.name);
+    localStorage.setItem("characterPlanet", char.planet)
     }
   }
 
