@@ -75,15 +75,6 @@ document.getElementById("chatText").addEventListener("keypress", e => {
 });
 setInterval(loadChat, 5000); // tự động refresh chat
 
-// Gắn sự kiện cho nút gửi
-document.getElementById("chatSendBtn").addEventListener("click", sendChat);
-
-// Gửi khi nhấn Enter
-document.getElementById("chatText").addEventListener("keypress", e => {
-  if (e.key === "Enter") {
-    sendChat();
-  }
-});
 
   function toggleBox(id) {
   document.querySelectorAll(".popup-box").forEach(box => box.classList.add("hidden"));
@@ -186,7 +177,6 @@ createAuxUI();
 
 // internal state (only temporary UI state)
 let goldBalance = 0; // chỉ dùng để hiển thị UI hiện tại
-let roundName = null; 
 const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cuối
 const API_MAIN = "https://index.nro2024.workers.dev"; 
 
