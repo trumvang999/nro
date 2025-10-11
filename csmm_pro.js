@@ -568,7 +568,7 @@ async function handleNewResult(res) {
     const data = await resp.json();
 
     if (data.ok) {
-      console.log(`✅ Round ${res.round} settled (${data.settled} bets)`);
+      console.log(`✅ Settle ok`);
     } else {
       console.warn("⚠️ Settle failed:", data.error);
     }
@@ -580,10 +580,17 @@ async function handleNewResult(res) {
 function statusClass(status) {
   if (!status) return "status-cho";
   const s = status.toLowerCase();
-  if (s.includes("win")) return "status-thang";
-  if (s.includes("lose")) return "status-thua";
-  if (s.includes("chờ")) return "status-wait";
+  if (s.includes("won")) return "status-thang";
+  if (s.includes("lost")) return "status-thua";
   return "status-cho";
+}
+
+function statusText(status) {
+  if (!status) return "Chờ";
+  const s = status.toLowerCase();
+  if (s.includes("won")) return "Thắng";
+  if (s.includes("lost")) return "Thua";
+  return "Chờ";
 }
 
 let currentRem = 0;
@@ -749,7 +756,7 @@ function renderPending(pendingData) {
   if (pendingData.length === 0) {
     table.innerHTML = `
       <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
-        Chưa có cược chờ nào
+        Chưa có cược đang chờ nào
       </td></tr>`;
     return;
   }
@@ -759,7 +766,7 @@ function renderPending(pendingData) {
       <td>${b.round}</td>
       <td>${labelType(b.bet_type, b.bet_digit)}</td>
 <td>${b.amount.toLocaleString()}</td>
-      <td>chờ</td>
+      <td>Chờ</td>
     </tr>
   `).join('');
 }
