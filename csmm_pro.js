@@ -384,7 +384,7 @@ function renderPending(){
         <td style="padding: 8px 10px;">${b.round || "-"}</td>
         <td style="padding: 8px 10px;">${labelType(b.type,b.digit)}</td>
         <td style="padding: 8px 10px;">${b.amount}</td>
-        <td style="padding: 8px 10px;"  class="${statusClass(b.status)}">${b.status}</td>
+        <td style="padding: 8px 10px;"  class="${statusClass(b.status)}">${statusText(b.status)}</td>
       </tr>
     `;
   }
@@ -455,7 +455,7 @@ function renderBetHistory(){
         <td>${labelType(b.type,b.digit)}</td>
         <td>${b.amount}</td>
         <td>${b.number ?? "-"}</td>
-        <td class="${statusClass(b.status)}">${b.status}</td>
+        <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
         <td>${b.payout}</td>
       </tr>
     `;
@@ -790,7 +790,7 @@ table.innerHTML = historyData.map(b => `
     <td>${labelType(b.bet_type, b.bet_digit)}</td>
     <td>${b.amount.toLocaleString()}</td>
     <td>${b.result_digit ?? "-"}</td>
-    <td class="${statusClass(b.status)}">${b.status}</td>
+<td class="${statusClass(b.status)}">${statusText(b.status)}</td>
     <td>${b.win_amount ? b.win_amount.toLocaleString() : ""}</td>
   </tr>
 `).join('');
