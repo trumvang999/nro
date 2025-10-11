@@ -1,26 +1,37 @@
+const CHAT_API = "https://index.nro2024.workers.dev";
+
+function getAvatar(planet) {
+  switch (planet) {
+    case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
+    case "Namek": return "https://forum.ngocrongonline.com/avatar/small3932.png";
+    case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
+    default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
+  }
+}
+
 async function sendChat() {
   const input = document.getElementById("chatText");
   const msg = input.value.trim();
   if (!msg) return;
 
- // Lấy thông tin người dùng từ localStorage
-const user = localStorage.getItem("currentUser");
+  const userId = localStorage.getItem("accountId");
+  const name = localStorage.getItem("characterName");
+  const planet = localStorage.getItem("characterPlanet");
 
-// Nếu chưa có người dùng, thông báo và dừng
-if (!user) {
-  alert("Vui lòng đăng nhập");
-  throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
-}
+  if (!userId || !name) {
+    alert("Vui lòng đăng nhập hoặc tạo nhân vật");
+    return;
+  }
 
+  const chatObj = {
+    userId,
+    name,
+    planet,
+    msg,
+    time: new Date().toLocaleTimeString()
+  };
 
-// Tạo object chat
-const chatObj = {
-  user,                   // tên user
-  msg,                    // tin nhắn
-  time: new Date().toLocaleTimeString() // thời gian hiện tại
-};
-
-  await fetch("https://doan-so.nro2024.workers.dev/chat/save", {
+  await fetch(`${CHAT_API}/chat/save`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(chatObj)
@@ -31,21 +42,24 @@ const chatObj = {
 }
 
 async function loadChat() {
-  const res = await fetch("https://doan-so.nro2024.workers.dev/chat/load");
-  const chatHistory = await res.json();
+  const res = await fetch(`${CHAT_API}/chat/load`);
+  const data = await res.json();
 
   const chatMessages = document.getElementById("chatMessages");
   chatMessages.innerHTML = "";
-  const currentUser = localStorage.getItem("currentUser");
 
-  chatHistory.forEach(c => {
+  const myId = localStorage.getItem("accountId");
+
+  data.forEach(c => {
     const div = document.createElement("div");
-    div.className = "msg " + (c.user === currentUser ? "self" : "other");
+    div.className = "msg " + (c.user === myId ? "self" : "other");
     div.innerHTML = `
-      <div class="avatar"></div>
-      <div id="msg-self">
-        <div class="sender">${c.user}</div>
-        <div>${c.msg}</div>
+      <div class="avatar">
+        <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
+      </div>
+      <div class="msg-box">
+        <div class="sender">${c.name} <span style="color:#8fb4c9">(${c.planet})</span></div>
+        <div class="content">${c.msg}</div>
         <span class="time">${c.time}</span>
       </div>
     `;
@@ -55,7 +69,11 @@ async function loadChat() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Khi trang load thì load chat
+document.getElementById("chatSendBtn").addEventListener("click", sendChat);
+document.getElementById("chatText").addEventListener("keypress", e => {
+  if (e.key === "Enter") sendChat();
+});
+setInterval(loadChat, 5000); // tự động refresh chat
 
 // Gắn sự kiện cho nút gửi
 document.getElementById("chatSendBtn").addEventListener("click", sendChat);
@@ -310,8 +328,12 @@ document.querySelectorAll(".tab-link").forEach(btn => {
 document.getElementById("depositBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputDeposit").value, 10) || 0;
   if(amount > 0){
-    goldBalance += amount;
-savegoldBalance();
+await fetch(`${API_MAIN}/transaction/request`, {
+  method: "POST",
+  headers: {"Content-Type":"application/json"},
+  body: JSON.stringify({accountId, type:"deposit", amount})
+});
+alert("Đã gửi yêu cầu nạp, vui lòng chờ duyệt!");
 syncAllData();
     rendergoldBalance();
     addHistory("Nạp", amount);
@@ -323,8 +345,12 @@ syncAllData();
 document.getElementById("withdrawBtn").addEventListener("click", () => {
   const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
   if(amount > 0 && goldBalance >= amount){
-goldBalance -= amount;
-savegoldBalance();
+await fetch(`${API_MAIN}/transaction/request`, {
+  method: "POST",
+  headers: {"Content-Type":"application/json"},
+  body: JSON.stringify({accountId, type:"deposit", amount})
+});
+alert("Đã gửi yêu cầu rút, vui lòng chờ duyệt!");
 syncAllData();
     rendergoldBalance();
     addHistory("Rút", amount);
@@ -351,47 +377,6 @@ async function loadResultHistory() {
   resultHistory = Array.isArray(data) ? data.slice(-5) : [];
   renderResultTable();
 }
-
-  // render pending text area (create if missing)
-function renderPending(){
-  const table = document.getElementById("pendingTable");
-  if(!table) return;
-
-  // số dòng hiển thị
-  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
-  const recent = pendingBets.slice(-rowsPerPage).reverse();
-
-  if(recent.length === 0){
-    table.innerHTML = `
-      <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
-        Chưa có cược chờ nào
-      </td></tr>`;
-    return;
-  }
-
-  let html = `
-    <tr>
-      <th style="padding: 8px 10px;">Mã phiên</th>
-      <th style="padding: 8px 10px;">Loại cược</th>
-      <th style="padding: 8px 10px;">Số tiền</th>
-      <th style="padding: 8px 10px;">Trạng thái</th>
-    </tr>
-  `;
-
-  for(const b of recent){
-    html += `
-      <tr>
-        <td style="padding: 8px 10px;">${b.round || "-"}</td>
-        <td style="padding: 8px 10px;">${labelType(b.type,b.digit)}</td>
-        <td style="padding: 8px 10px;">${b.amount}</td>
-        <td style="padding: 8px 10px;"  class="${statusClass(b.status)}">${statusText(b.status)}</td>
-      </tr>
-    `;
-  }
-
-  table.innerHTML = html;
-}
-document.getElementById("rowsPerPagePending").addEventListener("change", renderPending);
 
 function showBetNotice(msg, success = true) {
   const notice = document.getElementById("betNotice");
@@ -420,51 +405,6 @@ function showBetNotice(msg, success = true) {
       tbody.appendChild(tr);
     }
   }
-
-function renderBetHistory(){
-  const table = document.getElementById("betHistoryTable");
-  if(!table) return;
-
-  if(betHistory.length === 0){
-    table.innerHTML = `
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
-        Chưa có lịch sử đặt cược
-      </td></tr>`;
-    return;
-  }
-
-  // lấy số dòng cần hiển thị từ dropdown
-  const rowsPerPage = Number(document.getElementById("rowsPerPage").value);
-  const recent = betHistory.slice(-rowsPerPage).reverse();
-
-  let html = `
-    <tr>
-      <th>Mã phiên</th>
-      <th>Loại cược</th>
-      <th>Số tiền</th>
-      <th>Kết quả</th>
-      <th>Trạng thái</th>
-      <th>Thưởng</th>
-    </tr>
-  `;
-
-  for(const b of recent){
-    html += `
-      <tr>
-        <td>${b.round || "?"}</td>
-        <td>${labelType(b.type,b.digit)}</td>
-        <td>${b.amount}</td>
-        <td>${b.number ?? "-"}</td>
-        <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
-        <td>${b.payout}</td>
-      </tr>
-    `;
-  }
-
-  table.innerHTML = html;
-}
-
-document.getElementById("rowsPerPage").addEventListener("change", renderBetHistory);
 
 
   function labelType(code, digit=null){
@@ -530,6 +470,10 @@ function renderRound(){
 // ---------- Handle new round ----------
 async function handleNewResult(res) {
   if (!res) res = await fetchResult();
+  if (!res || !res.number || !res.round) {
+    console.warn("null");
+    return;
+  }
 
   const numStr = String(res.number).replace(/[^0-9]/g, '');
   const lastDigit = numStr ? Number(numStr.slice(-1)) : null;
@@ -750,6 +694,8 @@ async function loadBetHistory() {
 
 // ---------- Render bảng Đang Cược ----------
 function renderPending(pendingData) {
+  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
+const sliced = pendingData.slice(-rowsPerPage).reverse();
   const table = document.querySelector("#pendingTable tbody");
   if (!table) return;
 
@@ -776,26 +722,23 @@ function renderBetHistory(historyData) {
   const table = document.querySelector("#betHistoryTable tbody");
   if (!table) return;
 
-  if (historyData.length === 0) {
-    table.innerHTML = `
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
+  const rowsPerPage = Number(document.getElementById("rowsPerPage").value || 5);
+  const sliced = historyData.slice(-rowsPerPage).reverse();
+
+  table.innerHTML = sliced.length
+    ? sliced.map(b => `
+      <tr>
+        <td>${b.round}</td>
+        <td>${labelType(b.bet_type, b.bet_digit)}</td>
+        <td>${b.amount.toLocaleString()}</td>
+        <td>${b.result_digit ?? "-"}</td>
+        <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
+        <td>${b.win_amount ? b.win_amount.toLocaleString() : ""}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
         Chưa có lịch sử đặt cược
       </td></tr>`;
-    return;
-  }
-
-table.innerHTML = historyData.map(b => `
-  <tr>
-    <td>${b.round}</td>
-    <td>${labelType(b.bet_type, b.bet_digit)}</td>
-    <td>${b.amount.toLocaleString()}</td>
-    <td>${b.result_digit ?? "-"}</td>
-<td class="${statusClass(b.status)}">${statusText(b.status)}</td>
-    <td>${b.win_amount ? b.win_amount.toLocaleString() : ""}</td>
-  </tr>
-`).join('');
 }
-
 
 
 // ---------- Place bet ----------
