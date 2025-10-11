@@ -60,7 +60,7 @@ async function loadChat() {
         <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
       </div>
       <div id="msg-self">
-        <div class="sender">${c.name} <span style="color:#8fb4c9">(${c.planet})</span></div>
+        <div class="sender">${c.name}</div>
         <div>${c.msg}</div>
         <span class="time">${c.time}</span>
       </div>
