@@ -100,6 +100,13 @@ return { ok: false, error: data.error || "Lỗi không xác định." };
       return alert("Tên nhân vật phải từ 3 đến 8 ký tự!");
     if (!planet || planet === "Chọn hành tinh")
       return alert("Vui lòng chọn hành tinh!");
+      // 🧠 Kiểm tra trùng tên trước khi tạo
+  const checkRes = await fetch(`${API}/character/check-name?name=${encodeURIComponent(name)}`);
+  const checkData = await checkRes.json();
+  if (checkData.exists) {
+    alert("Tên nhân vật đã tồn tại, vui lòng chọn tên khác!");
+    return;
+  }
 
     const res = await fetch(`${API}/character/create`, {
       method: "POST",
