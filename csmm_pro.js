@@ -764,6 +764,41 @@ async function loadHistory() {
 
 // gọi hàm ngay khi load
 document.addEventListener("DOMContentLoaded", () => loadHistory());
+  
+// ---------- BXH ----------
+async function loadRank() {
+  const tbody = document.querySelector("#rankTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API_MAIN}/rank`);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    data.data.forEach((item, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${item.name}</td>
+        <td>${Number(item.gold || 0).toLocaleString("vi-VN")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err) {
+    console.error("💥 loadRank error:", err);
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi khi tải bảng xếp hạng</td></tr>`;
+  }
+}
+
+// gọi khi popup hiển thị
+document.getElementById("rankBox").addEventListener("show", loadRank);
 
 // ---------- Check ----------
 async function checkPending() {
