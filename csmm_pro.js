@@ -703,55 +703,67 @@ function renderBetHistory(historyData = []) {
   `).join("");
 }
   
+  function formatTime(created_at) {
+  if (!created_at) return "-";
+
+  // thử số
+  const num = Number(created_at);
+  if (!isNaN(num)) return new Date(num).toLocaleString("vi-VN", { hour12:false });
+
+  // thử Date string
+  const d = new Date(created_at);
+  if (!isNaN(d)) return d.toLocaleString("vi-VN", { hour12:false });
+
+  // fallback raw
+  return created_at;
+}
+
 // ---------- Lịch sử giao dịch ----------
 async function loadHistory() {
   const accountId = localStorage.getItem("accountId");
   const tbody = document.querySelector("#goldHistory tbody");
+  if (!tbody) return;
 
-  if (!tbody) return; // phòng trường hợp phần tử chưa render
   if (!accountId) {
     tbody.innerHTML = `<tr><td colspan="6">Không tìm thấy tài khoản</td></tr>`;
     return;
   }
 
   try {
-    const res = await fetch(`${API_MAIN}/transactions?accountId=${accountId}`);
+    const API = "https://index.nro2024.workers.dev";
+    const res = await fetch(`${API}/transactions?accountId=${accountId}`);
     const data = await res.json();
 
     if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6">Chưa có giao dịch</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Chưa có giao dịch</td></tr>`;
       return;
     }
 
     tbody.innerHTML = "";
-
     data.data.forEach(tx => {
       const row = document.createElement("tr");
       const cls = (tx.type || "").toLowerCase();
+      let timeText = tx.created_at ? new Date(Number(tx.created_at)).toLocaleString("vi-VN", { hour12:false }) : "-";
 
-      // xử lý thời gian fallback
-      let timeText = "-";
-      if (tx.created_at) {
-        const t = isNaN(tx.created_at) ? new Date(tx.created_at) : new Date(Number(tx.created_at));
-        timeText = t.toLocaleString("vi-VN", { hour12: false });
-      }
-
-      row.innerHTML = `
-        <td class="${cls}">${(tx.type || "").toUpperCase()}</td>
-        <td>${Number(tx.amount || 0).toLocaleString("vi-VN")}</td>
-        <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
-        <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
-        <td>${tx.note || ""}</td>
-        <td>${timeText}</td>
-      `;
+    row.innerHTML = `
+  <td class="${cls}">${(tx.type||"").toUpperCase()}</td>
+  <td>${Number(tx.amount||0).toLocaleString("vi-VN")}</td>
+  <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
+  <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
+  <td>${tx.note||""}</td>
+  <td>${formatTime(tx.created_at)}</td>
+`;
 
       tbody.appendChild(row);
     });
-  } catch (err) {
+  } catch(err) {
     console.error("💥 loadHistory error:", err);
-    tbody.innerHTML = `<tr><td colspan="6">Lỗi khi tải lịch sử</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi khi tải lịch sử</td></tr>`;
   }
 }
+
+// gọi hàm ngay khi load
+document.addEventListener("DOMContentLoaded", () => loadHistory());
 
 // ---------- Check ----------
 async function checkPending() {
