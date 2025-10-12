@@ -725,7 +725,7 @@ async function loadHistory() {
   }
 
   try {
-    const res = await fetch(`${CHAT_API}/transactions?accountId=${accountId}`);
+    const res = await fetch(`${API_MAIN}/transactions?accountId=${accountId}`);
     const data = await res.json();
 
     if (!data.ok || !data.data || data.data.length === 0) {
