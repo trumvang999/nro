@@ -334,17 +334,6 @@ document.querySelectorAll(".tab-link").forEach(btn => {
   });
 });
 
-// thêm lịch sử
-function addHistory(type, amount){
-  const ul = document.getElementById("goldHistory");
-  if(ul.querySelector("li") && ul.querySelector("li").textContent === "Chưa có giao dịch"){
-    ul.innerHTML = "";
-  }
-  const li = document.createElement("li");
-  li.textContent = type + " " + amount + " vàng";
-  ul.prepend(li);
-}
-
 async function loadResultHistory() {
   const res = await fetch(`${API_WORKER}/history`);
   const data = await res.json();
