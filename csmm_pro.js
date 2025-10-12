@@ -49,7 +49,9 @@ async function loadChat() {
   chatMessages.innerHTML = "";
   const myId = localStorage.getItem("accountId");
 
-  const chats = Array.isArray(data.chat) ? data.chat : [];
+  const chats = (Array.isArray(data.chat) ? data.chat : []).sort(
+    (a, b) => new Date(a.time) - new Date(b.time)
+  );
 
   chats.forEach(c => {
     const isSelf = c.userId === myId;
@@ -726,7 +728,7 @@ async function checkPending() {
     if (pending.length === 0) return;
 
     for (const bet of pending) {
-      console.log("🔎 Found pending round:", bet.round);
+      console.log("Pending round:", bet.round);
 
       // Lấy kết quả phiên đó
       const resRound = await fetch(`${API_WORKER}/result?round=${bet.round}`);
