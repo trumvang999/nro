@@ -713,6 +713,49 @@ function renderBetHistory(historyData = []) {
     </tr>
   `).join("");
 }
+  
+// ---------- Lịch sử giao dịch ----------
+async function loadHistory() {
+  const accountId = localStorage.getItem("accountId");
+  const tbody = document.querySelector("#goldHistory tbody");
+
+  if (!accountId) {
+    tbody.innerHTML = `<tr><td colspan="6">Không tìm thấy tài khoản</td></tr>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${CHAT_API}/transactions?accountId=${accountId}`);
+    const data = await res.json();
+
+    if (!data.ok || !data.data || data.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">Chưa có giao dịch</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+
+    data.data.forEach(tx => {
+      const row = document.createElement("tr");
+      const time = new Date(tx.created_at).toLocaleString("vi-VN", { hour12: false });
+      const cls = tx.type.toLowerCase();
+
+      row.innerHTML = `
+        <td class="${cls}">${tx.type.toUpperCase()}</td>
+        <td>${tx.amount.toLocaleString("vi-VN")}</td>
+        <td>${tx.balance_before ?? "-"}</td>
+        <td>${tx.balance_after ?? "-"}</td>
+        <td>${tx.note || ""}</td>
+        <td>${time}</td>
+      `;
+
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error("💥 loadHistory error:", err);
+    tbody.innerHTML = `<tr><td colspan="6">Lỗi khi tải lịch sử</td></tr>`;
+  }
+}
 
 // ---------- Check ----------
 async function checkPending() {
