@@ -719,6 +719,7 @@ async function loadHistory() {
   const accountId = localStorage.getItem("accountId");
   const tbody = document.querySelector("#goldHistory tbody");
 
+  if (!tbody) return; // phòng trường hợp phần tử chưa render
   if (!accountId) {
     tbody.innerHTML = `<tr><td colspan="6">Không tìm thấy tài khoản</td></tr>`;
     return;
@@ -728,7 +729,7 @@ async function loadHistory() {
     const res = await fetch(`${API_MAIN}/transactions?accountId=${accountId}`);
     const data = await res.json();
 
-    if (!data.ok || !data.data || data.data.length === 0) {
+    if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6">Chưa có giao dịch</td></tr>`;
       return;
     }
@@ -737,16 +738,22 @@ async function loadHistory() {
 
     data.data.forEach(tx => {
       const row = document.createElement("tr");
-      const time = new Date(tx.created_at).toLocaleString("vi-VN", { hour12: false });
-      const cls = tx.type.toLowerCase();
+      const cls = (tx.type || "").toLowerCase();
+
+      // xử lý thời gian fallback
+      let timeText = "-";
+      if (tx.created_at) {
+        const t = isNaN(tx.created_at) ? new Date(tx.created_at) : new Date(Number(tx.created_at));
+        timeText = t.toLocaleString("vi-VN", { hour12: false });
+      }
 
       row.innerHTML = `
-        <td class="${cls}">${tx.type.toUpperCase()}</td>
-        <td>${tx.amount.toLocaleString("vi-VN")}</td>
-        <td>${tx.balance_before ?? "-"}</td>
-        <td>${tx.balance_after ?? "-"}</td>
+        <td class="${cls}">${(tx.type || "").toUpperCase()}</td>
+        <td>${Number(tx.amount || 0).toLocaleString("vi-VN")}</td>
+        <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
+        <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
         <td>${tx.note || ""}</td>
-        <td>${time}</td>
+        <td>${timeText}</td>
       `;
 
       tbody.appendChild(row);
