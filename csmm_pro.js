@@ -53,22 +53,22 @@ async function loadChat() {
     (a, b) => new Date(a.time) - new Date(b.time)
   );
 
-  chats.forEach(c => {
-    const isSelf = c.userId === myId;
-    const div = document.createElement("div");
-    div.className = "msg " + (isSelf ? "self" : "other");
-    div.innerHTML = `
-      <div class="avatar">
-        <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
-      </div>
-      <div id="msg-self">
-        <div class="sender">${c.name}</div>
-        <div>${c.msg}</div>
-        <span class="time">${c.time}</span>
-      </div>
-    `;
-    chatMessages.appendChild(div);
-  });
+chats.forEach(c => {
+  const isSelf = c.user === myId; // <- dùng c.user thay vì c.userId
+  const div = document.createElement("div");
+  div.className = "msg " + (isSelf ? "self" : "other");
+  div.innerHTML = `
+    <div class="avatar">
+      <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
+    </div>
+    <div id="msg-self">
+      <div class="sender">${c.name}</div>
+      <div>${c.msg}</div>
+      <span class="time">${c.time}</span>
+    </div>
+  `;
+  chatMessages.appendChild(div);
+});
 
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
