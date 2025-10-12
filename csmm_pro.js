@@ -766,12 +766,17 @@ async function loadHistory() {
 document.addEventListener("DOMContentLoaded", () => loadHistory());
   
 // ---------- BXH ----------
+// ---------- Load bảng xếp hạng ----------
 async function loadRank() {
   const tbody = document.querySelector("#rankTable tbody");
+  if (!tbody) return;
+
+  // placeholder khi đang tải
   tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
 
   try {
-    const res = await fetch(`${API_MAIN}/rank`);
+    const API = typeof API_MAIN !== 'undefined' ? API_MAIN : "https://index.nro2024.workers.dev";
+    const res = await fetch(`${API}/rank`);
     const data = await res.json();
 
     if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
@@ -779,23 +784,40 @@ async function loadRank() {
       return;
     }
 
+    // xóa placeholder cũ
     tbody.innerHTML = "";
+
+    // tạo từng dòng
     data.data.forEach((item, index) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${index+1}</td>
-        <td>${item.name}</td>
+        <td>${index + 1}</td>
+        <td>${item.name || "Unknown"}</td>
         <td>${Number(item.balance || 0).toLocaleString("vi-VN")}</td>
       `;
       tbody.appendChild(tr);
     });
   } catch(err) {
+    console.error("💥 loadRank error:", err);
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải dữ liệu</td></tr>`;
   }
 }
 
-// gọi khi popup hiển thị
-document.getElementById("rankBox").addEventListener("show", loadRank);
+// ---------- Event khi mở popup ----------
+const rankBox = document.getElementById("rankBox");
+if(rankBox) {
+  // giả lập khi popup hiển thị, gọi loadRank
+  const openBtn = document.querySelector("#openRankBtn"); // nút mở popup
+  if(openBtn){
+    openBtn.addEventListener("click", () => {
+      rankBox.style.display = "block";
+      loadRank();
+    });
+  }
+}
+
+// Hoặc gọi trực tiếp khi page load (tùy bạn muốn)
+document.addEventListener("DOMContentLoaded", loadRank);
 
 // ---------- Check ----------
 async function checkPending() {
