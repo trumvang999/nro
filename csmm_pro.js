@@ -655,7 +655,7 @@ function renderPending(pendingData = []) {
   if (!table) return;
 
   const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
-  const sliced = pendingData.slice(-rowsPerPage);
+const sliced = pendingData.slice(0, rowsPerPage);
 
   if (!sliced.length) {
     table.innerHTML = `
@@ -681,7 +681,8 @@ function renderBetHistory(historyData = []) {
   if (!table) return;
 
   const rowsPerPage = Number(document.getElementById("rowsPerPage").value || 5);
-  const sliced = historyData.slice(-rowsPerPage);
+  const sliced = historyData.slice(0, rowsPerPage);
+
 
   if (!sliced.length) {
     table.innerHTML = `
