@@ -768,8 +768,6 @@ document.addEventListener("DOMContentLoaded", () => loadHistory());
 // ---------- BXH ----------
 async function loadRank() {
   const tbody = document.querySelector("#rankTable tbody");
-  if (!tbody) return;
-
   tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
 
   try {
@@ -785,15 +783,14 @@ async function loadRank() {
     data.data.forEach((item, index) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${index+1}</td>
         <td>${item.name}</td>
-        <td>${Number(item.gold || 0).toLocaleString("vi-VN")}</td>
+        <td>${Number(item.balance || 0).toLocaleString("vi-VN")}</td>
       `;
       tbody.appendChild(tr);
     });
   } catch(err) {
-    console.error("💥 loadRank error:", err);
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi khi tải bảng xếp hạng</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải dữ liệu</td></tr>`;
   }
 }
 
