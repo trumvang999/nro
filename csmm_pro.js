@@ -558,7 +558,7 @@ function startCountdown() {
           const rn = await getCurrentRound(); // fetch round mới
           roundName = rn.round;
           renderRound();
-
+          await checkPending();
           nextTickAt = rn.time + 60000;
 
           // reset flags
@@ -712,6 +712,50 @@ function renderBetHistory(historyData = []) {
   `).join("");
 }
 
+// ---------- Check ----------
+async function checkPending() {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) return;
+
+  try {
+    const res = await fetch(`${API_MAIN}/bet/history?accountId=${accountId}`);
+    const data = await res.json();
+    if (!data.ok || !Array.isArray(data.data)) return;
+
+    const pending = data.data.filter(b => b.status === "pending");
+    if (pending.length === 0) return;
+
+    for (const bet of pending) {
+      console.log("🔎 Found pending round:", bet.round);
+
+      // Lấy kết quả phiên đó
+      const resRound = await fetch(`${API_WORKER}/result?round=${bet.round}`);
+      const roundData = await resRound.json();
+      if (!roundData.ok || !roundData.number) continue;
+
+      const numStr = String(roundData.number).replace(/[^0-9]/g, "");
+      const lastDigit = Number(numStr.slice(-1));
+      const cls = lastDigit >= 5 ? "Tài" : "Xỉu";
+      const oe = lastDigit % 2 === 0 ? "Chẵn" : "Lẻ";
+      const classification = `${cls}/${oe}`;
+
+      // Gửi settle-round
+      await fetch(`${API_MAIN}/settle-round`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          round: bet.round,
+          lastDigit,
+          classification
+        })
+      });
+
+      console.log(`✅ Settled old round ${bet.round}`);
+    }
+  } catch (err) {
+    console.warn("checkPending error:", err);
+  }
+}
 
 // ---------- Place bet ----------
 placeBetBtn.addEventListener("click", async () => {
