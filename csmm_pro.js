@@ -49,9 +49,9 @@ async function loadChat() {
   chatMessages.innerHTML = "";
   const myId = localStorage.getItem("accountId");
 
-  const chats = (Array.isArray(data.chat) ? data.chat : []).sort(
-    (a, b) => new Date(a.time) - new Date(b.time)
-  );
+const chats = (Array.isArray(data.chat) ? data.chat : []).sort(
+  (a, b) => a.created_at - b.created_at
+);
 
 chats.forEach(c => {
   const isSelf = c.user === myId; // <- dùng c.user thay vì c.userId
