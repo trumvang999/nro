@@ -719,6 +719,7 @@ function renderBetHistory(historyData = []) {
   return created_at;
 }
 
+<script>
 // ---------- Lịch sử giao dịch ----------
 async function loadHistory() {
   const accountId = localStorage.getItem("accountId");
@@ -740,39 +741,64 @@ async function loadHistory() {
       return;
     }
 
+    // ======= Từ điển dịch =======
+    const typeMap = {
+      DEPOSIT: "Nạp",
+      WITHDRAW: "Rút",
+      BET: "Đặt cược",
+      WIN: "Thắng",
+      LOSE: "Thua",
+    };
+
+    const noteMap = {
+      gift_redeem: "Đổi quà",
+      place_bet: "Đặt cược",
+      settle_round: "Kết quả vòng",
+    };
+
+    // ======= Hàm định dạng thời gian =======
+    function formatTime(ms) {
+      if (!ms) return "-";
+      return new Date(Number(ms)).toLocaleString("vi-VN", {
+        hour12: false,
+      });
+    }
+
+    // ======= Hiển thị =======
     tbody.innerHTML = "";
     data.data.forEach(tx => {
       const row = document.createElement("tr");
       const cls = (tx.type || "").toLowerCase();
-      let timeText = tx.created_at ? new Date(Number(tx.created_at)).toLocaleString("vi-VN", { hour12:false }) : "-";
 
-    row.innerHTML = `
-  <td class="${cls}">${(tx.type||"").toUpperCase()}</td>
-  <td>${Number(tx.amount||0).toLocaleString("vi-VN")}</td>
-  <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
-  <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
-  <td>${tx.note||""}</td>
-  <td>${formatTime(tx.created_at)}</td>
-`;
+      const typeText = typeMap[tx.type?.toUpperCase()] || tx.type || "-";
+      const noteText = noteMap[tx.note] || tx.note || "";
+
+      row.innerHTML = `
+        <td class="${cls}">${typeText}</td>
+        <td>${Number(tx.amount || 0).toLocaleString("vi-VN")}</td>
+        <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
+        <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
+        <td>${noteText}</td>
+        <td>${formatTime(tx.created_at)}</td>
+      `;
 
       tbody.appendChild(row);
     });
-  } catch(err) {
+  } catch (err) {
     console.error("💥 loadHistory error:", err);
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi khi tải lịch sử</td></tr>`;
   }
 }
 
-// gọi hàm ngay khi load
+// Gọi hàm ngay khi load
 document.addEventListener("DOMContentLoaded", () => loadHistory());
+</script>
   
-// ---------- BXH ----------
 // ---------- Load bảng xếp hạng ----------
 async function loadRank() {
   const tbody = document.querySelector("#rankTable tbody");
   if (!tbody) return;
 
-  // placeholder khi đang tải
   tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
 
   try {
@@ -785,20 +811,26 @@ async function loadRank() {
       return;
     }
 
-    // xóa placeholder cũ
     tbody.innerHTML = "";
 
-    // tạo từng dòng
     data.data.forEach((item, index) => {
       const tr = document.createElement("tr");
+      const rank = index + 1;
+      let icon = `<span class="rank-num">${rank}</span>`; // mặc định hiển thị số
+
+      // top 3 có huy chương màu
+      if (rank === 1) icon = `<i class="fas fa-award gold"></i><span class="rank-num">1</span>`;
+      else if (rank === 2) icon = `<i class="fas fa-award silver"></i><span class="rank-num">2</span>`;
+      else if (rank === 3) icon = `<i class="fas fa-award bronze"></i><span class="rank-num">3</span>`;
+
       tr.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${icon}</td>
         <td>${item.name || "Unknown"}</td>
         <td>${Number(item.balance || 0).toLocaleString("vi-VN")}</td>
       `;
       tbody.appendChild(tr);
     });
-  } catch(err) {
+  } catch (err) {
     console.error("💥 loadRank error:", err);
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải dữ liệu</td></tr>`;
   }
