@@ -817,9 +817,9 @@ async function loadRank() {
       let icon = `<span class="rank-num">${rank}</span>`; // mặc định hiển thị số
 
       // top 3 có huy chương màu
-      if (rank === 1) icon = `<i class="fas fa-award gold"></i><span class="rank-num">1</span>`;
-      else if (rank === 2) icon = `<i class="fas fa-award silver"></i><span class="rank-num">2</span>`;
-      else if (rank === 3) icon = `<i class="fas fa-award bronze"></i><span class="rank-num">3</span>`;
+      if (rank === 1) icon = `<div class="special"><i class="fas fa-award gold"></i><span class="rank-num">1</span></div>`;
+      else if (rank === 2) icon = `<div class="special"><i class="fas fa-award silver"></i><span class="rank-num">2</span></div>`;
+      else if (rank === 3) icon = `<div class="special"><i class="fas fa-award bronze"></i><span class="rank-num">3</span></div>`;
 
       tr.innerHTML = `
         <td>${icon}</td>
