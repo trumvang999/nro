@@ -791,7 +791,6 @@ async function loadHistory() {
 
 // Gọi hàm ngay khi load
 document.addEventListener("DOMContentLoaded", () => loadHistory());
-</script>
   
 // ---------- Load bảng xếp hạng ----------
 async function loadRank() {
