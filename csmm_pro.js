@@ -752,16 +752,31 @@ async function loadHistory() {
     const noteMap = {
       gift_redeem: "Đổi quà",
       place_bet: "Đặt cược",
-      settle_round: "Kết quả vòng",
+      settle_round: "Kết quả",
     };
 
     // ======= Hàm định dạng thời gian =======
-    function formatTime(ms) {
-      if (!ms) return "-";
-      return new Date(Number(ms)).toLocaleString("vi-VN", {
-        hour12: false,
-      });
-    }
+function formatTime(value) {
+  if (!value) return "-";
+
+  // Nếu là số dạng UNIX (tính bằng giây)
+  if (!isNaN(value)) {
+    const ts = Number(value);
+    const date = ts < 1000000000000 ? ts * 1000 : ts; // nếu là giây → đổi sang mili-giây
+    return new Date(date).toLocaleString("vi-VN", { hour12: false });
+  }
+
+  // Nếu là chuỗi ngày giờ kiểu "13:23:03 12/10/2025"
+  if (typeof value === "string" && value.includes("/")) {
+    const [time, datePart] = value.split(" ");
+    const [day, month, year] = datePart.split("/");
+    return `${time} ${day.padStart(2,"0")}/${month.padStart(2,"0")}/${year}`;
+  }
+
+  // Fallback
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? "-" : d.toLocaleString("vi-VN", { hour12: false });
+}
 
     // ======= Hiển thị =======
     tbody.innerHTML = "";
