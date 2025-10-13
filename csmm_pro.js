@@ -719,7 +719,6 @@ function renderBetHistory(historyData = []) {
   return created_at;
 }
 
-<script>
 // ---------- Lịch sử giao dịch ----------
 async function loadHistory() {
   const accountId = localStorage.getItem("accountId");
