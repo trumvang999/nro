@@ -114,8 +114,8 @@ rechargeForm.addEventListener("submit", async function(e) {
   username: currentUser,
   type, 
   amount, 
-  code: "'" + code,        // giữ nguyên số 0
-  serial: "'" + serial, 
+  code,      // giữ nguyên string
+  serial, 
   time
 };
 
