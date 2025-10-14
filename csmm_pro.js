@@ -810,16 +810,16 @@ function formatTime(value) {
   await loadHistory();
 });
 
-  document.getElementById("btnStats").addEventListener("click", async () => {
+function closeBox(id) {
+  document.getElementById(id).classList.add("hidden");
+}
+  
+document.getElementById("btnStats").addEventListener("click", async () => {
   document.getElementById("StatsBox").classList.remove("hidden");
   await loadRoundStats();
 });
 
-function closeBox(id) {
-  document.getElementById(id).classList.add("hidden");
-}
-
-  // ---------- Load bảng thống kê ----------
+// ---------- Load bảng thống kê ----------
 async function loadRoundStats() {
   const tbodyStats = document.querySelector("#roundStatsTable tbody");
   const tbodyPlayers = document.querySelector("#roundPlayersTable tbody");
@@ -831,7 +831,7 @@ async function loadRoundStats() {
     const res = await fetch(`${API_MAIN}/bet/stats`);
     const data = await res.json();
 
-    // ==== Tổng hợp
+    // ==== Tổng hợp CLTX ====
     if (!data.ok || !data.stats || !data.stats.length) {
       tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Chưa có cược nào</td></tr>`;
     } else {
@@ -839,21 +839,22 @@ async function loadRoundStats() {
         <tr>
           <td>${s.bet_type}</td>
           <td>${s.count}</td>
-          <td>${Number(s.total).toLocaleString()}</td>
+          <td>${Number(s.total).toLocaleString("vi-VN")}</td>
         </tr>
       `).join('');
     }
 
-    // ==== Danh sách người chơi
-    if (!data.bets || !data.bets.length) {
-      tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không có cược nào</td></tr>`;
+    // ==== Chi tiết người chơi ====
+    const players = data.players || data.bets || [];
+    if (!players.length) {
+      tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không có dữ liệu</td></tr>`;
     } else {
-      tbodyPlayers.innerHTML = data.bets.map(b => `
+      tbodyPlayers.innerHTML = players.map(p => `
         <tr>
-          <td>${b.username || "Ẩn danh"}</td>
-          <td>${b.bet_type}${b.bet_digit ? " " + b.bet_digit : ""}</td>
-          <td>${Number(b.amount).toLocaleString()}</td>
-          <td>${formatTime(b.created_at)}</td>
+          <td>${p.username || "Ẩn danh"}</td>
+          <td>${p.win_rate ? p.win_rate + "%" : "-"}</td>
+          <td>${Number(p.total_bet || 0).toLocaleString("vi-VN")}</td>
+          <td>${Number(p.total_win || 0).toLocaleString("vi-VN")}</td>
         </tr>
       `).join('');
     }
