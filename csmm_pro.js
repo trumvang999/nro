@@ -813,16 +813,6 @@ function formatTime(value) {
 function closeBox(id) {
   document.getElementById(id).classList.add("hidden");
 }
-      // Tải dữ liệu
-document.getElementById("btnStats").addEventListener("click", async () => {
-  document.getElementById("StatsBox").classList.remove("hidden");
-  try {
-    await loadRoundStats();
-    await fetchSoicau();
-  } catch (err) {
-    console.error("Lỗi khi tải dữ liệu:", err);
-  }
-});
 
 // ---------- Load bảng thống kê ----------
 async function loadRoundStats() {
@@ -862,6 +852,37 @@ async function loadRoundStats() {
         `;
       }).join('');
     }
+    
+    // ========== Chi tiết người chơi ==========
+    const players = data.players || [];
+    if (!players.length) {
+      tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu</td></tr>`;
+    } else {
+      tbodyPlayers.innerHTML = players.map((p, i) => `
+        <tr>
+          <td>
+            ${p.name}
+          </td>
+          <td>${Number(p.total_bet).toLocaleString("vi-VN")}</td>
+          <td>${Number(p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${(p.total_bet - p.total_win) > 0 ? "-" : ""}${Math.abs(p.total_bet - p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${p.win_rate}%</td>
+        </tr>
+      `).join('');
+    }
+
+  } catch (err) {
+    console.warn("loadRoundStats error:", err);
+    tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
+    tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Lỗi tải</td></tr>`;
+  }
+}
+function formatTime(ts) {
+  if (!ts) return "-";
+  const d = new Date(ts);
+  return d.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+  
 // Soi cầu
     const link = "https://doan-so.nro2024.workers.dev/soicau";
 
@@ -894,36 +915,16 @@ async function fetchSoicau() {
     taiXiuDiv.innerHTML = chanLeDiv.innerHTML = `<span style="color:red;">Lỗi tải dữ liệu</span>`;
   }
 }
-
-    // ========== Chi tiết người chơi ==========
-    const players = data.players || [];
-    if (!players.length) {
-      tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu</td></tr>`;
-    } else {
-      tbodyPlayers.innerHTML = players.map((p, i) => `
-        <tr>
-          <td>
-            ${p.name}
-          </td>
-          <td>${Number(p.total_bet).toLocaleString("vi-VN")}</td>
-          <td>${Number(p.total_win).toLocaleString("vi-VN")}</td>
-          <td>${(p.total_bet - p.total_win) > 0 ? "-" : ""}${Math.abs(p.total_bet - p.total_win).toLocaleString("vi-VN")}</td>
-          <td>${p.win_rate}%</td>
-        </tr>
-      `).join('');
-    }
-
+//Tải dữ liệu
+  document.getElementById("btnStats").addEventListener("click", async () => {
+  document.getElementById("StatsBox").classList.remove("hidden");
+  try {
+    // Chạy 2 cái cùng lúc
+    await Promise.all([loadRoundStats(), fetchSoicau()]);
   } catch (err) {
-    console.warn("loadRoundStats error:", err);
-    tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
-    tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Lỗi tải</td></tr>`;
+    console.error("Lỗi khi tải dữ liệu:", err);
   }
-}
-function formatTime(ts) {
-  if (!ts) return "-";
-  const d = new Date(ts);
-  return d.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
+});
 
 // ---------- Load bảng xếp hạng ----------
 async function loadRank() {
