@@ -866,8 +866,7 @@ async function loadRoundStats() {
       tbodyPlayers.innerHTML = players.map((p, i) => `
         <tr>
           <td>
-            ${i}
-            ${p.username}
+            ${p.name}
           </td>
           <td>${Number(p.total_bet).toLocaleString("vi-VN")}</td>
           <td>${Number(p.total_win).toLocaleString("vi-VN")}</td>
