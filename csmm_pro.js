@@ -817,6 +817,7 @@ function closeBox(id) {
 document.getElementById("btnStats").addEventListener("click", async () => {
   document.getElementById("StatsBox").classList.remove("hidden");
   await loadRoundStats();
+  await fetchSoicau()
 });
 
 // ---------- Load bảng thống kê ----------
@@ -857,7 +858,38 @@ async function loadRoundStats() {
         `;
       }).join('');
     }
+// Soi cầu
+    const link = "https://doan-so.nro2024.workers.dev/soicau";
 
+async function fetchSoicau() {
+  const taiXiuDiv = document.getElementById("tai-xiu");
+  const chanLeDiv = document.getElementById("chan-le");
+
+  taiXiuDiv.innerHTML = `<span>Đang tải...</span>`;
+  chanLeDiv.innerHTML = `<span>Đang tải...</span>`;
+
+  try {
+    const { ok, dayTaiXiu, dayChanLe, error } = await (await fetch(link)).json();
+    if (!ok) throw new Error(error || "Lỗi API");
+
+    const createBadge = (text, bg) => `
+      <span style="
+        display:inline-block;width:25px;height:25px;line-height:25px;
+        text-align:center;margin-right:3px;border-radius:50%;
+        color:#fff;font-weight:bold;font-family:Arial,sans-serif;
+        background-color:${bg}">
+        ${text[0]}
+      </span>
+    `;
+
+    taiXiuDiv.innerHTML = dayTaiXiu.map(v => createBadge(v, v === "Tài" ? "#28a745" : "#f00")).join('');
+    chanLeDiv.innerHTML = dayChanLe.map(v => createBadge(v, v === "Chẵn" ? "#007bff" : "#ff9900")).join('');
+
+  } catch (e) {
+    console.error("Lỗi lấy soi cầu:", e);
+    taiXiuDiv.innerHTML = chanLeDiv.innerHTML = `<span style="color:red;">Lỗi tải dữ liệu</span>`;
+  }
+}
     // ========== Chi tiết người chơi ==========
     const players = data.players || [];
     if (!players.length) {
