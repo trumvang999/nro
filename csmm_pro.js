@@ -813,7 +813,16 @@ function formatTime(value) {
 function closeBox(id) {
   document.getElementById(id).classList.add("hidden");
 }
-
+      // Tải dữ liệu
+document.getElementById("btnStats").addEventListener("click", async () => {
+  document.getElementById("StatsBox").classList.remove("hidden");
+  try {
+    await loadRoundStats();
+    await fetchSoicau();
+  } catch (err) {
+    console.error("Lỗi khi tải dữ liệu:", err);
+  }
+});
 
 // ---------- Load bảng thống kê ----------
 async function loadRoundStats() {
@@ -885,16 +894,6 @@ async function fetchSoicau() {
     taiXiuDiv.innerHTML = chanLeDiv.innerHTML = `<span style="color:red;">Lỗi tải dữ liệu</span>`;
   }
 }
-      // Tải dữ liệu
-document.getElementById("btnStats").addEventListener("click", async () => {
-  document.getElementById("StatsBox").classList.remove("hidden");
-  try {
-    await loadRoundStats();
-    await fetchSoicau();
-  } catch (err) {
-    console.error("Lỗi khi tải dữ liệu:", err);
-  }
-});
 
     // ========== Chi tiết người chơi ==========
     const players = data.players || [];
