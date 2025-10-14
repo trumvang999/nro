@@ -888,9 +888,14 @@ async function fetchSoicau() {
       // Tải dữ liệu
 document.getElementById("btnStats").addEventListener("click", async () => {
   document.getElementById("StatsBox").classList.remove("hidden");
-  await loadRoundStats();
-  await fetchSoicau();
+  try {
+    await loadRoundStats();
+    await fetchSoicau();
+  } catch (err) {
+    console.error("Lỗi khi tải dữ liệu:", err);
+  }
 });
+
     // ========== Chi tiết người chơi ==========
     const players = data.players || [];
     if (!players.length) {
