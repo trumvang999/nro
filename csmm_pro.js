@@ -806,7 +806,68 @@ function formatTime(value) {
 
 // Gọi hàm ngay khi load
 document.addEventListener("DOMContentLoaded", () => loadHistory());
-  
+
+  document.getElementById("btnStats").addEventListener("click", async () => {
+  document.getElementById("StatsBox").classList.remove("hidden");
+  await loadRoundStats();
+});
+
+function closeBox(id) {
+  document.getElementById(id).classList.add("hidden");
+}
+
+  // ---------- Load bảng thống kê ----------
+async function loadRoundStats() {
+  const tbodyStats = document.querySelector("#roundStatsTable tbody");
+  const tbodyPlayers = document.querySelector("#roundPlayersTable tbody");
+
+  tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
+  tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API_MAIN}/bet/stats`);
+    const data = await res.json();
+
+    // ==== Tổng hợp
+    if (!data.ok || !data.stats || !data.stats.length) {
+      tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Chưa có cược nào</td></tr>`;
+    } else {
+      tbodyStats.innerHTML = data.stats.map(s => `
+        <tr>
+          <td>${s.bet_type}</td>
+          <td>${s.count}</td>
+          <td>${Number(s.total).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ==== Danh sách người chơi
+    if (!data.bets || !data.bets.length) {
+      tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không có cược nào</td></tr>`;
+    } else {
+      tbodyPlayers.innerHTML = data.bets.map(b => `
+        <tr>
+          <td>${b.username || "Ẩn danh"}</td>
+          <td>${b.bet_type}${b.bet_digit ? " " + b.bet_digit : ""}</td>
+          <td>${Number(b.amount).toLocaleString()}</td>
+          <td>${formatTime(b.created_at)}</td>
+        </tr>
+      `).join('');
+    }
+
+  } catch (err) {
+    console.warn("loadRoundStats error:", err);
+    tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải</td></tr>`;
+    tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
+  }
+}
+
+function formatTime(ts) {
+  if (!ts) return "-";
+  const d = new Date(ts);
+  return d.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 // ---------- Load bảng xếp hạng ----------
 async function loadRank() {
   const tbody = document.querySelector("#rankTable tbody");
