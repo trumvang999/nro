@@ -913,7 +913,7 @@ async function loadRank() {
 // ---------- Event khi mở popup ----------
     document.getElementById("RankBox").addEventListener("click", async () => {
   document.getElementById("rankBox").classList.remove("hidden");
-  await loadRanks();
+  await loadRank();
 });
 
 // ---------- Check ----------
