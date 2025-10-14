@@ -911,20 +911,10 @@ async function loadRank() {
 }
 
 // ---------- Event khi mở popup ----------
-const rankBox = document.getElementById("rankBox");
-if(rankBox) {
-  // giả lập khi popup hiển thị, gọi loadRank
-  const openBtn = document.querySelector("#openRankBtn"); // nút mở popup
-  if(openBtn){
-    openBtn.addEventListener("click", () => {
-      rankBox.style.display = "block";
-      loadRank();
-    });
-  }
-}
-
-// Hoặc gọi trực tiếp khi page load (tùy bạn muốn)
-document.addEventListener("DOMContentLoaded", loadRank);
+    document.getElementById("RankBox").addEventListener("click", async () => {
+  document.getElementById("rankBox").classList.remove("hidden");
+  await loadRanks();
+});
 
 // ---------- Check ----------
 async function checkPending() {
