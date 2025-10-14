@@ -726,7 +726,7 @@ async function loadHistory() {
   if (!tbody) return;
 
   if (!accountId) {
-    tbody.innerHTML = `<tr><td colspan="6">Không tìm thấy tài khoản</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6">Vui lòng đăng nhập</td></tr>`;
     return;
   }
 
