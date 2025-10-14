@@ -889,7 +889,7 @@ async function fetchSoicau() {
 document.getElementById("btnStats").addEventListener("click", async () => {
   document.getElementById("StatsBox").classList.remove("hidden");
   await loadRoundStats();
-  await fetchSoicau()
+  await fetchSoicau();
 });
     // ========== Chi tiết người chơi ==========
     const players = data.players || [];
