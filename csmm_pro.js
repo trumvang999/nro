@@ -805,7 +805,10 @@ function formatTime(value) {
 }
 
 // Gọi hàm ngay khi load
-document.addEventListener("DOMContentLoaded", () => loadHistory());
+    document.getElementById("btnHistory").addEventListener("click", async () => {
+  document.getElementById("Historybox").classList.remove("hidden");
+  await loadHistory();
+});
 
   document.getElementById("btnStats").addEventListener("click", async () => {
   document.getElementById("StatsBox").classList.remove("hidden");
