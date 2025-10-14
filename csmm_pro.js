@@ -824,48 +824,65 @@ async function loadRoundStats() {
   const tbodyStats = document.querySelector("#roundStatsTable tbody");
   const tbodyPlayers = document.querySelector("#roundPlayersTable tbody");
 
-  tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
-  tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>`;
+  tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>`;
+  tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>`;
 
   try {
     const res = await fetch(`${API_MAIN}/bet/stats`);
     const data = await res.json();
 
-    // ==== Tổng hợp CLTX ====
-    if (!data.ok || !data.stats || !data.stats.length) {
-      tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Chưa có cược nào</td></tr>`;
+    if (!data.ok) throw new Error(data.error || "Lỗi tải thống kê");
+
+    // ========== Tổng hợp ==========
+    document.getElementById("roundCode").textContent = data.round || "-";
+
+    const totalPlayers = data.players?.length || 0;
+    const totalBetSum = data.stats?.reduce((a, s) => a + (s.total || 0), 0) || 0;
+    document.getElementById("totalPlayers").textContent = totalPlayers.toLocaleString("vi-VN");
+    document.getElementById("totalBet").textContent = totalBetSum.toLocaleString("vi-VN");
+
+    if (!data.stats || !data.stats.length) {
+      tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Chưa có dữ liệu</td></tr>`;
     } else {
-      tbodyStats.innerHTML = data.stats.map(s => `
-        <tr>
-          <td>${s.bet_type}</td>
-          <td>${s.count}</td>
-          <td>${Number(s.total).toLocaleString("vi-VN")}</td>
-        </tr>
-      `).join('');
+      const totalAll = data.stats.reduce((a, s) => a + (s.total || 0), 0);
+      tbodyStats.innerHTML = data.stats.map(s => {
+        const percent = totalAll > 0 ? ((s.total / totalAll) * 100).toFixed(1) : "0.0";
+        return `
+          <tr>
+            <td>${s.bet_type}</td>
+            <td>${s.count}</td>
+            <td>${Number(s.total).toLocaleString("vi-VN")}</td>
+            <td>${percent}%</td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    // ==== Chi tiết người chơi ====
-    const players = data.players || data.bets || [];
+    // ========== Chi tiết người chơi ==========
+    const players = data.players || [];
     if (!players.length) {
-      tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Không có dữ liệu</td></tr>`;
+      tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu</td></tr>`;
     } else {
-      tbodyPlayers.innerHTML = players.map(p => `
+      tbodyPlayers.innerHTML = players.map((p, i) => `
         <tr>
-          <td>${p.username || "Ẩn danh"}</td>
-          <td>${p.win_rate ? p.win_rate + "%" : "-"}</td>
-          <td>${Number(p.total_bet || 0).toLocaleString("vi-VN")}</td>
-          <td>${Number(p.total_win || 0).toLocaleString("vi-VN")}</td>
+          <td>
+            ${i === 0 ? "🥇 " : i === 1 ? "🥈 " : i === 2 ? "🥉 " : ""}
+            ${p.username || "Ẩn danh"}
+          </td>
+          <td>${Number(p.total_bet).toLocaleString("vi-VN")}</td>
+          <td>${Number(p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${(p.total_bet - p.total_win) > 0 ? "-" : ""}${Math.abs(p.total_bet - p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${p.win_rate}%</td>
         </tr>
       `).join('');
     }
 
   } catch (err) {
     console.warn("loadRoundStats error:", err);
-    tbodyStats.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải</td></tr>`;
-    tbodyPlayers.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
+    tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
+    tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Lỗi tải</td></tr>`;
   }
 }
-
 function formatTime(ts) {
   if (!ts) return "-";
   const d = new Date(ts);
