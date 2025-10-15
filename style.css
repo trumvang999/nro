@@ -627,7 +627,7 @@ iframe{border:none;max-width:100%;border-radius:10px;}
 .inf,div.thongke,div.value{font-size:13px!important;}
 .slider-thumbs img {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);}
+    grid-template-columns: repeat(4, 1fr)!important;}
 }
 @media screen and (max-width:500px){
 .tb-menu{width:300px;height:380px}
