@@ -625,7 +625,7 @@ iframe{border:none;max-width:100%;border-radius:10px;}
 .random-posts,ul.blog-posts, #vip{      grid-template-columns: repeat(2, 1fr)!important;gap:10px!important;}
 #price,.mua-btn,#nutvip,#anhvip{font-size:14px!important;}
 .inf,div.thongke,div.value{font-size:13px!important;}
-.slider-thumbs img {
+.slider-thumbs{
     display: grid;
     grid-template-columns: repeat(4, 1fr)!important;}
 }
