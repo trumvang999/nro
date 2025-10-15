@@ -1,13 +1,51 @@
-const CHAT_API = "https://index.nro2024.workers.dev";
+const API_MAIN = "https://index.nro2024.workers.dev";
 
 function getAvatar(planet) {
   switch (planet) {
     case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
-    case "Namek": return "https://forum.ngocrongonline.com/avatar/small3932.png";
+    case "Namek": return "https://forum.ngocrongonline.com/avatar/small523.png";
     case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
     default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
   }
 }
+
+// Mở profile khi click
+document.getElementById("ProfileInfo").addEventListener("click", async () => {
+  try {
+    const accountId = localStorage.getItem("accountId");
+    if (!accountId) return alert("Vui lòng đăng nhập");
+
+    const res = await fetch(`${API_MAIN}/character/profile?accountId=${accountId}`);
+    const data = await res.json();
+    if (!data) throw new Error("Không có dữ liệu");
+
+    const char = data.profile || data;
+
+    // Gán dữ liệu
+    document.getElementById("profileName").innerText = char.name || "Không rõ";
+    document.getElementById("profileId").innerText = char.id ? char.id.substring(0,8) : "-";
+    document.getElementById("profileUser").innerText = char.username || "-";
+    document.getElementById("profileGold").innerText = (char.balance || 0).toLocaleString("vi-VN");
+    document.getElementById("profileVip").innerText = `VIP ${char.vipLevel || 0}`;
+    document.getElementById("profilePlanet").innerText = char.planet || "N/A";
+    document.getElementById("profileAvatar").src = getAvatar(char.planet);
+    document.getElementById("profileCreated").innerText = char.createdAt
+      ? new Date(char.createdAt).toLocaleString("vi-VN")
+      : "-";
+
+    document.getElementById("profileModal").style.display = "block";
+  } catch (e) {
+    console.error("Lỗi load profile:", e);
+    alert("Không thể tải profile!");
+  }
+});
+
+// Đóng modal
+document.getElementById("closeProfile").addEventListener("click", () => {
+  document.getElementById("profileModal").style.display = "none";
+});
+
+const CHAT_API = "https://index.nro2024.workers.dev";
 
 async function sendChat() {
   const input = document.getElementById("chatText");
