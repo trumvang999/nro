@@ -496,7 +496,7 @@ h3{font-size:15px;font-weight:bold;text-transform:uppercase;margin:0 0 15px 0;po
 .PopularPosts ul,.recentposts ul,.randomposts ul{;margin-bottom:10px;display:block;}
 .PopularPosts ul li,.recentposts ul li,.randomposts ul li{padding:0;width:25%;display:inline-block;vertical-align:top;position:relative}
 .post_thumb,.PopularPosts .item-thumbnail,.recentposts .post-thumb,.randomposts .post-thumb{width:100%;float:left}
-.post_thumb a,.PopularPosts .item-thumbnail a,.recentposts .post-thumb a,.randomposts .post-thumb a{display:flex;position:relative;padding-bottom:80%}
+.post_thumb a,.PopularPosts .item-thumbnail a,.recentposts .post-thumb a,.randomposts .post-thumb a{display:flex;position:relative;padding-bottom:75%}
 .post_thumb img,.PopularPosts .item-thumbnail img,.recentposts .post-thumb img,.randomposts .post-thumb img{border-radius: 12px 12px 0 0; ;position: absolute;top:50%;left:50%;width:100%;height:100%;    object-fit: cover; object-position: top center;    transform: translate(-50%, -50%); border:1px solid transparent;}
 .night-mode .randomposts .post-meta, .night-mode .randomposts .post-thumb img{background:#111}
 .PopularPosts .item_meta,.recentposts .post-meta,.randomposts .post-meta{float:left;font-size:13px;display:;padding:10px 5px;background:#fff;  width:100%;line-height:20px;margin-top:5px;
