@@ -106,3 +106,104 @@
       }
     }, 5000);
   }
+async function loadPayOSHistory() {
+  const currentUser = localStorage.getItem("currentUser");
+  const tbody = document.getElementById("payos-history-body");
+
+  if (!currentUser) {
+    tbody.innerHTML = `<tr><td colspan="6">Vui lòng đăng nhập!</td></tr>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "https://naptien.nro2024.workers.dev/payos/history?username=" + currentUser
+    );
+    const data = await res.json();
+
+    if (!data.success || !data.history.length) {
+      tbody.innerHTML = `<tr><td colspan="6">Chưa có giao dịch nào.</td></tr>`;
+      return;
+    }
+
+    // ✅ Lấy 10 giao dịch mới nhất
+    const recent = data.history
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 10);
+
+    const rows = recent
+      .map((item) => {
+        const time = new Date(item.timestamp).toLocaleString("vi-VN");
+
+        // ✅ Xử lý trạng thái 3 loại
+        let status = "";
+        if (item.paid) {
+          status = `<span style="color:green;font-weight:bold;">Thành công</span>`;
+        } else if (item.canceled) {
+          status = `<span style="color:red;font-weight:bold;">Đã huỷ</span>`;
+        } else {
+          status = `<span style="color:orange;font-weight:bold;">Đang chờ</span>`;
+        }
+
+        // ✅ Nếu đã huỷ hoặc đã thanh toán → không cho thao tác
+        let action = `<span style="color:#999;">-</span>`;
+
+        if (!item.paid && !item.canceled) {
+          if (item.paymentLink) {
+            action = `
+              <a href="${item.paymentLink}" target="_blank"><button style="color:#007bff;background:none;border:none;font-weight:600;cursor:pointer;text-decoration:underline;padding:5px;">Thanh toán</button></a>
+              |
+              <button onclick="cancelPayOSOrder('${item.orderCode}')" 
+                      style="background:none;border:none;color:red;font-weight:600;cursor:pointer;text-decoration:underline;padding:5px;">
+                Huỷ
+              </button>`;
+          } else {
+            action = `
+              <button onclick="cancelPayOSOrder('${item.orderCode}')" 
+                      style="background:none;border:none;color:red;font-weight:600;cursor:pointer;">
+                Huỷ
+              </button>`;
+          }
+        }
+
+        return `
+          <tr>
+            <td>${time}</td>
+            <td>${item.orderCode}</td>
+            <td>${item.username ? "Nạp tiền " + item.username : "-"}</td>
+            <td>${Number(item.amount).toLocaleString()}đ</td>
+            <td>${status}</td>
+            <td>${action}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    tbody.innerHTML = rows;
+  } catch (err) {
+    console.error("Lỗi tải lịch sử:", err);
+    tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Không thể tải lịch sử!</td></tr>`;
+  }
+}
+
+// ✅ Huỷ đơn
+async function cancelPayOSOrder(orderCode) {
+  if (!confirm("Bạn có chắc muốn huỷ đơn #" + orderCode + " không?")) return;
+
+  try {
+    const res = await fetch("https://naptien.nro2024.workers.dev/payos/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderCode }),
+    });
+
+    const data = await res.json();
+    alert(data.message || "Đã huỷ đơn!");
+    loadPayOSHistory(); // refresh lại bảng
+  } catch (err) {
+    alert("Lỗi huỷ đơn: " + err.message);
+  }
+}
+
+// Gọi khi load trang
+document.addEventListener("DOMContentLoaded", loadPayOSHistory);
