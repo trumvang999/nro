@@ -253,10 +253,11 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // 7. Logout
   function logoutHandler() {
-  localStorage.removeItem("expireTime");
-  localStorage.removeItem("currentPass");
-    localStorage.removeItem("currentUser");
-	    localStorage.removeItem("accountId");
+  	localStorage.removeItem("expireTime");
+  	localStorage.removeItem("currentPass");
+	localStorage.removeItem("currentUser");
+	localStorage.removeItem("accountId");
+	localStorage.removeItem("lastPayment");
     location.reload();
   }
 
