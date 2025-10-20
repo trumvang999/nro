@@ -56,7 +56,6 @@
 
     const data = await res.json();
 
-    // ✅ Lấy link đúng trường trả về từ backend
     const paymentLink =
       data.paymentLink ||
       data?.data?.checkoutUrl ||
@@ -75,8 +74,9 @@
         content: `nro2024 ${currentUser}`,
         orderCode: data.orderCode
       }));
-
+    loadPayOSHistory(); // refresh lại bảng
       checkPayment(data.orderCode, statusText);
+      
     } else {
       console.log("Phản hồi từ server:", data);
       alert("Không tạo được đơn thanh toán! Vui lòng thử lại.");
@@ -126,7 +126,6 @@ async function loadPayOSHistory() {
       return;
     }
 
-    // ✅ Lấy 10 giao dịch mới nhất
     const recent = data.history
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 10);
@@ -135,7 +134,6 @@ async function loadPayOSHistory() {
       .map((item) => {
         const time = new Date(item.timestamp).toLocaleString("vi-VN");
 
-        // ✅ Xử lý trạng thái 3 loại
         let status = "";
         if (item.paid) {
           status = `<span style="color:green;font-weight:bold;">Thành công</span>`;
@@ -145,7 +143,6 @@ async function loadPayOSHistory() {
           status = `<span style="color:orange;font-weight:bold;">Đang chờ</span>`;
         }
 
-        // ✅ Nếu đã huỷ hoặc đã thanh toán → không cho thao tác
         let action = `<span style="color:#999;">-</span>`;
 
         if (!item.paid && !item.canceled) {
@@ -186,7 +183,6 @@ async function loadPayOSHistory() {
   }
 }
 
-// ✅ Huỷ đơn
 async function cancelPayOSOrder(orderCode) {
   if (!confirm("Bạn có chắc muốn huỷ đơn #" + orderCode + " không?")) return;
 
