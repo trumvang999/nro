@@ -5,7 +5,6 @@
       contentInput.value = "Vui lòng đăng nhập";
     } else {
       contentInput.value = "nro2024 " + currentUser;
-      document.addEventListener("DOMContentLoaded", loadPayOSHistory);
     }
 
     if (window.location.hash === "#popup") {
@@ -107,7 +106,6 @@
       }
     }, 5000);
   }
-
 async function loadPayOSHistory() {
   const currentUser = localStorage.getItem("currentUser");
   const tbody = document.getElementById("payos-history-body");
@@ -202,3 +200,6 @@ async function cancelPayOSOrder(orderCode) {
     alert("Lỗi huỷ đơn: " + err.message);
   }
 }
+
+// Gọi khi load trang
+document.addEventListener("DOMContentLoaded", loadPayOSHistory);
