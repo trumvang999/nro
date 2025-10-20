@@ -74,7 +74,7 @@
         content: `nro2024 ${currentUser}`,
         orderCode: data.orderCode
       }));
-    setTimeout(loadPayOSHistory, 2000);
+    setTimeout(loadPayOSHistory, 1000);
       checkPayment(data.orderCode, statusText);
       
     } else {
