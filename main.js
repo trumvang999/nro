@@ -1,6 +1,6 @@
 //<![CDATA[
 (function(){
-  const scriptURL = "https://shop.nro2024.workers.dev/";
+  const scriptURL = "https://shop.nro2024.workers.dev";
   let isRegistering = false;
 
   // 1. Delegated events
