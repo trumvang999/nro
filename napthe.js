@@ -1,4 +1,4 @@
-const proxyURL = "https://napthe.nro2024.workers.dev/";
+const proxyURL = "https://napthe.nro2024.workers.dev";
 const currentUser = localStorage.getItem("currentUser");
 const allHistories = JSON.parse(localStorage.getItem("histories") || "{}");
 if (!allHistories[currentUser]) allHistories[currentUser] = [];
