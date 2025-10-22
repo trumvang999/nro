@@ -56,15 +56,23 @@
     btn.disabled = true;
     btn.innerText = isRegistering ? "Đang đăng ký..." : "Đang đăng nhập...";
 
-    // validate
-    if (u.length < 3 || p.length < 3) {
-      msg.innerText = "Tài khoản và mật khẩu phải từ 3 ký tự.";
-      return resetBtn();
-    }
-    if (!/[a-zA-Z]/.test(u) ||!/[a-zA-Z]/.test(p)) {
-      msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
-      return resetBtn();
-    }
+// validate
+if (u.length < 3 || p.length < 3) {
+  msg.innerText = "Tài khoản và mật khẩu phải từ 3 ký tự.";
+  return resetBtn();
+}
+
+// ❌ Không cho chứa ký tự đặc biệt
+if (!/^[a-zA-Z0-9_]+$/.test(u)) {
+  msg.innerText = "Tài khoản không được chứa kí tự đặc biệt.";
+  return resetBtn();
+}
+
+if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
+  msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
+  return resetBtn();
+}
+
     if (isRegistering && p !== confirm) {
       msg.innerText = "Mật khẩu nhập lại không khớp.";
       return resetBtn();
