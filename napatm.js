@@ -129,7 +129,7 @@ async function loadPayOSHistory() {
   const tbody = document.getElementById("payos-history-body");
 
   if (!currentUser) {
-    tbody.innerHTML = `<tr><td colspan="6">Vui lòng đăng nhập!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6">Chưa có giao dịch nạp.</td></tr>`;
     return;
   }
 
