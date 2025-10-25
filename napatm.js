@@ -52,7 +52,7 @@ async function generateLink() {
     const content = `nro2024 ${currentUser} ${data.orderCode}`;
     contentInput.value = content;
 
-    const qrUrl = `https://qr.sepay.vn/img?acc=105800851168&bank=MBBank&amount=${amount}&des=${encodeURIComponent(content)}&template=compact`;
+    const qrUrl = `https://qr.sepay.vn/img?acc=105800851168&bank=MBBank&amount=${amount}&des=${encodeURIComponent(content)}`;
     qrImage.src = qrUrl;
 
     linkSection.style.display = "block";
