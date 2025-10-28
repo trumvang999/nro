@@ -109,22 +109,27 @@ rechargeForm.addEventListener("submit", async function(e) {
     "Viettel": { code: [13, 15], serial: [11, 14] },
     "Mobifone": { code: [12], serial: [15] },
     "Vinaphone": { code: [14], serial: [14] },
-    "Gate": { code: [10, 12], serial: [10, 12] },
-    "Zing": { code: [9, 12], serial: [9, 12] },
   };
 
-  const rule = cardRules[type];
-  if (rule) {
-    const validCode = rule.code.includes(code.length);
-    const validSerial = rule.serial.includes(serial.length);
-    if (!validCode || !validSerial) {
-      rechargeResult.style.color = "red";
-      rechargeResult.innerText =
-        `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
+const rule = cardRules[type];
+if (!rule) {
+  rechargeResult.style.color = "red";
+  rechargeResult.innerText = `❌ Loại thẻ "${type}" không hợp lệ.`;
+  isSending = false;
+  return;
+}
+
+const validCode = rule.code.includes(code.length);
+const validSerial = rule.serial.includes(serial.length);
+
+if (!validCode || !validSerial) {
+  rechargeResult.style.color = "red";
+  rechargeResult.innerText =
+    `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
 Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
-      isSending = false;
-      return;
-    }
+  isSending = false;
+  return;
+}
   }
 
   // ===== Gửi thẻ hợp lệ =====
