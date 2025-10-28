@@ -83,8 +83,9 @@ async function fetchLatestStatus() {
   }
 }
 
-rechargeForm.addEventListener("submit", async function(e) {
+rechargeForm.addEventListener("submit", async function (e) {
   e.preventDefault();
+
   if (!currentUser) {
     alert("Vui lòng đăng nhập!");
     return;
@@ -97,44 +98,47 @@ rechargeForm.addEventListener("submit", async function(e) {
   const code = document.getElementById("card-code").value.trim();
   const serial = document.getElementById("card-serial").value.trim();
 
-  if (!code || !serial || !type || amount <= 0) {
+  // ===== Kiểm tra nhập đủ =====
+  if (!type || !code || !serial || amount <= 0) {
     rechargeResult.style.color = "red";
     rechargeResult.innerText = "❌ Vui lòng nhập đầy đủ thông tin hợp lệ.";
     isSending = false;
     return;
   }
 
-  // ===== Kiểm tra độ dài thẻ theo loại =====
+  // ===== Quy định độ dài thẻ =====
   const cardRules = {
     "Viettel": { code: [13, 15], serial: [11, 14] },
     "Mobifone": { code: [12], serial: [15] },
     "Vinaphone": { code: [14], serial: [14] },
+    "Gate": { code: [10], serial: [10] },
+    "Zing": { code: [9, 12], serial: [9, 12] }
   };
 
-const rule = cardRules[type];
-if (!rule) {
-  rechargeResult.style.color = "red";
-  rechargeResult.innerText = `❌ Loại thẻ "${type}" không hợp lệ.`;
-  isSending = false;
-  return;
-}
-
-const validCode = rule.code.includes(code.length);
-const validSerial = rule.serial.includes(serial.length);
-
-if (!validCode || !validSerial) {
-  rechargeResult.style.color = "red";
-  rechargeResult.innerText =
-    `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
-Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
-  isSending = false;
-  return;
-}
+  const rule = cardRules[type];
+  if (!rule) {
+    rechargeResult.style.color = "red";
+    rechargeResult.innerText = `❌ Loại thẻ "${type}" không hợp lệ.`;
+    isSending = false;
+    return;
   }
 
-  // ===== Gửi thẻ hợp lệ =====
+  // ===== Kiểm tra độ dài mã & serial =====
+  const validCode = rule.code.includes(code.length);
+  const validSerial = rule.serial.includes(serial.length);
+
+  if (!validCode || !validSerial) {
+    rechargeResult.style.color = "red";
+    rechargeResult.innerText = 
+      `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
+Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
+    isSending = false;
+    return;
+  }
+
+  // ===== Nếu hợp lệ thì gửi =====
   rechargeResult.style.color = "dodgerblue";
-  rechargeResult.innerText = "Đang gửi...";
+  rechargeResult.innerText = "⏳ Đang gửi thẻ, vui lòng chờ...";
 
   const time = new Date().toISOString();
   const payload = {
@@ -153,21 +157,22 @@ Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
     const txt = await res.text();
 
     if (txt.includes("Thẻ đã ghi")) {
       rechargeResult.style.color = "orange";
-      rechargeResult.innerText = txt;
+      rechargeResult.innerText = "⚠️ Thẻ đã được ghi nhận trước đó.";
     } else {
       rechargeResult.style.color = "green";
-      rechargeResult.innerText = "✅ Gửi thành công! Đang chờ duyệt.";
+      rechargeResult.innerText = "✅ Gửi thành công! Thẻ đang chờ duyệt.";
     }
 
     fetchLatestStatus();
   } catch (err) {
+    console.error("Lỗi gửi thẻ:", err);
     rechargeResult.style.color = "red";
-    rechargeResult.innerText = "❌ Lỗi khi gửi thẻ.";
-    console.error("Lỗi gửi:", err);
+    rechargeResult.innerText = "❌ Lỗi khi gửi thẻ, vui lòng thử lại.";
   }
 
   isSending = false;
