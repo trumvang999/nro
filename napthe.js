@@ -108,11 +108,9 @@ rechargeForm.addEventListener("submit", async function (e) {
 
   // ===== Quy định độ dài thẻ =====
   const cardRules = {
-    "Viettel": { code: [13, 15], serial: [11, 14] },
-    "Mobifone": { code: [12], serial: [15] },
-    "Vinaphone": { code: [14], serial: [14] },
-    "Gate": { code: [10], serial: [10] },
-    "Zing": { code: [9, 12], serial: [9, 12] }
+    "VIETTEL": { code: [13, 15], serial: [11, 14] },
+    "MOBIFONE": { code: [12], serial: [15] },
+    "VINAPHONE": { code: [14], serial: [14] },
   };
 
   const rule = cardRules[type];
