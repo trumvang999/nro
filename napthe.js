@@ -83,10 +83,9 @@ async function fetchLatestStatus() {
   }
 }
 
-
 rechargeForm.addEventListener("submit", async function(e) {
   e.preventDefault();
-   if (!currentUser) {
+  if (!currentUser) {
     alert("Vui lòng đăng nhập!");
     return;
   }
@@ -105,21 +104,43 @@ rechargeForm.addEventListener("submit", async function(e) {
     return;
   }
 
+  // ===== Kiểm tra độ dài thẻ theo loại =====
+  const cardRules = {
+    "Viettel": { code: [13, 15], serial: [11, 14] },
+    "Mobifone": { code: [12], serial: [15] },
+    "Vinaphone": { code: [14], serial: [14] },
+    "Gate": { code: [10, 12], serial: [10, 12] },
+    "Zing": { code: [9, 12], serial: [9, 12] },
+  };
+
+  const rule = cardRules[type];
+  if (rule) {
+    const validCode = rule.code.includes(code.length);
+    const validSerial = rule.serial.includes(serial.length);
+    if (!validCode || !validSerial) {
+      rechargeResult.style.color = "red";
+      rechargeResult.innerText =
+        `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
+Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
+      isSending = false;
+      return;
+    }
+  }
+
+  // ===== Gửi thẻ hợp lệ =====
   rechargeResult.style.color = "dodgerblue";
   rechargeResult.innerText = "Đang gửi...";
 
   const time = new Date().toISOString();
   const payload = {
-  action: "nap_the",
-  username: currentUser,
-  type, 
-  amount, 
-  code,      // giữ nguyên string
-  serial, 
-  time
-};
-
-console.log("Payload gửi lên:", payload);
+    action: "nap_the",
+    username: currentUser,
+    type,
+    amount,
+    code,
+    serial,
+    time
+  };
 
   try {
     const res = await fetch(proxyURL, {
@@ -134,7 +155,7 @@ console.log("Payload gửi lên:", payload);
       rechargeResult.innerText = txt;
     } else {
       rechargeResult.style.color = "green";
-      rechargeResult.innerText = "Gửi thành công! Đang chờ duyệt.";
+      rechargeResult.innerText = "✅ Gửi thành công! Đang chờ duyệt.";
     }
 
     fetchLatestStatus();
