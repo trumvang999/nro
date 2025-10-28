@@ -128,7 +128,7 @@ rechargeForm.addEventListener("submit", async function (e) {
   if (!validCode || !validSerial) {
     rechargeResult.style.color = "red";
     rechargeResult.innerText = 
-      `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
+      `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.`;
     isSending = false;
     return;
   }
