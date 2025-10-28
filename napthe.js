@@ -129,14 +129,13 @@ rechargeForm.addEventListener("submit", async function (e) {
     rechargeResult.style.color = "red";
     rechargeResult.innerText = 
       `❌ Độ dài mã hoặc serial không đúng với thẻ ${type}.
-Mã: ${code.length} ký tự, Serial: ${serial.length} ký tự.`;
     isSending = false;
     return;
   }
 
   // ===== Nếu hợp lệ thì gửi =====
   rechargeResult.style.color = "dodgerblue";
-  rechargeResult.innerText = "⏳ Đang gửi thẻ, vui lòng chờ...";
+  rechargeResult.innerText = "Đang gửi thẻ, vui lòng chờ...";
 
   const time = new Date().toISOString();
   const payload = {
