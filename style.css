@@ -284,7 +284,7 @@ svg{fill:#575757}
 .night-mode .body-wrapper ul, .night-mode ul.blog-posts{border-color:#ccc}
 .blog-posts{margin:0;    display: flex;min-width:100%;
     flex-wrap: wrap;}
-.night-mode .blog-posts .post, .night-mode .body-wrapper ul li{border-color:#ccc;background:#111}
+.night-mode .blog-posts .post, .night-mode .body-wrapper ul li{background:#111}
 .blog-posts .post,.body-wrapper ul li{background:#fff;position:relative;display:inline-block;vertical-align:top;padding:7.5px;width:25%;   box-shadow:0 0 2.5px #0085cb}
 #blog-pager{float:left;width:100%;text-align:center;font-size:14px;}
 .blog-pager-newer-link{float:left;line-height:30px}
