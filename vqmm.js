@@ -85,7 +85,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
     return;
   }
 
-  messageDiv.style.color = "black";
+  messageDiv.style.color = "orange";
   messageDiv.textContent = "Đang xử lý yêu cầu...";
 
   try {
