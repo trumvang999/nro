@@ -105,7 +105,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       document.getElementById("gold-balance").textContent = data.balance.toLocaleString("vi-VN") + " vàng";
       messageDiv.style.color = "green";
       messageDiv.textContent = `✅ ${data.message}`;
-      alert(`Rút vàng thành công!\nSố dư hiện tại: ${data.balance.toLocaleString("vi-VN")} vàng`);
+      alert(`Rút vàng thành công! Liên hệ Facebook để giao dịch`);
       setTimeout(closeWithdrawModal, 1500);
       
     } else {
