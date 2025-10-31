@@ -55,42 +55,68 @@ document.getElementById("withdrawPreview").innerHTML = preview;
 
   }
 
- function confirmWithdraw() {
+ async function confirmWithdraw() {
   const server = document.getElementById("withdrawServer").value;
   const user = document.getElementById("withdrawUser").value.trim();
   const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
-  const messageDiv = document.getElementById("withdrawMessage"); // Dòng alert
+  const messageDiv = document.getElementById("withdrawMessage");
 
-  messageDiv.textContent = ""; // Reset mỗi lần click
+  messageDiv.textContent = ""; // reset
 
+  // Kiểm tra nhập đủ
   if (!server || !user || gold < 100000000) {
-    messageDiv.textContent = "Vui lòng nhập đủ thông tin";
+    messageDiv.style.color = "red";
+    messageDiv.textContent = "Vui lòng nhập đủ thông tin (tối thiểu 100,000,000 vàng)";
     return;
   }
 
-  const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
+  const username = localStorage.getItem("currentUser") || "";
+  if (!username) {
+    messageDiv.style.color = "red";
+    messageDiv.textContent = "Vui lòng đăng nhập!";
+    return;
+  }
+
   const balanceText = document.getElementById("gold-balance").textContent || "";
   const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
-
   if (gold > balanceNum) {
-    messageDiv.textContent = "Số vàng rút vượt quá số dư hiện tại!";
+    messageDiv.style.color = "red";
+    messageDiv.textContent = "❌ Số vàng rút vượt quá số dư hiện tại!";
     return;
   }
 
-  const message =
-`Yêu cầu rút vàng
----------------------
-Tài khoản: ${username}
-Số vàng hiện tại: ${balanceNum.toLocaleString("vi-VN")} vàng
-Server: ${server}
-Tên nhân vật: ${user}
-Số vàng muốn rút: ${gold.toLocaleString("vi-VN")} vàng`;
+  messageDiv.style.color = "black";
+  messageDiv.textContent = "Đang xử lý yêu cầu...";
 
-  navigator.clipboard.writeText(message).then(() => {
-    messageDiv.style.color = "green";
-    alert ("Đã copy thông tin rút vàng, dán vào tin nhắn Facebook để gửi!");
-    setTimeout(closeWithdrawModal, 3000);
-  });
+  try {
+    const res = await fetch("https://vongquay.nro2024.workers.dev/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username,
+        server: server,
+        char_name: user,
+        gold: gold
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("gold-balance").textContent = data.balance.toLocaleString("vi-VN") + " vàng";
+      messageDiv.style.color = "green";
+      messageDiv.textContent = `✅ ${data.message}`;
+      alert(`Rút vàng thành công!\nSố dư hiện tại: ${data.balance.toLocaleString("vi-VN")} vàng`);
+      setTimeout(closeWithdrawModal, 1500);
+      
+    } else {
+      messageDiv.style.color = "red";
+      messageDiv.textContent = `❌ ${data.message}`;
+    }
+  } catch (err) {
+    console.error(err);
+    messageDiv.style.color = "red";
+    messageDiv.textContent = "❌ Lỗi kết nối máy chủ!";
+  }
 }
 
   // Preview auto update khi nhập
