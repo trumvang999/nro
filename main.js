@@ -154,7 +154,7 @@ function loadBalance(user) {
       document.getElementById("balance").innerText =
         parseInt(info.balance, 10).toLocaleString() + " VNĐ";
 // --- Đồng bộ số dư lên header ---
-const headerBalance = document.querySelector("header #balance");
+const headerBalance = document.getElementById("header-balance");
 if (headerBalance) {
   headerBalance.textContent = " | Số dư: " + parseInt(info.balance, 10).toLocaleString() + " VNĐ";
 }
