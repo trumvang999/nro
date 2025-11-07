@@ -156,7 +156,7 @@ function loadBalance(user) {
 // --- Đồng bộ số dư lên header ---
 const headerBalance = document.getElementById("header-balance");
 if (headerBalance) {
-  headerBalance.textContent = " | Số dư: " + parseInt(info.balance, 10).toLocaleString() + " VNĐ";
+  headerBalance.textContent = " - " + parseInt(info.balance, 10).toLocaleString() + " VNĐ";
 }
       // Xử lý lịch sử và kiểm tra dữ liệu đầu vào
       const raw = info.history || "";
