@@ -153,7 +153,11 @@ function loadBalance(user) {
     .then(info => {
       document.getElementById("balance").innerText =
         parseInt(info.balance, 10).toLocaleString() + " VNĐ";
-
+// --- Đồng bộ số dư lên header ---
+const headerBalance = document.querySelector("header #balance");
+if (headerBalance) {
+  headerBalance.textContent = " | Số dư: " + parseInt(info.balance, 10).toLocaleString() + " VNĐ";
+}
       // Xử lý lịch sử và kiểm tra dữ liệu đầu vào
       const raw = info.history || "";
 
