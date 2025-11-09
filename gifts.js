@@ -1,5 +1,6 @@
-const SCRIPT_URL = "https://shop.nro2024.workers.dev/";
+>const SCRIPT_URL = "https://shop.nro2024.workers.dev/";
 const currentUser = localStorage.getItem("currentUser") || "guest";
+const giftKey = "gift_claimed_" + currentUser;
 const btn = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
 const wrapper = document.getElementById("gift-container");
@@ -11,20 +12,33 @@ async function checkGiftStatus() {
     return;
   }
 
+  // Nếu đã lưu trong localStorage, ẩn luôn
+  if (localStorage.getItem(giftKey) === "1") {
+    btn.style.display = "none";
+    msgBox.style.display = "block";
+    msgBox.innerText = "Bạn đã nhận quà rồi.";
+    return;
+  }
+
   try {
-    const resp = await fetch(`${SCRIPT_URL}?action=get_user&username=${currentUser}`);
+    // Gọi worker check trạng thái
+    const url = `${SCRIPT_URL}?action=claim_gift&username=${encodeURIComponent(currentUser)}`;
+    const resp = await fetch(url, { method: "GET" });
     const data = await resp.json();
 
-    if (data.history?.includes("Nhận quà")) {
+    if (data.success === false && data.message.includes("Bạn đã nhận quà rồi")) {
       btn.style.display = "none";
-      msgBox.innerText = "Bạn đã nhận quà rồi.";
+      msgBox.innerText = data.message;
       msgBox.style.display = "block";
+      // ✅ Lưu trạng thái vào localStorage
+      localStorage.setItem(giftKey, "1");
     } else {
       btn.style.display = "inline-block";
       msgBox.style.display = "none";
     }
+
   } catch (err) {
-    console.error(err);
+    console.error("Lỗi check gift:", err);
     btn.style.display = "inline-block";
     msgBox.style.display = "none";
   }
@@ -48,17 +62,18 @@ async function claimGift() {
       })
     });
 
-    const msg = await resp.text();
-    msgBox.innerText = msg;
+    const data = await resp.json();
+    msgBox.innerText = data.message;
     msgBox.style.display = "block";
 
-    if (msg.includes("Bạn đã nhận quà rồi")) {
-      btn.style.display = "none"; // Worker đã chặn
+    if (data.success === false) {
+      btn.style.display = "none";
     } else {
-      btn.style.display = "none"; // Nhận thành công
+      btn.style.display = "none";
+      // ✅ Nhận thành công → lưu vào localStorage
+      localStorage.setItem(giftKey, "1");
+      if (typeof loadBalance === "function") loadBalance();
     }
-
-    if (typeof loadBalance === "function") loadBalance();
 
   } catch (err) {
     alert("Lỗi kết nối:\n" + err);
