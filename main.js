@@ -2,68 +2,115 @@
   const scriptURL = "https://shop.nro2024.workers.dev";
   let isRegistering = false;
 
+  // 1. Delegated events
   document.addEventListener("click", e => {
     const id = e.target.id;
-    if (id === "done") { e.preventDefault(); handleSubmit(); return; }
-    if (id === "switch-link") { e.preventDefault(); switchMode(); }
-    if (id === "logoutBtn") { e.preventDefault(); logoutHandler(); }
+    if (id === "done") {
+      e.preventDefault(); handleSubmit(); return;
+    }
+    if (id === "switch-link") {
+      e.preventDefault(); switchMode();
+    }
+    if (id === "depositBtn") {
+      e.preventDefault(); updateBalance("+");
+    }
+    if (id === "withdrawBtn") {
+      e.preventDefault(); updateBalance("-");
+    }
+    if (id === "logoutBtn") {
+      e.preventDefault(); logoutHandler();
+    }
   });
 
+  document.addEventListener("submit", e => {
+    if (e.target.id === "form") {
+      e.preventDefault(); handleSubmit();
+    }
+  });
+
+  // 2. Chuyển Đăng nhập ↔ Đăng ký
   function switchMode() {
     isRegistering = !isRegistering;
-    document.getElementById("form-title").innerText = isRegistering ? "Đăng ký" : "Đăng nhập";
-    document.getElementById("done").innerText = isRegistering ? "Đăng ký" : "Đăng nhập";
-    document.getElementById("switch-link").innerText = isRegistering
+    document.getElementById("form-title").innerText      = isRegistering ? "Đăng ký" : "Đăng nhập";
+    document.getElementById("done").innerText            = isRegistering ? "Đăng ký" : "Đăng nhập";
+    document.getElementById("switch-link").innerText     = isRegistering
       ? "Đã có tài khoản? Đăng nhập"
       : "Chưa có tài khoản? Đăng ký";
-    document.getElementById("email-wrapper").style.display = isRegistering ? "block" : "none";
+    document.getElementById("email-wrapper").style.display           = isRegistering ? "block" : "none";
     document.getElementById("confirm-password-wrapper").style.display = isRegistering ? "block" : "none";
+    document.getElementById("form-message").innerText = "";
+    document.getElementById("form-success").innerText = "";
   }
 
-  // ✅ Login / Register
+  // 3. Xử lý đăng ký / đăng nhập
   function handleSubmit() {
-    const u = document.getElementById("username").value.trim();
-    const p = document.getElementById("password").value.trim();
-    const email = document.getElementById("email").value.trim();
+    const u       = document.getElementById("username").value.trim().toLowerCase();
+    const p       = document.getElementById("password").value.trim();
+    const email   = document.getElementById("email").value.trim();
     const confirm = document.getElementById("confirm-password").value.trim();
-    const msg = document.getElementById("form-message");
+    const msg     = document.getElementById("form-message");
     const success = document.getElementById("form-success");
-    const btn = document.getElementById("done");
-
-    msg.innerText = "";
-    success.innerText = "";
+    const btn     = document.getElementById("done");
+    msg.innerText = ""; success.innerText = "";
     btn.disabled = true;
     btn.innerText = isRegistering ? "Đang đăng ký..." : "Đang đăng nhập...";
+
+// validate
+if (u.length < 3 || p.length < 3) {
+  msg.innerText = "Tài khoản và mật khẩu phải từ 3 ký tự.";
+  return resetBtn();
+}
+
+// ❌ Không cho chứa ký tự đặc biệt
+if (!/^[a-zA-Z0-9_]+$/.test(u)) {
+  msg.innerText = "Tài khoản không được chứa kí tự đặc biệt.";
+  return resetBtn();
+}
+
+if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
+  msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
+  return resetBtn();
+}
 
     if (isRegistering && p !== confirm) {
       msg.innerText = "Mật khẩu nhập lại không khớp.";
       return resetBtn();
     }
 
+    // build params
     const data = new URLSearchParams();
     data.append("action", isRegistering ? "register" : "login");
     data.append("username", u);
     data.append("password", p);
     if (isRegistering) data.append("email", email);
 
+    // fetch
     fetch(scriptURL, { method: "POST", body: data })
-      .then(r => r.json())
-      .then(res => {
+      .then(r => r.text())
+      .then(txt => {
         if (isRegistering) {
-          if (res.success) {
-            success.innerText = "✅ Đăng ký thành công! Vui lòng đăng nhập.";
+          if (txt.includes("✅")) {
+			            alert("Đăng ký thành công!");
+            success.innerText = "Đăng ký thành công! Vui lòng đăng nhập.";
             setTimeout(switchMode, 1000);
-          } else msg.innerText = res.message || "Đăng ký thất bại.";
+          } else {
+            msg.innerText = txt;
+          }
         } else {
-          if (res.success) {
+          if (txt.includes("✅ Đăng nhập thành công")) {
+            // báo thành công rồi reload trang
             alert("Đăng nhập thành công!");
-            localStorage.setItem("token", res.token);
-            localStorage.setItem("loginTime", Date.now());
-            renderUI();
-          } else msg.innerText = res.message || "Sai tài khoản hoặc mật khẩu.";
+localStorage.setItem("currentUser", u);
+localStorage.setItem("currentPass", p); 
+localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000); // 30 phút
+
+            location.reload();
+          } else {
+            msg.innerText = txt;
+          }
         }
       })
-      .catch(() => msg.innerText = "Lỗi kết nối!")
+      .catch(() => { msg.innerText = "Lỗi kết nối!"; })
       .finally(resetBtn);
 
     function resetBtn() {
@@ -72,48 +119,21 @@
     }
   }
 
-  // ✅ Kiểm tra token tự động khi mở trang
-  async function checkAutoLogin() {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
+const itemsPerPage = 5;
+let historyData = [];
 
-    const res = await fetch(`${scriptURL}?action=check_token&token=${token}`);
-    const data = await res.json();
-    if (data.valid) {
-      renderUI(data.username, data.balance);
-      return true;
-    } else {
-      localStorage.removeItem("token");
-      return false;
-    }
-  }
+function renderUI() {
+  const u = localStorage.getItem("currentUser");
+  if (!u) return;
 
-  // ✅ Giao diện sau khi login
-  function renderUI(username, balance) {
-    document.getElementById("form").style.display = "none";
-    document.getElementById("switch-link").style.display = "none";
-    document.getElementById("user-panel").style.display = "block";
-    document.getElementById("user-display").innerText = username;
-    document.getElementById("balance").innerText =
-      parseInt(balance || 0, 10).toLocaleString() + " VNĐ";
-	  document.getElementById("form-title").textContent = "Thông tin tài khoản";
-  }
+  document.getElementById("form").style.display = "none";
+  document.getElementById("switch-link").style.display = "none";
+  document.getElementById("user-panel").style.display = "block";
+  document.getElementById("user-display").innerText = u;
+  document.getElementById("form-title").textContent = "Thông tin tài khoản";
+  loadBalance(u);
 
-  function logoutHandler() {
-    localStorage.clear();
-    location.reload();
-  }
-
-  // ✅ Auto-run
-  window.addEventListener("load", async () => {
-    const loggedIn = await checkAutoLogin();
-    if (!loggedIn) {
-      document.getElementById("form").style.display = "block";
-      document.getElementById("switch-link").style.display = "block";
-    }
-  });
-})();
-
+}
 
 function loadBalance(user) {
   const container = document.getElementById("balance-container");
