@@ -15,8 +15,7 @@ async function checkGiftStatus() {
   // Nếu đã lưu trong localStorage, ẩn luôn
   if (localStorage.getItem(giftKey) === "1") {
     btn.style.display = "none";
-    msgBox.style.display = "block";
-    msgBox.innerText = "Bạn đã nhận quà rồi.";
+    msgBox.style.display = "none";
     return;
   }
 
