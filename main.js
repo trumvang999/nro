@@ -1,4 +1,3 @@
-//<![CDATA[
 (function(){
   const scriptURL = "https://shop.nro2024.workers.dev";
   let isRegistering = false;
@@ -265,17 +264,10 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // 7. Logout
   function logoutHandler() {
-  	localStorage.removeItem("expireTime");
-  	localStorage.removeItem("currentPass");
-	localStorage.removeItem("currentUser");
-	localStorage.removeItem("accountId");
-	localStorage.removeItem("lastPayment");
+  	localStorage.clear();
     location.reload();
   }
 
   // 8. Khởi tạo
   window.addEventListener("load", renderUI);
 })();
-
-
-//]]>
