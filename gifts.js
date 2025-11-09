@@ -21,26 +21,29 @@ async function checkGiftStatus() {
   }
 
   try {
-    // Gọi worker check trạng thái
     const url = `${SCRIPT_URL}?action=claim_gift&username=${encodeURIComponent(currentUser)}`;
     const resp = await fetch(url, { method: "GET" });
-    const data = await resp.json();
+    let data;
+    try {
+      data = await resp.json();
+    } catch {
+      // Nếu không phải JSON, parse thành object mặc định
+      data = { success: false, message: await resp.text() };
+    }
 
     if (data.success === false && data.message.includes("Bạn đã nhận quà rồi")) {
       btn.style.display = "none";
       msgBox.innerText = data.message;
       msgBox.style.display = "block";
-      // ✅ Lưu trạng thái vào localStorage
       localStorage.setItem(giftKey, "1");
+      setTimeout(() => msgBox.style.display = "none", 3000); // 3s biến mất
+      location.reload();
     } else {
       btn.style.display = "inline-block";
       msgBox.style.display = "none";
     }
-
   } catch (err) {
     console.error("Lỗi check gift:", err);
-    btn.style.display = "inline-block";
-    msgBox.style.display = "none";
   }
 }
 
