@@ -12,6 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
   btn.addEventListener("click", () => {
     msgBox.innerText = "Chức năng nhận quà đang bảo trì!";
     msgBox.style.display = "block";
+        btn.style.display = "none";
     setTimeout(() => msgBox.style.display = "none", 3000); // 3s biến mất
   });
 });
