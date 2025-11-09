@@ -1,4 +1,4 @@
->const SCRIPT_URL = "https://shop.nro2024.workers.dev/";
+const SCRIPT_URL = "https://shop.nro2024.workers.dev/";
 const currentUser = localStorage.getItem("currentUser") || "guest";
 const giftKey = "gift_claimed_" + currentUser;
 const btn = document.getElementById("claim-gift-btn");
