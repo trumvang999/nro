@@ -769,8 +769,8 @@ padding:20px;
     margin: 0 auto;
     padding: 20px;
     border-radius: 10px;
-    width: 100%;
-    max-width: 500px;
+    width: 450px;
+    max-width: 90%;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     position: relative;
     top: 50%;
@@ -895,7 +895,6 @@ padding:20px;
 @media (max-width: 600px) {
   .modal-content {
     padding: 15px;
-    max-width: 95%;
   }
   .slider-btn {
     font-size: 14px;
