@@ -14,7 +14,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!user){
           msgBox.innerText = "Vui lòng đăng nhập để nhận quà!";
     msgBox.style.display = "block";
-          setTimeout(() => msgBox.style.display = "none", 2000); // 3s biến mất
+              btn.style.display = "none";
+          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
     }
     else{
     msgBox.innerText = "Chức năng nhận quà đang bảo trì!";
