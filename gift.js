@@ -1,7 +1,7 @@
 const btn    = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
 const wrapper = document.getElementById("gift-container");
-const user = localstorage.getItem("currentUser");
+const user = localStorage.getItem("currentUser");
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!btn || !msgBox) return;
