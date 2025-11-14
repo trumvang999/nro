@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!body.success) throw new Error(body.message || "Mua không thành công");
 
-      infoBox.innerHTML = `<span style='color:green;'>${body.message || "Mua thành công! Xem thông tin tài khoản mật khẩu tại lịch sử mua nick"}</span>`;
+      infoBox.innerHTML = `<span style='color:green;'>${body.message + "! Xem thông tin tài khoản mật khẩu tại lịch sử mua nick"|| "Mua thành công! Xem thông tin tài khoản mật khẩu tại lịch sử mua nick"}</span>`;
 
       const record = {
         id_acc: accId,
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
         datMuaBtn.classList.add("disabled");
         datMuaBtn.style.backgroundColor = "#aaa";
         datMuaBtn.style.pointerEvents = "none";
-        datMuaBtn.style.opacity = "0.7";
+        datMuaBtn.style.opacity = "0.8";
         datMuaBtn.setAttribute("aria-disabled", "true");
       }
 
