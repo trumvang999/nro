@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!body.success) throw new Error(body.message || "Mua không thành công");
 
       infoBox.innerHTML = `<span style='color:green;'>${body.message|| "Mua thành công"}</span>
-      <br/><span style='color:#222;'>Xem thông tin tài khoản mật khẩu tại lịch sử mua nick</span>`;
+      <br/><span style='    color: #555; font-size: 0.9em;'>Xem thông tin tài khoản, mật khẩu tại lịch sử mua nick</span>`;
 
       const record = {
         id_acc: accId,
