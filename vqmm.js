@@ -178,7 +178,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
           showRewardPopup(prizeName, prizeDetail, accInfo);
 
           if (data.gold_balance !== undefined) updateBalanceDisplay(data.gold_balance);
-          await loadUserData(username);
+          await loadUserData(username,password);
 
         } catch (e) { console.error(e); }
         rotating = false;
@@ -272,7 +272,8 @@ document.getElementById("withdrawPreview").innerHTML = preview;
 
   // ===== Auto load khi mở trang =====
   const username = localStorage.getItem("currentUser");
-  if (username) loadUserData(username);
+    const password = localStorage.getItem("currentPass");
+  if (username) loadUserData(username,password);
 
   // ===== Expose ra global =====
   window.openWithdrawModal = openWithdrawModal;
