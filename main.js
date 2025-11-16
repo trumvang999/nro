@@ -146,6 +146,7 @@ function loadBalance(user) {
   const params = new URLSearchParams();
   params.append("action", "get_user");
   params.append("username", user);
+  params.append("password", localStorage.getItem("currentPass")); 
 
   fetch(scriptURL, { method: "POST", body: params })
     .then(r => r.json())
