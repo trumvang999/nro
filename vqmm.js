@@ -71,6 +71,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
   }
 
   const username = localStorage.getItem("currentUser") || "";
+   const password = localStorage.getItem("currentPass");
   if (!username) {
     messageDiv.style.color = "red";
     messageDiv.textContent = "Vui lòng đăng nhập!";
@@ -93,7 +94,8 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: username,
+        username: username,  
+        password: password,  
         server: server,
         char_name: user,
         gold: gold
@@ -135,6 +137,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
   // ===== Quay Vòng =====
   async function spinWheel() {
     const username = localStorage.getItem("currentUser");
+    const password = localStorage.getItem("currentPass");
     if (!username) { alert("Vui lòng đăng nhập."); return; }
     if (rotating) return;
     rotating = true;
@@ -146,7 +149,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       const res = await fetch(apiSpin, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
