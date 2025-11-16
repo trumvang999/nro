@@ -230,7 +230,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
   }
 
   // ===== Load lịch sử & số dư =====
-  async function loadUserData(username) {
+  async function loadUserData(username,password) {
     historyBody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#888;">Đang tải lịch sử và số dư vàng...</td></tr>`;
     try {
       const res = await fetch(apiUser, {
