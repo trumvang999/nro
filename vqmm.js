@@ -236,7 +236,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       const res = await fetch(apiUser, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
