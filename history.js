@@ -32,7 +32,7 @@ async function loadHistoryTable() {
     tbody.innerHTML = "";
    if (data.count === 0 || data.data.length === 0) {
       tbody.innerHTML = `
-        <tr><td colspan='5' style='padding:10px;color:#666;'>Chưa có giao dịch</td></tr>`;
+        <tr><td colspan='5' style='padding:10px;color:#666;'>Chưa có giao dịch nào.</td></tr>`;
       return;
     }
     data.data.forEach(item => {
