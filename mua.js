@@ -119,6 +119,16 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.loadHistoryTable = async function () {
+    
+      const username = localStorage.getItem("username");
+  const password = localStorage.getItem("password");
+
+  if (!username || !password) {
+    document.querySelector("#purchase-table tbody").innerHTML =
+      "<tr><td colspan='5' style='padding:10px;color:#999;'>Vui lòng đăng nhập để xem lịch sử.</td></tr>";
+    return;
+  }
+    
     const params = new URLSearchParams({
       action: "get_history",
       username,
@@ -131,6 +141,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!data.success) throw new Error(data.message || "Không load được lịch sử");
 
       const tbody = document.querySelector("#purchase-table tbody");
+
+       if (data.count === 0 || data.data.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan='5' style='padding:10px;color:#666;'>Chưa có giao dịch</td></tr>`;
+      return;
+    }
+      
       tbody.innerHTML = "";
       data.data.forEach(item => {
         const tr = document.createElement("tr");
