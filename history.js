@@ -30,7 +30,11 @@ async function loadHistoryTable() {
 
     const tbody = document.querySelector("#purchase-table tbody");
     tbody.innerHTML = "";
-
+   if (data.count === 0 || data.data.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan='5' style='padding:10px;color:#666;'>Chưa có giao dịch</td></tr>`;
+      return;
+    }
     data.data.forEach(item => {
       const tr = document.createElement("tr");
       let timestamp = item.timestamp || "";
