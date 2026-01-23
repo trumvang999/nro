@@ -258,29 +258,26 @@ async function cancelPayOSOrder(orderCode) {
 function showQR(paymentLink, orderCode) {
   const linkSection = document.getElementById("linkSection");
   const qrImage = document.getElementById("qrImage");
-  const btn = document.getElementById("generate");
-  const statusText = document.getElementById("statusText");
+    const taodon = document.getElementById("taodon");
+const statusText = document.getElementById("statusText");
 
-  // Gán QR
+  // Gán ảnh QR
   qrImage.src = paymentLink;
-
-  // Update nút
-  if (btn) {
-    btn.textContent = `Đơn #${orderCode}`;
-    btn.disabled = true;
-    btn.style.opacity = "0.7";
-  }
-
-  // Update trạng thái
-  statusText.textContent = "Đang chờ thanh toán...";
+taodon.textContent = `Đơn #${orderCode}`;
+  // Cập nhật trạng thái
+  statusText.textContent = `Đang chờ thanh toán...`;
   statusText.style.color = "orange";
 
+  // Hiện khối QR
   linkSection.style.display = "block";
+
+  // Cuộn mượt đến QR
   linkSection.scrollIntoView({ behavior: "smooth" });
 
   //  theo dõi trạng thái đơn cũ
   checkPayment(orderCode, statusText);
 }
+
 
 
 // Gọi khi load trang
