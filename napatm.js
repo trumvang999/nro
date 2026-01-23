@@ -17,7 +17,25 @@ document.addEventListener("DOMContentLoaded", () => {
   contentInput.value = currentUser ? "Tạo đơn để lấy nội dung" : "Vui lòng đăng nhập";
 });
 
+function toggleCreateBtn(loading) {
+  const btn = document.getElementById("generate");
+  if (!btn) return;
+
+  if (loading) {
+    btn.disabled = true;
+    btn.dataset.text = btn.innerHTML;
+    btn.innerHTML = "Đang tạo đơn...";
+    btn.style.opacity = "0.9";
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn.dataset.text || "Tạo đơn";
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+  }
+}
+
 async function generateLink() {
+  toggleCreateBtn(true);
   const amount = document.getElementById("amountInput").value;
   const linkSection = document.getElementById("linkSection");
   const qrImage = document.getElementById("qrImage");
@@ -26,12 +44,14 @@ async function generateLink() {
 
   if (!amount || amount < 10000) {
     alert("Vui lòng nhập số tiền hợp lệ (>=10.000đ)");
+        toggleCreateBtn(false);
     return;
   }
 
   const currentUser = localStorage.getItem("currentUser");
   if (!currentUser) {
     alert("Bạn cần đăng nhập trước khi nạp!");
+        toggleCreateBtn(false);
     return;
   }
 
@@ -45,6 +65,7 @@ async function generateLink() {
     const data = await res.json();
     if (!data.success) {
       alert(data.message || "Không tạo được đơn. Vui lòng thử lại!");
+          toggleCreateBtn(false);
       return;
     }
 
@@ -58,6 +79,7 @@ async function generateLink() {
     linkSection.style.display = "block";
     statusText.style.color = "orange";
     statusText.innerText = "Đang chờ thanh toán...";
+    toggleCreateBtn(false);
 
     // Lưu thông tin đơn
     localStorage.setItem("lastPayment", JSON.stringify({
@@ -73,6 +95,7 @@ async function generateLink() {
 
   } catch (err) {
     alert("Lỗi kết nối: " + err.message);
+        toggleCreateBtn(false);
   }
 }
   
