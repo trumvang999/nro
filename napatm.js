@@ -1,3 +1,5 @@
+let paymentInterval = null;
+
 function copyToClipboard(elementId) {
   const copyText = document.getElementById(elementId);
   if (!copyText) return;
@@ -98,22 +100,27 @@ async function generateLink() {
         toggleCreateBtn(false);
   }
 }
-  
 async function checkPayment(orderCode, statusText) {
-  const interval = setInterval(async () => {
+  if (paymentInterval) clearInterval(paymentInterval);
+
+  paymentInterval = setInterval(async () => {
     try {
-      const res = await fetch(`https://napatm.nro2024.workers.dev/sepay/status?orderCode=${orderCode}`);
+      const res = await fetch(
+        `https://napatm.nro2024.workers.dev/sepay/status?orderCode=${orderCode}`
+      );
       const data = await res.json();
 
       if (!data.success) return;
 
-      const isPaid = data.paid === true || data.paid === 1 || data.paid === "1";
-      const isCanceled = data.canceled === true || data.canceled === 1 || data.canceled === "1";
+      const isPaid = data.paid == 1 || data.paid === true;
+      const isCanceled = data.canceled == 1 || data.canceled === true;
 
       if (isPaid) {
-        clearInterval(interval);
+        clearInterval(paymentInterval);
+        paymentInterval = null;
+      toggleCreateBtn(false);
         statusText.style.color = "green";
-        statusText.innerText = "Thanh toán thành công!";
+        statusText.textContent = "Thanh toán thành công!";
 
         // ✅ Cập nhật popup thông tin
         const popup = document.getElementById("popupSuccess");
@@ -134,15 +141,18 @@ async function checkPayment(orderCode, statusText) {
       };
         }
 
-        // ✅ Refresh lịch sử
         if (typeof loadPayOSHistory === "function") loadPayOSHistory();
-      } else if (isCanceled) {
-        clearInterval(interval);
-        statusText.style.color = "red";
-        statusText.innerText = "Đơn đã bị huỷ!";
       }
-    } catch (err) {
-      console.log("Không check được trạng thái:", err);
+
+      if (isCanceled) {
+        clearInterval(paymentInterval);
+        paymentInterval = null;
+
+        statusText.style.color = "red";
+        statusText.textContent = "Đơn đã bị huỷ!";
+      }
+    } catch (e) {
+      console.log("Check lỗi:", e);
     }
   }, 5000);
 }
@@ -248,22 +258,30 @@ async function cancelPayOSOrder(orderCode) {
 function showQR(paymentLink, orderCode) {
   const linkSection = document.getElementById("linkSection");
   const qrImage = document.getElementById("qrImage");
-    const taodon = document.getElementById("taodon");
-const statusText = document.getElementById("statusText");
+  const btn = document.getElementById("generate");
+  const statusText = document.getElementById("statusText");
 
-  // Gán ảnh QR
+  // Gán QR
   qrImage.src = paymentLink;
-taodon.textContent = `Đơn #${orderCode}`;
-  // Cập nhật trạng thái
-  statusText.textContent = `Đang chờ thanh toán...`;
+
+  // Update nút
+  if (btn) {
+    btn.textContent = `Đơn #${orderCode}`;
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+  }
+
+  // Update trạng thái
+  statusText.textContent = "Đang chờ thanh toán...";
   statusText.style.color = "orange";
 
-  // Hiện khối QR
   linkSection.style.display = "block";
-
-  // Cuộn mượt đến QR
   linkSection.scrollIntoView({ behavior: "smooth" });
+
+  //  theo dõi trạng thái đơn cũ
+  checkPayment(orderCode, statusText);
 }
+
 
 // Gọi khi load trang
 document.addEventListener("DOMContentLoaded", loadPayOSHistory);
