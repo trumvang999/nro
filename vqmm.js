@@ -180,6 +180,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
   const kameBeam = document.querySelector(".kame-beam");
 
   kameOverlay.style.display = "flex";
+  kameOverlay.style.opacity = "1";
 
   //  Tụ lực (đợi GIF)
   setTimeout(() => {
