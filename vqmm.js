@@ -175,7 +175,24 @@ document.getElementById("withdrawPreview").innerHTML = preview;
           currentAngle = finalAngle % 360;
           wheel.style.transition = "none";
           wheel.style.transform = `rotate(${currentAngle}deg)`;
+            // ===== HIỆU ỨNG KAME =====
+  const kameOverlay = document.getElementById("kame-overlay");
+  const kameBeam = document.querySelector(".kame-beam");
 
+  kameOverlay.style.display = "flex";
+
+  //  Tụ lực (đợi GIF)
+  setTimeout(() => {
+    kameBeam.classList.add("fire");
+
+    //  Flash xong → hiện thưởng
+    setTimeout(async () => {
+      kameOverlay.style.display = "none";
+      kameBeam.classList.remove("fire");
+          }, 800); // thời gian flash
+
+  }, 1200); // thời gian tụ lực
+          
           resultEl.innerHTML =
             "<marquee>Tiếp tục quay để tăng % may mắn, phần quà vip vẫn đang chờ bạn</marquee>";
           showRewardPopup(prizeName, prizeDetail, accInfo);
