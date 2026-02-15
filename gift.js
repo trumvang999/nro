@@ -38,6 +38,9 @@ try {
   if (text.includes("✅")) {
     showMsg(text, "green");
     btn.style.display = "none";
+    setTimeout(() => {
+      msgBox.style.display = "none";
+    }, 5000);
   } 
   else if (text.includes("❌")) {
     showMsg(text, "orange");
