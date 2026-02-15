@@ -28,7 +28,7 @@ try {
   const result = await response.json();
 
   if (!response.ok) {
-    showMsg("Lỗi server!", "red");
+    showMsg(result.message ||"Lỗi server!", "red");
     return;
   }
 
