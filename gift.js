@@ -17,6 +17,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // 2️⃣ Disable tránh spam click
     btn.disabled = true;
+            btn.style.display = "none";
     showMsg("Đang xử lý, vui lòng chờ...", "orange");
 
     try {
