@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
             btn.style.display = "none";
     showMsg("Đang xử lý, vui lòng chờ...", "orange");
 
-ttry {
+try {
   const response = await fetch(
     `${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`,
     { method: "POST" }
