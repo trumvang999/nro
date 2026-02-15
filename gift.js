@@ -39,11 +39,12 @@ try {
   } else {
     showMsg(result.message || "Không thể nhận quà!", "orange");
     btn.disabled = false;
-    btn.style.display = "block";
+    btn.style.display = "none";
   }
 
 } catch (error) {
   showMsg("Không thể kết nối server. Vui lòng thử lại!", "red");
+      btn.style.display = "none";
 }
 
   });
