@@ -1,73 +1,62 @@
 const btn = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
-const user = localStorage.getItem("currentUser");
-
 const WORKER_URL = "https://shop.nro2024.workers.dev";
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!btn || !msgBox) return;
 
   btn.addEventListener("click", async () => {
-    // 1. Kiểm tra đăng nhập
-       if (!user){
+    const user = localStorage.getItem("currentUser");
 
-          msgBox.innerText = "Vui lòng đăng nhập để nhận quà!";
-
-    msgBox.style.display = "block";
-
-              btn.style.display = "none";
-
-          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
-  return;
+    // 1️⃣ Kiểm tra đăng nhập
+    if (!user) {
+      showMsg("Vui lòng đăng nhập để nhận quà!", "orange");
+      btn.style.display = "none";
+      return;
     }
-  
+
+    // 2️⃣ Disable tránh spam click
     btn.disabled = true;
-    btn.style.display = "none";
-    showMsg("Đang xử lí, vui lòng chờ...", "orange");
+    showMsg("Đang xử lý, vui lòng chờ...", "orange");
 
     try {
-      // 3. Gọi API claim_gift
-      // Gửi action=claim_gift và username qua Query Params
-      const response = await fetch(`${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`, {
-        method: "POST"
-      });
+      const response = await fetch(
+        `${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`,
+        { method: "POST" }
+      );
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Thành công
-        showMsg("Chúc mừng! Bạn đã nhận quà thành công.", "green");
-        btn.style.display = "none"; // Ẩn nút sau khi nhận thành công
-      } else {
-        showMsg(result.message || "Có lỗi xảy ra, vui lòng thử lại!", "orange");
-       
-    msgBox.style.display = "block";
-
-              btn.style.display = "none";
-
-          setTimeout(() => msgBox.style.display = "none",3000); // 3s biến mất
-  return;
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("Server trả về dữ liệu không hợp lệ");
       }
+
+      // 3️⃣ Thành công
+      if (response.ok && result.success === true) {
+        showMsg("Chúc mừng! Bạn đã nhận quà thành công.", "green");
+        btn.style.display = "none";
+        return;
+      }
+
+      // 4️⃣ Đã nhận hoặc lỗi logic
+      showMsg(result.message || "Có lỗi xảy ra, vui lòng thử lại!", "orange");
+      btn.style.display = "none";
+
     } catch (error) {
-      showMsg(result.message , "red");
-   
-    msgBox.style.display = "block";
-
-              btn.style.display = "none";
-
-          setTimeout(() => msgBox.style.display = "none", 3000); // 3s biến mất
-  return;
+      console.error("Claim gift error:", error);
+      showMsg("Không thể kết nối server. Vui lòng thử lại!", "red");
+      btn.disabled = false; // cho phép thử lại nếu lỗi network
     }
   });
 });
 
-// Hàm hiển thị thông báo tiện lợi
+// ===== Helper hiển thị message =====
 function showMsg(text, color) {
   msgBox.innerText = text;
   msgBox.style.color = color;
   msgBox.style.display = "block";
-  
-  // Tự động ẩn sau 3 giây nếu không phải là thông báo thành công
+
   if (color !== "green") {
     setTimeout(() => {
       msgBox.style.display = "none";
