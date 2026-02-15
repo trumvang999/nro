@@ -20,32 +20,39 @@ window.addEventListener("DOMContentLoaded", () => {
             btn.style.display = "none";
     showMsg("Đang xử lý, vui lòng chờ...", "orange");
 
-try {
-  const response = await fetch(`${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`, {
-    method: "POST"
-  });
+ttry {
+  const response = await fetch(
+    `${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`,
+    { method: "POST" }
+  );
 
-  const result = await response.json();
+  const text = await response.text(); 
 
   if (!response.ok) {
-    showMsg(result.message ||"Lỗi server!", "red");
+    showMsg(text || "Lỗi server!", "red");
+    btn.disabled = false;
     return;
   }
 
-  // 🔹 XỬ LÝ THEO success
-  if (result.success) {
-    showMsg(result.message || "Nhận quà thành công!", "green");
+  // 🔹 Xử lý theo nội dung backend trả
+  if (text.includes("✅")) {
+    showMsg(text, "green");
     btn.style.display = "none";
-  } else {
-    showMsg(result.message || "Không thể nhận quà!", "orange");
+  } 
+  else if (text.includes("❌")) {
+    showMsg(text, "orange");
     btn.disabled = false;
-    btn.style.display = "none";
+  } 
+  else {
+    showMsg("Phản hồi không xác định!", "red");
+    btn.disabled = false;
   }
 
 } catch (error) {
   showMsg("Không thể kết nối server. Vui lòng thử lại!", "red");
-      btn.style.display = "none";
+  btn.disabled = false;
 }
+
 
   });
 });
