@@ -40,16 +40,25 @@ window.addEventListener("DOMContentLoaded", () => {
         showMsg("Chúc mừng! Bạn đã nhận quà thành công.", "green");
         btn.style.display = "none"; // Ẩn nút sau khi nhận thành công
       } else {
-        // Thất bại (Ví dụ: Đã nhận rồi - lỗi 403)
         showMsg(result.message || "Có lỗi xảy ra, vui lòng thử lại!", "orange");
-        btn.disabled = false;
-        btn.innerText = "Nhận Quà Ngay";
+       
+    msgBox.style.display = "block";
+
+              btn.style.display = "none";
+
+          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
+  return;
       }
     } catch (error) {
       // Lỗi kết nối
       showMsg("Lỗi kết nối đến máy chủ!", "red");
-      btn.disabled = false;
-      btn.innerText = "Thử lại";
+   
+    msgBox.style.display = "block";
+
+              btn.style.display = "none";
+
+          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
+  return;
     }
   });
 });
