@@ -2,7 +2,6 @@ const btn = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
 const user = localStorage.getItem("currentUser");
 
-// URL Worker của bạn (Thay bằng URL thật của bạn)
 const WORKER_URL = "https://shop.nro2024.workers.dev";
 
 window.addEventListener("DOMContentLoaded", () => {
