@@ -49,7 +49,7 @@ window.addEventListener("DOMContentLoaded", () => {
   return;
       }
     } catch (error) {
-      showMsg("Lỗi kết nối đến máy chủ!", "red");
+      showMsg(result.message , "red");
    
     msgBox.style.display = "block";
 
