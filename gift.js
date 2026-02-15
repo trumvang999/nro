@@ -21,10 +21,9 @@ window.addEventListener("DOMContentLoaded", () => {
   return;
     }
   
-    // 2. Trạng thái đang xử lý (Tránh user spam click)
     btn.disabled = true;
     btn.style.display = "none";
-    showMsg("Đang xử lí...", "orange");
+    showMsg("Đang xử lí, vui lòng chờ...", "orange");
 
     try {
       // 3. Gọi API claim_gift
@@ -46,18 +45,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
               btn.style.display = "none";
 
-          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
+          setTimeout(() => msgBox.style.display = "none",3000); // 3s biến mất
   return;
       }
     } catch (error) {
-      // Lỗi kết nối
       showMsg("Lỗi kết nối đến máy chủ!", "red");
    
     msgBox.style.display = "block";
 
               btn.style.display = "none";
 
-          setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
+          setTimeout(() => msgBox.style.display = "none", 3000); // 3s biến mất
   return;
     }
   });
