@@ -9,16 +9,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
   btn.addEventListener("click", async () => {
     // 1. Kiểm tra đăng nhập
-    if (!user) {
-        msgBox.innerText = "Vui lòng đăng nhập để nhận quà!";
+       if (!user){
+
+          msgBox.innerText = "Vui lòng đăng nhập để nhận quà!";
 
     msgBox.style.display = "block";
 
               btn.style.display = "none";
 
           setTimeout(() => msgBox.style.display = "none", 2000); // 2s biến mất
+  return;
     }
-
+  
     // 2. Trạng thái đang xử lý (Tránh user spam click)
     btn.disabled = true;
     btn.innerText = "Đang xử lý...";
