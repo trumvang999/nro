@@ -23,8 +23,8 @@ window.addEventListener("DOMContentLoaded", () => {
   
     // 2. Trạng thái đang xử lý (Tránh user spam click)
     btn.disabled = true;
-    btn.innerText = "Đang xử lý...";
-    showMsg("Đang kiểm tra điều kiện nhận quà...", "orange");
+    btn.style.display = "none";
+    showMsg("Đang xử lí...", "orange");
 
     try {
       // 3. Gọi API claim_gift
