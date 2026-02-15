@@ -43,7 +43,7 @@ try {
     }, 5000);
   } 
   else if (text.includes("❌")) {
-    showMsg(text, "orange");
+    showMsg(text, "red");
     btn.disabled = false;
   } 
   else {
