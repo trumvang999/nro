@@ -32,8 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const gold = parseInt(document.getElementById("withdrawGold").value) || 0;
 
     const username = localStorage.getItem("currentUser") || "Chưa đăng nhập";
-    const balanceText = document.getElementById("gold-balance").textContent || "";
-    const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
+    const balanceNum = parseInt(goldBalanceEl.dataset.balance || "0");
 
     let preview = "Nhập thông tin để xem trước kết quả";
 
@@ -78,8 +77,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
     return;
   }
 
-  const balanceText = document.getElementById("gold-balance").textContent || "";
-  const balanceNum = parseInt(balanceText.replace(/\D/g, "")) || 0;
+  const balanceNum = parseInt(goldBalanceEl.dataset.balance || "0");
   if (gold > balanceNum) {
     messageDiv.style.color = "red";
     messageDiv.textContent = "❌ Số vàng rút vượt quá số dư hiện tại!";
@@ -104,7 +102,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
 
     const data = await res.json();
     if (data.success) {
-      document.getElementById("gold-balance").textContent = data.balance.toLocaleString("vi-VN") + " vàng";
+      updateBalanceDisplay(data.balance);
       messageDiv.style.color = "green";
       messageDiv.textContent = `✅ ${data.message}`;
       alert(`Rút vàng thành công! Liên hệ Facebook để giao dịch`);
@@ -214,9 +212,15 @@ document.getElementById("withdrawPreview").innerHTML = preview;
   }
 
   // ===== Cập nhật số dư =====
-  function updateBalanceDisplay(gold) {
-    if (gold !== undefined) goldBalanceEl.textContent = `Số dư vàng: ${gold}`;
-  }
+function updateBalanceDisplay(gold) {
+  if (gold === undefined) return;
+
+  const formatted = Number(gold).toLocaleString("vi-VN");
+  goldBalanceEl.textContent = formatted + " vàng";
+
+  // lưu balance chuẩn để dùng lại
+  goldBalanceEl.dataset.balance = gold;
+}
 
   // ===== Popup thưởng =====
   function showRewardPopup(prizeName, prizeDetail, accInfo) {
