@@ -104,8 +104,7 @@ document.getElementById("withdrawPreview").innerHTML = preview;
     if (data.success) {
       updateBalanceDisplay(data.balance);
       messageDiv.style.color = "green";
-      messageDiv.textContent = `✅ ${data.message}`;
-      alert(`Rút vàng thành công! Tìm Bot ở trang mua vàng để giao dịch!`);
+      messageDiv.textContent = `✅ Rút vàng thành công!`;
       setTimeout(closeWithdrawModal, 3000);
       location.reload()
       
