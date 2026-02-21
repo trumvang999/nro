@@ -105,8 +105,9 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       updateBalanceDisplay(data.balance);
       messageDiv.style.color = "green";
       messageDiv.textContent = `✅ ${data.message}`;
-      alert(`Rút vàng thành công! Liên hệ Facebook để giao dịch`);
-      setTimeout(closeWithdrawModal, 1500);
+      alert(`Rút vàng thành công! Tìm Bot ở trang mua vàng để giao dịch!`);
+      setTimeout(closeWithdrawModal, 3000);
+      location.reload()
       
     } else {
       messageDiv.style.color = "red";
