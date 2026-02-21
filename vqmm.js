@@ -105,9 +105,8 @@ document.getElementById("withdrawPreview").innerHTML = preview;
       updateBalanceDisplay(data.balance);
       messageDiv.style.color = "green";
       messageDiv.textContent = `✅ Rút vàng thành công!`;
-      setTimeout(closeWithdrawModal, 3000);
-      location.reload()
-      
+      setTimeout(closeWithdrawModal, 5000);
+
     } else {
       messageDiv.style.color = "red";
       messageDiv.textContent = `❌ ${data.message}`;
