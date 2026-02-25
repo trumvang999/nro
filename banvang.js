@@ -82,7 +82,7 @@ function newFunction() {
 
     if (!serverVal || serverVal === "") {
         botLabel.html("<span style='color: ${color}; font-weight: bold;'></span> ");
-        $('#PrintTxt').html('Chọn server để xem tỉ giá và vị trí Bot');
+        $('#PrintTxt').html('Chọn server để xem tỉ giá và vị trí Bot (không cố định)');
         return;
     }
 
