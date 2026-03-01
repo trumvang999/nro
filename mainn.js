@@ -277,15 +277,12 @@ function changePage(step) {
 
     function togglePurchase() {
     const box = document.getElementById("purchase-history-box");
-    const icon = document.getElementById("purchase-icon");
 
     if (box.style.display === "none") {
       box.style.display = "block";
-      icon.setAttribute("d", "M288 384l192 192 192-192H288z");
       loadHistoryTable();
     } else {
       box.style.display = "none";
-      icon.setAttribute("d", "M480 672l192-192H288z");
     }
   };
 
@@ -294,7 +291,7 @@ function toggleHistory() {
 
   if (!box) return;
 
-  if (box.style.display === "none" || box.style.display === "") {
+    if (box.style.display === "none") {
     box.style.display = "block";
   } else {
     box.style.display = "none";
