@@ -1,16 +1,15 @@
 async function redeemGiftcode() {
-  const currentUser = localStorage.getItem("currentUser");
-  const accountId = localStorage.getItem("accountId");
+  const accountId = localStorage.getItem("idgame");
   const code = document.getElementById("giftcodeInput")?.value?.trim();
 
-  if (!currentUser) return alert("Vui lòng đăng nhập");
+  if (!accountId) return alert("Vui lòng đăng nhập");
   if (!code) return alert("Nhập giftcode");
 
   try {
     const resp = await fetch("https://index.nro2024.workers.dev/gift/redeem", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: currentUser, code })
+      body: JSON.stringify({ username: accountId, code })
     });
 
     const data = await resp.json();
