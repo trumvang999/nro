@@ -144,7 +144,7 @@ function renderUI() {
     document.getElementById("user-panel").style.display = "block";
     document.getElementById("user-display").innerText = info.username;
     document.getElementById("form-title").textContent = "Thông tin tài khoản";
-    localStorage.setItem("token", info.idgame);
+    localStorage.setItem("idgame", info.idgame);
 
     loadBalance();
 
