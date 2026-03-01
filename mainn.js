@@ -294,7 +294,7 @@ window.addEventListener("DOMContentLoaded", function () {
   // 8. Khởi tạo
   window.addEventListener("load", renderUI);
 })();
-function toggleHistory() {
+function togglePurchase() {
   const box = document.getElementById("purchase-history-box");
 
   if (box.style.display === "none") {
@@ -317,3 +317,4 @@ function toggleHistory() {
       icon.setAttribute("d", "M480 672l192-192H288z");
     }
   };
+
