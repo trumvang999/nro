@@ -1,15 +1,4 @@
 const SCRIPT_URL = "https://account.nro2024.workers.dev";
-        function togglePurchase() {
-  const box = document.getElementById("purchase-history-box");
-  const icon = document.getElementById("purchase-icon");
-
-  if (box.style.display === "none") {
-    box.style.display = "block";
-    loadHistoryTable(); // gọi API mỗi khi mở
-  } else {
-    box.style.display = "none";
-  }
-}
 
 async function loadHistoryTable() {
   const tbody = document.querySelector("#purchase-table tbody");
