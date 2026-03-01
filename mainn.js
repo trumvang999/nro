@@ -259,26 +259,6 @@ function changePage(step) {
   renderHistory();
 }
 
-function toggleHistory() {
-  const box = document.getElementById("history-section");
-  const icon = document.getElementById("purchase-icon");
-
-  if (box.style.display === "none") {
-    box.style.display = "block";
-  } else {
-    box.style.display = "none";
-  }
-}
-
-window.addEventListener("DOMContentLoaded", function () {
-
-  const btn = document.getElementById("toggle-history");
-  if (btn) {
-    btn.addEventListener("click", toggleHistory);
-  }
-
-});
-
   // 7. Logout
  function logoutHandler() {
 
@@ -318,3 +298,22 @@ function togglePurchase() {
     }
   };
 
+function toggleHistory() {
+  const box = document.getElementById("history-section");
+  const icon = document.getElementById("purchase-icon");
+
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", function () {
+
+  const btn = document.getElementById("toggle-history");
+  if (btn) {
+    btn.addEventListener("click", toggleHistory);
+  }
+
+});
