@@ -274,16 +274,7 @@ function changePage(step) {
   // 8. Khởi tạo
   window.addEventListener("load", renderUI);
 })();
-function togglePurchase() {
-  const box = document.getElementById("purchase-history-box");
 
-  if (box.style.display === "none") {
-    box.style.display = "block";
-    loadHistoryTable();   // gọi API riêng
-  } else {
-    box.style.display = "none";
-  }
-}
     window.togglePurchase = function () {
     const box = document.getElementById("purchase-history-box");
     const icon = document.getElementById("purchase-icon");
@@ -298,22 +289,14 @@ function togglePurchase() {
     }
   };
 
-function toggleHistory() {
+window.toggleHistory = function () {
   const box = document.getElementById("history-section");
-  const icon = document.getElementById("purchase-icon");
 
-  if (box.style.display === "none") {
+  if (!box) return;
+
+  if (box.style.display === "none" || box.style.display === "") {
     box.style.display = "block";
   } else {
     box.style.display = "none";
   }
-}
-
-window.addEventListener("DOMContentLoaded", function () {
-
-  const btn = document.getElementById("toggle-history");
-  if (btn) {
-    btn.addEventListener("click", toggleHistory());
-  }
-
-});
+};
