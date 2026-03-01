@@ -222,38 +222,31 @@ let goldBalance = 0; // chỉ dùng để hiển thị UI hiện tại
 const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cuối
 const API_MAIN = "https://index.nro2024.workers.dev"; 
 
-
- async function persistToServer(accountId, username, password, key, value) {
+async function persistToServer(key, value) {
   try {
+    const accountId = localStorage.getItem("idgame"); // Dùng idgame
+    if (!accountId) return;
+
     const res = await fetch(`${API_MAIN}/persist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        accountId,
-        username,
-        password,
+        accountId, // Gửi accountId thay vì idgame để khớp với param backend
         key,
         value
       })
     });
 
     const data = await res.json();
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || "Persist failed");
-    }
-
-    console.log(`[SYNC OK] ${key} synced to server`);
+    console.log(`[SYNC ${data.ok ? 'OK' : 'FAIL'}] ${key}`);
   } catch (e) {
     console.warn(`[SYNC ERROR] ${key}:`, e.message);
   }
 }
-
 async function syncAllData() {
-  const accountId = localStorage.getItem("accountId");
-  const currentUser = localStorage.getItem("currentUser");
-  const currentPass = localStorage.getItem("currentPass");
+  const accountId = localStorage.getItem("idgame");
 
-  if (!accountId || !currentUser || !currentPass) {
+  if (!accountId) {
     console.warn("Sai thông tin");
     return;
   }
@@ -271,7 +264,7 @@ async function syncAllData() {
       }
 
       if (value !== null) {
-        await persistToServer(accountId, currentUser, currentPass, key, value);
+        await persistToServer(key, value);
       }
     }
   } catch (err) {
@@ -300,10 +293,9 @@ async function loadRoundName() {
   function fmt(n){ return new Intl.NumberFormat().format(n); }
 
 // --- persist ---
-const currentUser = localStorage.getItem("currentUser");
 
 async function loadgoldBalance() {
-  const accountId = localStorage.getItem("accountId");
+  const accountId = localStorage.getItem("idgame");
   if (!accountId) {
     goldBalance = 0;
     rendergoldBalance();
@@ -324,9 +316,8 @@ async function loadgoldBalance() {
 }
 
 
-// 💾 Cập nhật goldBalance của user lên server (bỏ localStorage)
 async function savegoldBalance() {
-  const accountId = localStorage.getItem("accountId");
+  const accountId = localStorage.getItem("idgame");
   if (!accountId) return;
 
   try {
