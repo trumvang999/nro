@@ -275,7 +275,7 @@ function changePage(step) {
   window.addEventListener("load", renderUI);
 })();
 
-    window.togglePurchase = function () {
+    function togglePurchase() {
     const box = document.getElementById("purchase-history-box");
     const icon = document.getElementById("purchase-icon");
 
@@ -289,7 +289,7 @@ function changePage(step) {
     }
   };
 
-window.toggleHistory = function () {
+function toggleHistory() {
   const box = document.getElementById("history-section");
 
   if (!box) return;
