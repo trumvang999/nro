@@ -1,25 +1,75 @@
+const API_MAIN = "https://index.nro2024.workers.dev";
+
+function getAvatar(planet) {
+  switch (planet) {
+    case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
+    case "Namek": return "https://forum.ngocrongonline.com/avatar/small523.png";
+    case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
+    default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
+  }
+}
+
+// Mở profile khi click
+document.getElementById("ProfileInfo").addEventListener("click", async () => {
+  try {
+    const accountId = localStorage.getItem("idgame");
+    if (!accountId) return alert("Vui lòng đăng nhập");
+
+    const res = await fetch(`${API_MAIN}/character/profile?accountId=${accountId}`);
+    const data = await res.json();
+    if (!data) throw new Error("Không có dữ liệu");
+
+    const char = data.profile || data;
+
+    // Gán dữ liệu
+    document.getElementById("profileName").innerText = char.name || "Không rõ";
+    document.getElementById("profileId").innerText = char.id ? char.id.substring(0,8) : "-";
+    document.getElementById("profileUser").innerText = char.username || "-";
+    document.getElementById("profileGold").innerText = (char.balance || 0).toLocaleString("vi-VN");
+    document.getElementById("profileVip").innerText = `VIP ${char.vipLevel || 0}`;
+    document.getElementById("profilePlanet").innerText = char.planet || "N/A";
+    document.getElementById("profileAvatar").src = getAvatar(char.planet);
+    document.getElementById("profileCreated").innerText = char.createdAt
+      ? new Date(char.createdAt).toLocaleString("vi-VN")
+      : "-";
+
+    document.getElementById("profileModal").style.display = "block";
+  } catch (e) {
+    console.error("Lỗi load profile:", e);
+    alert("Không thể tải profile!");
+  }
+});
+
+// Đóng modal
+document.getElementById("closeProfile").addEventListener("click", () => {
+  document.getElementById("profileModal").style.display = "none";
+});
+
+const CHAT_API = "https://index.nro2024.workers.dev";
+
 async function sendChat() {
   const input = document.getElementById("chatText");
   const msg = input.value.trim();
   if (!msg) return;
 
- // Lấy thông tin người dùng từ localStorage
-const user = localStorage.getItem("currentUser");
+  const userId = localStorage.getItem("idgame");
+  const name = localStorage.getItem("characterName");
+  const planet = localStorage.getItem("characterPlanet");
 
-// Nếu chưa có người dùng, thông báo và dừng
-if (!user) {
-  alert("Vui lòng đăng nhập");
-  throw new Error("Chưa đăng nhập"); // ngăn chặn tiếp tục
-}
+  if (!userId || !name) {
+    alert("Vui lòng đăng nhập hoặc tạo nhân vật");
+    return;
+  }
 
-// Tạo object chat
-const chatObj = {
-  user,                   // tên user
-  msg,                    // tin nhắn
-  time: new Date().toLocaleTimeString() // thời gian hiện tại
-};
+  const chatObj = {
+    userId,
+    name,
+    planet,
+    msg,
+    time: new Date().toLocaleTimeString()
+  };
 
-  await fetch("https://doan-so.nro2024.workers.dev/chat/save", {
+  await fetch(`${CHAT_API}/chat/save`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(chatObj)
@@ -30,45 +80,43 @@ const chatObj = {
 }
 
 async function loadChat() {
-  const res = await fetch("https://doan-so.nro2024.workers.dev/chat/load");
-  const chatHistory = await res.json();
+  const res = await fetch(`${CHAT_API}/chat/load`);
+  const data = await res.json();
 
   const chatMessages = document.getElementById("chatMessages");
   chatMessages.innerHTML = "";
-  const currentUser = localStorage.getItem("currentUser");
+  const myId = localStorage.getItem("idgame");
 
-  chatHistory.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "msg " + (c.user === currentUser ? "self" : "other");
-    div.innerHTML = `
-      <div class="avatar"></div>
-      <div id="msg-self">
-        <div class="sender">${c.user}</div>
-        <div>${c.msg}</div>
-        <span class="time">${c.time}</span>
-      </div>
-    `;
-    chatMessages.appendChild(div);
-  });
+const chats = (Array.isArray(data.chat) ? data.chat : []).sort(
+  (a, b) => a.created_at - b.created_at
+);
+
+chats.forEach(c => {
+  const isSelf = c.user === myId; // <- dùng c.user thay vì c.userId
+  const div = document.createElement("div");
+  div.className = "msg " + (isSelf ? "self" : "other");
+  div.innerHTML = `
+    <div class="avatar">
+      <img src="${getAvatar(c.planet)}" alt="${c.planet}" />
+    </div>
+    <div id="msg-self">
+      <div class="sender">${c.name}</div>
+      <div>${c.msg}</div>
+      <span class="time">${c.time}</span>
+    </div>
+  `;
+  chatMessages.appendChild(div);
+});
 
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Khi trang load thì load chat
-window.addEventListener("load", () => {
-  loadChat();
-  // Auto refresh chat mỗi 3 giây
-  setInterval(loadChat, 3000);
-});
-// Gắn sự kiện cho nút gửi
 document.getElementById("chatSendBtn").addEventListener("click", sendChat);
-
-// Gửi khi nhấn Enter
 document.getElementById("chatText").addEventListener("keypress", e => {
-  if (e.key === "Enter") {
-    sendChat();
-  }
+  if (e.key === "Enter") sendChat();
 });
+setInterval(loadChat, 5000); // tự động refresh chat
+
 
   function toggleBox(id) {
   document.querySelectorAll(".popup-box").forEach(box => box.classList.add("hidden"));
@@ -81,8 +129,8 @@ document.getElementById("chatText").addEventListener("keypress", e => {
 
 let goldHidden = false;
 
-function updateGold(balance) {
-  document.getElementById("goldAmount").textContent = "Vàng: " + fmt(balance);
+function updateGold(goldBalance) {
+  document.getElementById("goldAmount").textContent = fmt(goldBalance);
   // Khi ẩn thì chỉ update số thật, span *** vẫn giữ nguyên
 }
 
@@ -169,14 +217,67 @@ document.getElementById("toggleGoldBtn").addEventListener("click", () => {
 // chạy khi load trang
 createAuxUI();
 
-
-  // internal state
-  let balance = 0;
-  let pendingBets = []; // {id, type, amount, digit, placedAt}
-  let resultHistory = []; // {time, number, lastDigit, classification}
-  let betHistory = []; // {id,time,type,digit,amount,status,payout}
-let roundName = null; 
+// internal state (only temporary UI state)
+let goldBalance = 0; // chỉ dùng để hiển thị UI hiện tại
 const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cuối
+const API_MAIN = "https://index.nro2024.workers.dev"; 
+
+
+ async function persistToServer(accountId, username, password, key, value) {
+  try {
+    const res = await fetch(`${API_MAIN}/persist`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        accountId,
+        username,
+        password,
+        key,
+        value
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Persist failed");
+    }
+
+    console.log(`[SYNC OK] ${key} synced to server`);
+  } catch (e) {
+    console.warn(`[SYNC ERROR] ${key}:`, e.message);
+  }
+}
+
+async function syncAllData() {
+  const accountId = localStorage.getItem("accountId");
+  const currentUser = localStorage.getItem("currentUser");
+  const currentPass = localStorage.getItem("currentPass");
+
+  if (!accountId || !currentUser || !currentPass) {
+    console.warn("Sai thông tin");
+    return;
+  }
+
+  try {
+    const keys = ["goldBalance", "giftUsed"];
+
+    for (const key of keys) {
+      let value;
+      try {
+        const raw = localStorage.getItem(`${key}_${accountId}`);
+        value = raw ? JSON.parse(raw) : null;
+      } catch {
+        value = null;
+      }
+
+      if (value !== null) {
+        await persistToServer(accountId, currentUser, currentPass, key, value);
+      }
+    }
+  } catch (err) {
+    console.warn("syncAllData error:", err);
+  }
+}
 
 // lấy round trực tiếp từ backend
 async function loadRoundName() {
@@ -201,33 +302,52 @@ async function loadRoundName() {
 // --- persist ---
 const currentUser = localStorage.getItem("currentUser");
 
-// load balance cho user hiện tại
-function loadBalance(){
-  if(!currentUser){
-    balance = 0;
-    renderBalance();
+async function loadgoldBalance() {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) {
+    goldBalance = 0;
+    rendergoldBalance();
     return;
   }
+
   try {
-    const raw = localStorage.getItem(`goldBalance_${currentUser}`);
-    balance = raw ? Number(raw) : 0; 
-  } catch(e){
-    balance = 0;
+    const res = await fetch(`${API_MAIN}/character/load?account=${accountId}`);
+    const data = await res.json();
+
+    goldBalance = data.character?.balance ?? 0;
+  } catch (e) {
+    console.warn("loadgoldBalance error:", e);
+    goldBalance = 0;
   }
-  renderBalance();
-}
-// save balance cho user hiện tại
-function saveBalance(){
-  try {
-    localStorage.setItem(`goldBalance_${currentUser}`, String(balance));
-  } catch(e){}
-  renderBalance();
+
+  rendergoldBalance();
 }
 
-// hiển thị balance ra UI
-function renderBalance(){
-  const span = document.getElementById('goldAmount');
-  if(span) span.textContent = 'Vàng: ' + fmt(balance);
+
+// 💾 Cập nhật goldBalance của user lên server (bỏ localStorage)
+async function savegoldBalance() {
+  const accountId = localStorage.getItem("accountId");
+  if (!accountId) return;
+
+  try {
+    // Gửi lên server để cập nhật (nguồn dữ liệu thật)
+    await fetch(`${API_MAIN}/character/update-goldBalance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId, goldBalance })
+    });
+  } catch (e) {
+    console.warn("Server update goldBalance failed", e);
+  }
+
+  // Cập nhật lại hiển thị UI
+  rendergoldBalance();
+}
+
+// 💡 Hiển thị goldBalance ra UI
+function rendergoldBalance() {
+  const span = document.getElementById("goldAmount");
+  if (span) span.textContent = fmt(goldBalance);
 }
 
 
@@ -252,104 +372,12 @@ document.querySelectorAll(".tab-link").forEach(btn => {
   });
 });
 
-// nạp vàng
-document.getElementById("depositBtn").addEventListener("click", () => {
-  const amount = parseInt(document.getElementById("goldInputDeposit").value, 10) || 0;
-  if(amount > 0){
-    balance += amount;
-    saveBalance();
-    renderBalance();
-    addHistory("Nạp", amount);
-    alert("Đã nạp " + amount + " vàng!");
-  }
-});
-
-// rút vàng
-document.getElementById("withdrawBtn").addEventListener("click", () => {
-  const amount = parseInt(document.getElementById("goldInputWithdraw").value, 10) || 0;
-  if(amount > 0 && balance >= amount){
-    balance -= amount;
-    saveBalance();
-    renderBalance();
-    addHistory("Rút", amount);
-    alert("Đã rút " + amount + " vàng!");
-  } else {
-    alert("Số vàng không hợp lệ hoặc không đủ!");
-  }
-});
-
-// thêm lịch sử
-function addHistory(type, amount){
-  const ul = document.getElementById("goldHistory");
-  if(ul.querySelector("li") && ul.querySelector("li").textContent === "Chưa có giao dịch"){
-    ul.innerHTML = "";
-  }
-  const li = document.createElement("li");
-  li.textContent = type + " " + amount + " vàng";
-  ul.prepend(li);
+async function loadResultHistory() {
+  const res = await fetch(`${API_WORKER}/history`);
+  const data = await res.json();
+  resultHistory = Array.isArray(data) ? data.slice(-5) : [];
+  renderResultTable();
 }
-
-
-async function saveResultHistory(){ 
-  // tạm thời chỉ log, không gọi server
-  console.log("Save resultHistory", resultHistory.slice(-5));
-  return;
-}
-
-
-async function loadResultHistory(){ 
-  try {
-    const resp = await fetch(`${API_WORKER}/load?key=resultHistory`);
-    const data = await resp.json();
-    if (Array.isArray(data.value)) {
-      resultHistory = data.value.slice(-5);
-      renderResultTable();
-    }
-  } catch (e) {
-    console.error("Load resultHistory failed", e);
-  }
-}
-
-  // render pending text area (create if missing)
-function renderPending(){
-  const table = document.getElementById("pendingTable");
-  if(!table) return;
-
-  // số dòng hiển thị
-  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
-  const recent = pendingBets.slice(-rowsPerPage).reverse();
-
-  if(recent.length === 0){
-    table.innerHTML = `
-      <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
-        Chưa có cược chờ nào
-      </td></tr>`;
-    return;
-  }
-
-  let html = `
-    <tr>
-      <th style="padding: 8px 10px;">Mã phiên</th>
-      <th style="padding: 8px 10px;">Loại cược</th>
-      <th style="padding: 8px 10px;">Số tiền</th>
-      <th style="padding: 8px 10px;">Trạng thái</th>
-    </tr>
-  `;
-
-  for(const b of recent){
-    html += `
-      <tr>
-        <td style="padding: 8px 10px;">${b.round || "-"}</td>
-        <td style="padding: 8px 10px;">${labelType(b.type,b.digit)}</td>
-        <td style="padding: 8px 10px;">${b.amount}</td>
-        <td style="padding: 8px 10px;"  class="${statusClass(b.status)}">${b.status}</td>
-      </tr>
-    `;
-  }
-
-  table.innerHTML = html;
-}
-document.getElementById("rowsPerPagePending").addEventListener("change", renderPending);
 
 function showBetNotice(msg, success = true) {
   const notice = document.getElementById("betNotice");
@@ -378,51 +406,6 @@ function showBetNotice(msg, success = true) {
       tbody.appendChild(tr);
     }
   }
-
-function renderBetHistory(){
-  const table = document.getElementById("betHistoryTable");
-  if(!table) return;
-
-  if(betHistory.length === 0){
-    table.innerHTML = `
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
-        Chưa có lịch sử đặt cược
-      </td></tr>`;
-    return;
-  }
-
-  // lấy số dòng cần hiển thị từ dropdown
-  const rowsPerPage = Number(document.getElementById("rowsPerPage").value);
-  const recent = betHistory.slice(-rowsPerPage).reverse();
-
-  let html = `
-    <tr>
-      <th>Mã phiên</th>
-      <th>Loại cược</th>
-      <th>Số tiền</th>
-      <th>Kết quả</th>
-      <th>Trạng thái</th>
-      <th>Thưởng</th>
-    </tr>
-  `;
-
-  for(const b of recent){
-    html += `
-      <tr>
-        <td>${b.round || "?"}</td>
-        <td>${labelType(b.type,b.digit)}</td>
-        <td>${b.amount}</td>
-        <td>${b.result ?? "-"}</td>
-        <td class="${statusClass(b.status)}">${b.status}</td>
-        <td>${b.payout}</td>
-      </tr>
-    `;
-  }
-
-  table.innerHTML = html;
-}
-
-document.getElementById("rowsPerPage").addEventListener("change", renderBetHistory);
 
 
   function labelType(code, digit=null){
@@ -485,22 +468,25 @@ function renderRound(){
   if(rn) rn.textContent = roundName || '—';
 }
 
-// handle new round
-async function handleNewResult(res){
-  // Nếu chưa truyền res (fetch), lấy từ backend
-  if(!res) res = await fetchResult();
+// ---------- Handle new round ----------
+async function handleNewResult(res) {
+  if (!res) res = await fetchResult();
+  if (!res || !res.number || !res.round) {
+    console.warn("null");
+    return;
+  }
 
-  const numStr = String(res.number).replace(/[^0-9]/g,'');
+  const numStr = String(res.number).replace(/[^0-9]/g, '');
   const lastDigit = numStr ? Number(numStr.slice(-1)) : null;
-  const cls = lastDigit != null ? classifyLastDigit(lastDigit) : {bigSmall:'—', oddEven:'—'};
+  const cls = lastDigit != null 
+    ? classifyLastDigit(lastDigit) 
+    : { bigSmall: '—', oddEven: '—' };
 
-  // ⚡ Hiệu ứng hiển thị kết quả
-  setTimeout(()=>{
-    showResultOnDisk(res.number);  
-    setTimeout(()=>{ canOpen = true; }, 1200);
+  setTimeout(() => {
+    showResultOnDisk(res.number);
+    setTimeout(() => { canOpen = true; }, 1200);
   }, 0);
 
-  // Lưu kết quả mới vào lịch sử hiển thị
   resultHistory.push({
     time: res.time,
     round: res.round,
@@ -509,87 +495,58 @@ async function handleNewResult(res){
     classification: `${cls.bigSmall}/${cls.oddEven}`
   });
   while (resultHistory.length > 5) resultHistory.shift();
-  saveResultHistory();
   renderResultTable();
 
-  // cập nhật roundName từ backend luôn
   roundName = res.round;
   renderRound();
 
-  // settle pending bets theo round hiện tại
-  if (pendingBets.length > 0) {
-    const stillPending = [];
+  try {
+    const resp = await fetch(`${API_MAIN}/settle-round`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        round: res.round,
+        lastDigit,
+        classification: `${cls.bigSmall}/${cls.oddEven}`
+      })
+    });
+    const data = await resp.json();
 
- for (const p of pendingBets) {
-  // ✅ nếu chưa gắn round thì gắn round hiện tại
-  if (!p.round) {
-    p.round = res.round;
-    p.time = res.time;
-  }
-
-  // giờ tất cả đều thuộc round hiện tại → xử lý luôn
-  const win = checkBet(p.type, lastDigit, p.digit);
-  let payout = 0;
-  if (win) {
-    if (['big','small','odd','even'].includes(p.type)) {
-      payout = Math.floor(p.amount * 1.95);
-    } else if (p.type === 'digit') {
-      payout = Math.floor(p.amount * 8);
+    if (data.ok) {
+      console.log(`✅ Settle ok`);
+    } else {
+      console.warn("⚠️ Settle failed:", data.error);
     }
-  }
-
-  betHistory.push({
-    ...p,
-    status: win ? 'Thắng' : 'Thua',
-    payout,
-    result: res.number
-  });
-
-  if (win) balance += payout;
-}
-pendingBets = []; // ✅ sau khi xử lý thì xóa hết cược chờ
-
-    saveBalance();
-
-    while(betHistory.length > 20) betHistory.shift(); // giữ nhiều hơn 5 để an toàn
-    saveBetHistory();
-    savePendingBets();
-
-    renderPending();
-    renderBetHistory();
+  } catch (err) {
+    console.error("❌ Lỗi khi gọi settle-round:", err);
   }
 }
+
 function statusClass(status) {
   if (!status) return "status-cho";
   const s = status.toLowerCase();
-  if (s.includes("thắng")) return "status-thang";
-  if (s.includes("thua")) return "status-thua";
+  if (s.includes("won")) return "status-thang";
+  if (s.includes("lost")) return "status-thua";
   return "status-cho";
 }
 
-// Bet History
-function loadBetHistory(){
-  try {
-    const raw = localStorage.getItem(`betHistory_${currentUser}`);
-    betHistory = raw ? JSON.parse(raw) : [];
-  } catch(e){
-    betHistory = [];
-  }
-}
-function saveBetHistory(){
-  try {
-    localStorage.setItem(`betHistory_${currentUser}`, JSON.stringify(betHistory));
-  } catch(e){}
+function statusText(status) {
+  if (!status) return "Chờ";
+  const s = status.toLowerCase();
+  if (s.includes("won")) return "Thắng";
+  if (s.includes("lost")) return "Thua";
+  return "Chờ";
 }
 
-
-  // countdown aligned to minute
 let currentRem = 0;
 let nextTickAt = 0;
 
 function startCountdown() {
-  // Đồng bộ mốc về phút chẵn + 60s
   nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
+
+  let hasClosedDisk = false;
+  let hasHandledResult = false;
+  let isWaitingNextRound = false;
 
   async function tick() {
     const now = Date.now();
@@ -602,10 +559,11 @@ function startCountdown() {
     const cd = document.getElementById("countdown");
     if (cd) cd.textContent = mm + ":" + ss;
 
-    // 12s trước khi hết vòng thì đóng cược
-    if (rem === 48) {
+    // Đóng disk 1 lần khi rem <= 48
+    if (rem <= 48 && !hasClosedDisk) {
       closeDisk();
       canOpen = false;
+      hasClosedDisk = true;
 
       const small = document.getElementById("fetchedNumberSmall");
       if (small && resultHistory.length > 0) {
@@ -613,25 +571,39 @@ function startCountdown() {
       }
     }
 
-    // khi countdown về 0 → fetch kết quả + hiện 10s
-    if (rem <= 0) {
-      await handleNewResult();
+    // Xử lý kết quả ngay khi countdown về 0
+    if (rem <= 0 && !hasHandledResult) {
+      hasHandledResult = true;
 
-      // giữ kết quả trong 10 giây
-      await new Promise(r => setTimeout(r, 10000));
+      await handleNewResult();     // show kết quả
+      await loadgoldBalance();     // cập nhật số dư
+      await loadBetHistory();      // cập nhật cược
 
-      // đặt lại mốc vòng tiếp theo (50s còn lại)
-      nextTickAt = Date.now() + 50000;
+      // Sau 10 giây mới lấy phiên mới
+      if (!isWaitingNextRound) {
+        isWaitingNextRound = true;
+
+        setTimeout(async () => {
+          const rn = await getCurrentRound(); // fetch round mới
+          roundName = rn.round;
+          renderRound();
+          await checkPending();
+          nextTickAt = rn.time + 60000;
+
+          // reset flags
+          hasClosedDisk = false;
+          hasHandledResult = false;
+          isWaitingNextRound = false;
+        }, 10000);
+      }
     }
 
-    // lặp lại mỗi giây
     setTimeout(tick, 1000);
   }
 
   tick();
 }
-
-
+  
   function updateCountdownOnce(nextTickAt){
     const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
     const mm = String(Math.floor(rem/60)).padStart(2,'0');
@@ -651,12 +623,6 @@ betButtons.forEach(btn=>{
     const raw = btn.dataset.type;         // 'chan','le','tai','xiu'
     const canonical = mapType[raw];
     const group = typeToGroup[canonical];
-
-    // Nếu đã chọn trong cùng nhóm mà khác cửa → chặn
-    if (currentSelection.group === group && currentSelection.type !== canonical) {
-      alert("Không được chọn");
-      return;
-    }
 
     // Clear tất cả trước
     betButtons.forEach(b=>b.classList.remove('active'));
@@ -681,144 +647,507 @@ numButtons.forEach(btn=>{
   });
 });
 
+// ---------- Get current round ----------
 async function getCurrentRound() {
   try {
     const resp = await fetch(API_URL + "/random", { cache: "no-cache" });
     const data = await resp.json();
-    return data.round; // ✅ lấy round từ backend
+    return data; // ✅ trả nguyên object {round, time, number,...}
   } catch (e) {
     console.error("getCurrentRound error", e);
     return null;
   }
 }
-// Pending Bets
-function loadPendingBets(){
+  
+// ---------- Load bet history from server ----------
+async function loadBetHistory() {
   try {
-    const raw = localStorage.getItem(`pendingBets_${currentUser}`);
-    pendingBets = raw ? JSON.parse(raw) : [];
-  } catch(e){
-    pendingBets = [];
+    const accountId = localStorage.getItem("idgame");
+    if (!accountId) return;
+
+    const res = await fetch(`${API_MAIN}/bet/history?accountId=${accountId}`);
+    const data = await res.json();
+
+    if (data.ok && Array.isArray(data.data)) {
+      // Tách pending và finished
+      const pending = data.data.filter(b => b.status === "pending");
+      const finished = data.data.filter(b => b.status !== "pending");
+
+      renderPending(pending);
+      renderBetHistory(finished);
+    } else {
+      console.warn("Không có dữ liệu cược từ server");
+      renderPending([]);
+      renderBetHistory([]);
+    }
+  } catch (err) {
+    console.error("Không load được lịch sử cược:", err);
+    renderPending([]);
+    renderBetHistory([]);
   }
 }
-function savePendingBets(){
-  try {
-    localStorage.setItem(`pendingBets_${currentUser}`, JSON.stringify(pendingBets));
-  } catch(e){}
-}
 
+// ---------- Render bảng Đang Cược ----------
+function renderPending(pendingData = []) {
+  const table = document.querySelector("#pendingTable tbody");
+  if (!table) return;
 
-placeBetBtn.addEventListener('click', async () => {
-  // Lấy các nút đang chọn
-  const actives = document.querySelectorAll('.bet-btn.active, .num.active');
+  const rowsPerPage = Number(document.getElementById("rowsPerPagePending").value || 5);
+const sliced = pendingData.slice(0, rowsPerPage);
 
-  if (actives.length === 0) {
-    alert("Bạn chưa chọn cửa cược nào.");
+  if (!sliced.length) {
+    table.innerHTML = `
+      <tr><td colspan="4" style="text-align:center;color:#999;padding:10px">
+        Chưa có cược đang chờ nào
+      </td></tr>`;
     return;
   }
 
-  // Nếu chọn nhiều hơn 1 → báo lỗi
-  if (actives.length > 1) {
-    alert("Chỉ được chọn 1 cửa mỗi lần cược!");
+  table.innerHTML = sliced.map(b => `
+    <tr>
+      <td>${b.round}</td>
+      <td>${labelType(b.bet_type, b.bet_digit)}</td>
+      <td>${Number(b.amount).toLocaleString()}</td>
+      <td>${statusText(b.status)}</td>
+    </tr>
+  `).join("");
+}
+
+// ---------- Render bảng Lịch Sử Cược ----------
+function renderBetHistory(historyData = []) {
+  const table = document.querySelector("#betHistoryTable tbody");
+  if (!table) return;
+
+  const rowsPerPage = Number(document.getElementById("rowsPerPage").value || 5);
+  const sliced = historyData.slice(0, rowsPerPage);
+
+
+  if (!sliced.length) {
+    table.innerHTML = `
+      <tr><td colspan="6" style="text-align:center;color:#999;padding:10px">
+        Chưa có lịch sử đặt cược
+      </td></tr>`;
     return;
   }
 
-  // Lấy thông tin cược
+  table.innerHTML = sliced.map(b => `
+    <tr>
+      <td>${b.round}</td>
+      <td>${labelType(b.bet_type, b.bet_digit)}</td>
+      <td>${Number(b.amount).toLocaleString()}</td>
+      <td>${b.result_digit ?? "-"}</td>
+      <td class="${statusClass(b.status)}">${statusText(b.status)}</td>
+      <td>${b.win_amount ? Number(b.win_amount).toLocaleString() : "-"}</td>
+    </tr>
+  `).join("");
+}
+  
+  function formatTime(created_at) {
+  if (!created_at) return "-";
+
+  // thử số
+  const num = Number(created_at);
+  if (!isNaN(num)) return new Date(num).toLocaleString("vi-VN", { hour12:false });
+
+  // thử Date string
+  const d = new Date(created_at);
+  if (!isNaN(d)) return d.toLocaleString("vi-VN", { hour12:false });
+
+  // fallback raw
+  return created_at;
+}
+
+// ---------- Lịch sử giao dịch ----------
+async function loadHistory() {
+  const accountId = localStorage.getItem("idgame");
+  const tbody = document.querySelector("#goldHistory tbody");
+  if (!tbody) return;
+
+  if (!accountId) {
+    tbody.innerHTML = `<tr><td colspan="6">Vui lòng đăng nhập</td></tr>`;
+    return;
+  }
+
+  try {
+    const API = "https://index.nro2024.workers.dev";
+    const res = await fetch(`${API}/transactions?accountId=${accountId}`);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Chưa có giao dịch</td></tr>`;
+      return;
+    }
+
+    // ======= Từ điển dịch =======
+    const typeMap = {
+      DEPOSIT: "Nạp",
+      WITHDRAW: "Rút",
+      BET: "Đặt cược",
+      WIN: "Thắng",
+      LOSE: "Thua",
+    };
+
+    const noteMap = {
+      gift_redeem: "Đổi quà",
+      place_bet: "Đặt cược",
+      settle_round: "Kết quả",
+    };
+
+    // ======= Hàm định dạng thời gian =======
+function formatTime(value) {
+  if (!value) return "-";
+
+  // Nếu là số dạng UNIX (tính bằng giây)
+  if (!isNaN(value)) {
+    const ts = Number(value);
+    const date = ts < 1000000000000 ? ts * 1000 : ts; // nếu là giây → đổi sang mili-giây
+    return new Date(date).toLocaleString("vi-VN", { hour12: false });
+  }
+
+  // Nếu là chuỗi ngày giờ kiểu "13:23:03 12/10/2025"
+  if (typeof value === "string" && value.includes("/")) {
+    const [time, datePart] = value.split(" ");
+    const [day, month, year] = datePart.split("/");
+    return `${time} ${day.padStart(2,"0")}/${month.padStart(2,"0")}/${year}`;
+  }
+
+  // Fallback
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? "-" : d.toLocaleString("vi-VN", { hour12: false });
+}
+
+    // ======= Hiển thị =======
+    tbody.innerHTML = "";
+    data.data.forEach(tx => {
+      const row = document.createElement("tr");
+      const cls = (tx.type || "").toLowerCase();
+
+      const typeText = typeMap[tx.type?.toUpperCase()] || tx.type || "-";
+      const noteText = noteMap[tx.note] || tx.note || "";
+
+      row.innerHTML = `
+        <td class="${cls}">${typeText}</td>
+        <td>${Number(tx.amount || 0).toLocaleString("vi-VN")}</td>
+        <td>${tx.balance_before != null ? tx.balance_before.toLocaleString("vi-VN") : "-"}</td>
+        <td>${tx.balance_after != null ? tx.balance_after.toLocaleString("vi-VN") : "-"}</td>
+        <td>${noteText}</td>
+        <td>${formatTime(tx.created_at)}</td>
+      `;
+
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error("💥 loadHistory error:", err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Lỗi khi tải lịch sử</td></tr>`;
+  }
+}
+
+// Gọi hàm ngay khi load
+    document.getElementById("btnHistory").addEventListener("click", async () => {
+  document.getElementById("Historybox").classList.remove("hidden");
+  await loadHistory();
+});
+
+function closeBox(id) {
+  document.getElementById(id).classList.add("hidden");
+}
+
+// ---------- Load bảng thống kê ----------
+async function loadRoundStats() {
+  const tbodyStats = document.querySelector("#roundStatsTable tbody");
+  const tbodyPlayers = document.querySelector("#roundPlayersTable tbody");
+
+  tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>`;
+  tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API_MAIN}/bet/stats`);
+    const data = await res.json();
+
+    if (!data.ok) throw new Error(data.error || "Lỗi tải thống kê");
+
+    // ========== Tổng hợp ==========
+    document.getElementById("roundCode").textContent = data.round || "-";
+
+    const totalPlayers = data.players?.length || 0;
+    const totalBetSum = data.stats?.reduce((a, s) => a + (s.total || 0), 0) || 0;
+    document.getElementById("totalPlayers").textContent = totalPlayers.toLocaleString("vi-VN");
+    document.getElementById("totalBet").textContent = totalBetSum.toLocaleString("vi-VN");
+
+    if (!data.stats || !data.stats.length) {
+      tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Chưa có dữ liệu</td></tr>`;
+    } else {
+      const totalAll = data.stats.reduce((a, s) => a + (s.total || 0), 0);
+      tbodyStats.innerHTML = data.stats.map(s => {
+        const percent = totalAll > 0 ? ((s.total / totalAll) * 100).toFixed(1) : "0.0";
+        return `
+          <tr>
+            <td>${s.bet_type}</td>
+            <td>${s.count}</td>
+            <td>${Number(s.total).toLocaleString("vi-VN")}</td>
+            <td>${percent}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // ========== Chi tiết người chơi ==========
+    const players = data.players || [];
+    if (!players.length) {
+      tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Không có dữ liệu</td></tr>`;
+    } else {
+      tbodyPlayers.innerHTML = players.map((p, i) => `
+        <tr>
+          <td>
+            ${p.name}
+          </td>
+          <td>${Number(p.total_bet).toLocaleString("vi-VN")}</td>
+          <td>${Number(p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${(p.total_bet - p.total_win) > 0 ? "-" : ""}${Math.abs(p.total_bet - p.total_win).toLocaleString("vi-VN")}</td>
+          <td>${p.win_rate}%</td>
+        </tr>
+      `).join('');
+    }
+
+  } catch (err) {
+    console.warn("loadRoundStats error:", err);
+    tbodyStats.innerHTML = `<tr><td colspan="4" style="text-align:center;">Lỗi tải</td></tr>`;
+    tbodyPlayers.innerHTML = `<tr><td colspan="5" style="text-align:center;">Lỗi tải</td></tr>`;
+  }
+}
+function formatTime(ts) {
+  if (!ts) return "-";
+  const d = new Date(ts);
+  return d.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+  
+// Soi cầu
+    const link = "https://doan-so.nro2024.workers.dev/soicau";
+
+async function fetchSoicau() {
+  const taiXiuDiv = document.getElementById("tai-xiu");
+  const chanLeDiv = document.getElementById("chan-le");
+
+  taiXiuDiv.innerHTML = `<span>Đang tải...</span>`;
+  chanLeDiv.innerHTML = `<span>Đang tải...</span>`;
+
+  try {
+    const { ok, dayTaiXiu, dayChanLe, error } = await (await fetch(link)).json();
+    if (!ok) throw new Error(error || "Lỗi API");
+
+    const createBadge = (text, bg) => `
+      <span style="
+        display:inline-block;width:25px;height:25px;line-height:25px;
+        text-align:center;margin-right:3px;border-radius:50%;
+        color:#fff;font-weight:bold;font-family:Arial,sans-serif;
+        background-color:${bg}">
+        ${text[0]}
+      </span>
+    `;
+
+    taiXiuDiv.innerHTML = dayTaiXiu.map(v => createBadge(v, v === "Tài" ? "#28a745" : "#f00")).join('');
+    chanLeDiv.innerHTML = dayChanLe.map(v => createBadge(v, v === "Chẵn" ? "#007bff" : "#ff9900")).join('');
+
+  } catch (e) {
+    console.error("Lỗi lấy soi cầu:", e);
+    taiXiuDiv.innerHTML = chanLeDiv.innerHTML = `<span style="color:red;">Lỗi tải dữ liệu</span>`;
+  }
+}
+//Tải dữ liệu
+  document.getElementById("btnStats").addEventListener("click", async () => {
+  document.getElementById("StatsBox").classList.remove("hidden");
+  try {
+    // Chạy 2 cái cùng lúc
+    await Promise.all([loadRoundStats(), fetchSoicau()]);
+  } catch (err) {
+    console.error("Lỗi khi tải dữ liệu:", err);
+  }
+});
+
+// ---------- Load bảng xếp hạng ----------
+async function loadRank() {
+  const tbody = document.querySelector("#rankTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Đang tải...</td></tr>`;
+
+  try {
+    const API = typeof API_MAIN !== 'undefined' ? API_MAIN : "https://index.nro2024.workers.dev";
+    const res = await fetch(`${API}/rank`);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+
+    data.data.forEach((item, index) => {
+      const tr = document.createElement("tr");
+      const rank = index + 1;
+      let icon = `<span class="rank-num">${rank}</span>`; // mặc định hiển thị số
+
+      // top 3 có huy chương màu
+      if (rank === 1) icon = `<div class="special"><i class="fas fa-award gold"></i><span class="rank-num">1</span></div>`;
+      else if (rank === 2) icon = `<div class="special"><i class="fas fa-award silver"></i><span class="rank-num">2</span></div>`;
+      else if (rank === 3) icon = `<div class="special"><i class="fas fa-award bronze"></i><span class="rank-num">3</span></div>`;
+
+      tr.innerHTML = `
+        <td>${icon}</td>
+        <td>${item.name || "Unknown"}</td>
+        <td>${Number(item.balance || 0).toLocaleString("vi-VN")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("💥 loadRank error:", err);
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Lỗi tải dữ liệu</td></tr>`;
+  }
+}
+
+// ---------- Event khi mở popup ----------
+    document.getElementById("RankBox").addEventListener("click", async () => {
+  document.getElementById("rankBox").classList.remove("hidden");
+  await loadRank();
+});
+
+// ---------- Check ----------
+async function checkPending() {
+  const accountId = localStorage.getItem("idgame");
+  if (!accountId) return;
+
+  try {
+    const res = await fetch(`${API_MAIN}/bet/history?accountId=${accountId}`);
+    const data = await res.json();
+    if (!data.ok || !Array.isArray(data.data)) return;
+
+    const pending = data.data.filter(b => b.status === "pending");
+    if (pending.length === 0) return;
+
+    for (const bet of pending) {
+      console.log("Pending round:", bet.round);
+
+      // Lấy kết quả phiên đó
+      const resRound = await fetch(`${API_WORKER}/result?round=${bet.round}`);
+      const roundData = await resRound.json();
+      if (!roundData.ok || !roundData.number) continue;
+
+      const numStr = String(roundData.number).replace(/[^0-9]/g, "");
+      const lastDigit = Number(numStr.slice(-1));
+      const cls = lastDigit >= 5 ? "Tài" : "Xỉu";
+      const oe = lastDigit % 2 === 0 ? "Chẵn" : "Lẻ";
+      const classification = `${cls}/${oe}`;
+
+      // Gửi settle-round
+      await fetch(`${API_MAIN}/settle-round`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          round: bet.round,
+          lastDigit,
+          classification
+        })
+      });
+
+      console.log(`✅ Settled old round ${bet.round}`);
+    }
+  } catch (err) {
+    console.warn("checkPending error:", err);
+  }
+}
+
+// ---------- Place bet ----------
+placeBetBtn.addEventListener("click", async () => {
+  const actives = document.querySelectorAll(".bet-btn.active, .num.active");
+  if (actives.length === 0) return alert("Bạn chưa chọn cửa cược nào.");
+  if (actives.length > 1) return alert("Chỉ được chọn 1 cửa mỗi lần cược!");
+
   const type = currentSelection.type;
   const digit = currentSelection.digit;
   const amount = Math.max(1, Math.floor(Number(betAmountEl.value) || 0));
+  if (!type) return alert("Chưa chọn loại cược");
+  if (amount < 100) return alert("Đặt tối thiểu 100 vàng.");
+  if (amount > goldBalance) return alert("Không đủ vàng.");
+  if (currentRem <= 3) return alert("Đã hết thời gian, vui lòng chờ phiên sau");
 
-  if (!type) { 
-    alert("Chưa chọn loại cược"); 
-    return; 
-  }
-  if (amount < 100) {
-    alert("Đặt tối thiểu 100 vàng.");
-    return;
-  }
-  if (amount > balance) {
-    alert("Không đủ vàng.");
-    return;
-  }
-  if (currentRem <= 3) { 
-    alert("Đã hết thời gian, vui lòng chờ phiên sau"); 
-    return; 
-  }
-
-  // ✅ luôn lấy round từ backend
   const rn = await getCurrentRound();
-  if (!rn) { 
-    alert("Không lấy được phiên"); 
-    return; 
+  if (!rn?.round) return alert("Không lấy được phiên");
+
+  const accountId = localStorage.getItem("idgame");
+  if (!accountId) return alert("Chưa đăng nhập");
+
+  try {
+    // 🪙 Gửi cược lên server — server sẽ trừ vàng và trả lại số dư mới
+    const res = await fetch(`${API_MAIN}/bet/place`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        accountId,
+        round: rn.round,
+        type,
+        digit,
+        amount
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      // ✅ Cập nhật vàng từ server (newBalance)
+      if (typeof data.newBalance !== "undefined") {
+        goldBalance = data.newBalance;
+        rendergoldBalance();
+      } else {
+        await loadgoldBalance();
+      }
+
+      showBetNotice("Đặt cược thành công!");
+      await loadBetHistory();
+    } else {
+      alert("❌ Lỗi đặt cược: " + (data.error || "Không xác định"));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi mạng, vui lòng thử lại.");
   }
-
-  const id = makeId();
-  balance -= amount;
-  saveBalance();
-
-  const placed = {
-    id,
-    type,
-    digit: type === 'digit' ? digit : null,
-    amount,
-    status: 'Chờ',
-    payout: 0,
-    round: null,   // ✅ chưa gắn round, để chờ phiên tiếp theo
-    time: Date.now()
-  };
-
-  pendingBets.push(placed);
-  savePendingBets();
-  saveBetHistory();
-
-  showBetNotice("Đặt cược thành công!");
-  renderPending();
-  renderBetHistory();
 });
 
 
-// helper describe bet
-function descBet(b){
-  return `${labelType(b.type,b.digit)}`
-}
-
 // ---------- Initial Load ----------
-async function init(){
-loadBalance();
-await loadResultHistory();
-loadBetHistory();
-loadPendingBets();          // ✅ load pending trước
-renderPending();            // ✅ rồi render
-renderBetHistory();
-renderResultTable();
+async function init() {
+  await loadgoldBalance();     // lấy số vàng từ D1
+  await loadResultHistory();   // lấy lịch sử kết quả từ doan-so worker
+  await loadBetHistory();      // ✅ lấy lịch sử cược từ DB server
+  renderResultTable();         // cập nhật bảng kết quả
 
   // load round hiện tại từ backend
-  roundName = await loadRoundName();
-  renderRound(); // show mã phiên
+  const rn = await getCurrentRound();
+  roundName = rn?.round || "—";
+  renderRound();
 
   // show latest result ngay nếu có
-  if(resultHistory.length > 0){
-    const latest = resultHistory[resultHistory.length-1];
+  if (resultHistory.length > 0) {
+    const latest = resultHistory[resultHistory.length - 1];
     resultEl.textContent = latest.number;
     const small = document.getElementById('fetchedNumberSmall');
-    if(small) small.textContent = latest.number;
+    if (small) small.textContent = latest.number;
   }
 
   // start countdown dựa trên backend
-  if(resultHistory.length > 0){
-    const latest = resultHistory[resultHistory.length-1];
+  if (resultHistory.length > 0) {
+    const latest = resultHistory[resultHistory.length - 1];
     startCountdown(latest.time + 50000); // 50s chạy ngầm, 10s show kết quả
   } else {
     startCountdown();
   }
 }
 
-
-// gọi init (bắt lỗi để dễ debug)
 init().catch(err => console.error('init failed', err));
 
 
   // expose for debug
-  window._demo = { getState: ()=>({balance, pendingBets, resultHistory, betHistory}) };
+  window._demo = { getState: ()=>({goldBalance, pendingBets, resultHistory, betHistory}) };
 
 })();
  let canOpen = false; // chỉ cho mở khi countdown = 0:00
