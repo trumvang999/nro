@@ -313,7 +313,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   const btn = document.getElementById("toggle-history");
   if (btn) {
-    btn.addEventListener("click", toggleHistory);
+    btn.addEventListener("click", toggleHistory());
   }
 
 });
