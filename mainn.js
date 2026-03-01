@@ -294,7 +294,7 @@ window.addEventListener("DOMContentLoaded", function () {
   // 8. Khởi tạo
   window.addEventListener("load", renderUI);
 })();
-function togglePurchase() {
+function toggleHistory() {
   const box = document.getElementById("purchase-history-box");
 
   if (box.style.display === "none") {
