@@ -6,9 +6,8 @@ async function main() {
   const balanceBox = document.getElementById("balanceInfo");
   const avatar = document.getElementById("charAvatar");
 
-  let username = localStorage.getItem("currentUser");
-  let password = localStorage.getItem("currentPass");
-  let accountId = localStorage.getItem("accountId");
+  // 1. Thay đổi nguồn lấy dữ liệu: Chỉ dùng idgame
+  let accountId = localStorage.getItem("idgame");
 
   function getAvatar(planet) {
     switch (planet) {
@@ -19,57 +18,41 @@ async function main() {
     }
   }
 
-  async function loginOrCreate(user, pass) {
+  // 2. Hàm xử lý đăng nhập/tạo tài khoản dựa trên accountId
+  async function loginOrCreate(id) {
+    // Thử login chỉ với accountId
     const res = await fetch(`${API}/account/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: user, password: pass })
+      body: JSON.stringify({ accountId: id }) 
     });
     const data = await res.json();
-    console.log("Kết quả login:", data);
 
-    // ✅ Nếu có accountId -> đăng nhập thành công
-    if (data.accountId) {
-      localStorage.setItem("currentUser", user);
-      localStorage.setItem("currentPass", pass);
-      localStorage.setItem("accountId", data.accountId);
+    // Nếu tồn tại -> OK
+    if (res.ok && data.accountId) {
       return { ok: true, created: false, accountId: data.accountId };
     }
 
-// ✅ Nếu API trả "Invalid login" -> thử tạo mới
-if (data.error && data.error === "Invalid login") {
-  const createRes = await fetch(`${API}/account/register`, {  
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: user, password: pass })
-  });
-  const createData = await createRes.json();
-  console.log("Tạo tài khoản mới:", createData);
+    // Nếu không tồn tại -> Gọi API đăng ký (Register) để tạo mới
+    // Lưu ý: Backend Register cũng cần sửa để nhận accountId
+    const createRes = await fetch(`${API}/account/register`, {  
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId: id })
+    });
+    const createData = await createRes.json();
 
-  // Nếu tạo mới thành công -> lưu và tiếp tục
-  if (createData.accountId) {
-    localStorage.setItem("currentUser", user);
-    localStorage.setItem("currentPass", pass);
-    localStorage.setItem("accountId", createData.accountId);
-    return { ok: true, created: true, accountId: createData.accountId };
-  }
+    if (createData.accountId) {
+      return { ok: true, created: true, accountId: createData.accountId };
+    }
 
-  // Nếu tạo thất bại (vì user đã có thật sự) -> sai mật khẩu
-  if (createData.error && createData.error.includes("exists")) {
-    return { ok: false, error: "Sai thông tin đăng nhập." };
-  }
-
-  return { ok: false, error: createData.error || "Không thể tạo tài khoản mới." };
-}
-
-// fallback lỗi khác
-return { ok: false, error: data.error || "Lỗi không xác định." };
-
+    return { ok: false, error: createData.error || "Lỗi hệ thống tài khoản." };
   }
 
   async function loadCharacter() {
     if (!accountId) return;
 
+    // Load nhân vật dựa trên accountId (idgame)
     const res = await fetch(`${API}/character/load?account=${accountId}`);
     const data = await res.json();
 
@@ -84,14 +67,15 @@ return { ok: false, error: data.error || "Lỗi không xác định." };
       status.innerHTML = "";
       balanceBox.style.display = "flex";
       document.getElementById("charNameDisplay").innerText = char.name;
-      document.getElementById("charIdDisplay").innerText = char.characterId.slice(0, 6);
+      document.getElementById("charIdDisplay").innerText = String(char.characterId).slice(0, 6);
       document.getElementById("goldAmount").innerText = `${char.balance.toLocaleString()}`;
       avatar.src = getAvatar(char.planet);
-    localStorage.setItem("characterName", char.name);
-    localStorage.setItem("characterPlanet", char.planet)
+      localStorage.setItem("characterName", char.name);
+      localStorage.setItem("characterPlanet", char.planet);
     }
   }
 
+  // Xử lý nút tạo nhân vật
   document.getElementById("createBtn").onclick = async () => {
     const name = document.getElementById("charName").value.trim();
     const planet = document.getElementById("charPlanet").value;
@@ -100,13 +84,14 @@ return { ok: false, error: data.error || "Lỗi không xác định." };
       return alert("Tên nhân vật phải từ 3 đến 8 ký tự!");
     if (!planet || planet === "Chọn hành tinh")
       return alert("Vui lòng chọn hành tinh!");
-      // 🧠 Kiểm tra trùng tên trước khi tạo
-  const checkRes = await fetch(`${API}/character/check-name?name=${encodeURIComponent(name)}`);
-  const checkData = await checkRes.json();
-  if (checkData.exists) {
-    alert("Tên nhân vật đã tồn tại, vui lòng chọn tên khác!");
-    return;
-  }
+
+    // Check trùng tên
+    const checkRes = await fetch(`${API}/character/check-name?name=${encodeURIComponent(name)}`);
+    const checkData = await checkRes.json();
+    if (checkData.exists) {
+      alert("Tên nhân vật đã tồn tại!");
+      return;
+    }
 
     const res = await fetch(`${API}/character/create`, {
       method: "POST",
@@ -126,30 +111,26 @@ return { ok: false, error: data.error || "Lỗi không xác định." };
     }
   };
 
-  document.getElementById("toggleGoldBtn").onclick = () => {
-    const gold = document.getElementById("goldAmount");
-    const hide = document.getElementById("goldAmountHide");
-    gold.style.display = gold.style.display !== "none" ? "none" : "inline";
-    hide.style.display = hide.style.display === "none" ? "inline" : "none";
-  };
-
-  if (username && password) {
-    const result = await loginOrCreate(username, password);
+  // Logic khởi chạy (Entry Point)
+  if (accountId) {
+    const result = await loginOrCreate(accountId);
     if (result.ok) {
-      accountId = result.accountId;
+      // Đăng nhập/Tạo thành công
       if (result.created) {
-        statusNv.style.color = "green";
-        statusNv.innerHTML = "Đã tạo tài khoản mới!";
+        console.log("Hệ thống đã tự động tạo ID mới trong DB");
       }
-await loadCharacter();
+      await loadCharacter();
     } else {
-      status.innerHTML = result.error;
+      status.innerHTML = `<span style="color:red">${result.error}</span>`;
     }
   } else {
-    status.innerHTML = "Vui lòng đăng nhập.";
+    status.innerHTML = "Không tìm thấy ID Game (idgame) trong hệ thống.";
   }
 }
 
 function closeBox() {
   document.getElementById("createCharBox").style.display = "none";
 }
+
+// Đừng quên gọi hàm main()
+main();
