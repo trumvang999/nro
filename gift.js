@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
     showMsg("Đang nhận quà...", "orange");
 
     try {
-      const res = await fetch(API_UR, {
+      const res = await fetch(API_URL, {
         method: "POST",
         credentials: "include", 
         headers: { "Content-Type": "application/json" },
