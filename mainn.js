@@ -145,6 +145,8 @@ function renderUI() {
     document.getElementById("user-display").innerText = info.username;
     document.getElementById("form-title").textContent = "Thông tin tài khoản";
     localStorage.setItem("idgame", info.idgame);
+    document.getElementById("email-user").innerText = info.email;
+    document.getElementById("name-user").innerText = info.username;
 
     loadBalance();
 
