@@ -87,23 +87,3 @@ btnSubmit.onclick = async () => {
     msgBox.innerText = "Lỗi kết nối server";
   }
 };
-</script>
- <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const btn = document.getElementById("toggle-order");
-  const box = document.getElementById("toggle-order-box");
-
-  // Ẩn mặc định
-  box.style.display = "none";
-
-  let isOpen = false;
-
-  btn.addEventListener("click", function () {
-    if (isOpen) {
-      box.style.display = "none";   // đóng
-    } else {
-      box.style.display = "block";  // mở
-    }
-    isOpen = !isOpen;
-  });
-});
