@@ -1,62 +1,47 @@
 const btn = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
-const WORKER_URL = "https://shop.nro2024.workers.dev";
+const API_URL = "https://account.nro2024.workers.dev";
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!btn || !msgBox) return;
 
   btn.addEventListener("click", async () => {
-    const user = localStorage.getItem("currentUser");
 
-    // 1️⃣ Kiểm tra đăng nhập
-    if (!user) {
-      showMsg("Vui lòng đăng nhập để nhận quà!", "orange");
-      btn.style.display = "none";
-      return;
-    }
-
-    // 2️⃣ Disable tránh spam click
+    // 1️⃣ Disable chống spam
     btn.disabled = true;
-            btn.style.display = "none";
-    showMsg("Đang xử lý, vui lòng chờ...", "orange");
+    showMsg("Đang nhận quà...", "orange");
 
-try {
-  const response = await fetch(
-    `${WORKER_URL}/?action=claim_gift&username=${encodeURIComponent(user)}`,
-    { method: "POST" }
-  );
+    try {
+      const res = await fetch(API_UR, {
+        method: "POST",
+        credentials: "include", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "claim_gift" })
+      });
 
-  const text = await response.text(); 
+      const data = await res.json();
 
-  if (!response.ok) {
-    showMsg(text || "Lỗi server!", "red");
-    btn.disabled = false;
-    return;
-  }
+      if (!data.success) {
+        showMsg(data.message || "Không thể nhận quà", "red");
+        btn.disabled = false;
+        return;
+      }
 
-  // 🔹 Xử lý theo nội dung backend trả
-  if (text.includes("✅")) {
-    showMsg(text, "green");
-    btn.style.display = "none";
-    setTimeout(() => {
-      msgBox.style.display = "none";
-    }, 5000);
-  } 
-  else if (text.includes("❌")) {
-    showMsg(text, "red");
-    btn.disabled = false;
-  } 
-  else {
-    showMsg("Phản hồi không xác định!", "red");
-    btn.disabled = false;
-  }
+      // ✅ Thành công
+      showMsg(data.message, "green");
+      btn.style.display = "none";
 
-} catch (error) {
-  showMsg("Không thể kết nối server. Vui lòng thử lại!", "red");
-  btn.disabled = false;
-}
+      // nếu muốn reload số dư
+      // loadUserInfo();
 
+      setTimeout(() => {
+        msgBox.style.display = "none";
+      }, 5000);
 
+    } catch (err) {
+      showMsg("Không thể kết nối server", "red");
+      btn.disabled = false;
+    }
   });
 });
 
