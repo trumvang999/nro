@@ -139,9 +139,8 @@ function renderUI() {
 
 if (!info.success) {
     showCookieWarning();
-  }
-  return;
-})
+    return;
+}
     document.getElementById("form").style.display = "none";
     document.getElementById("switch-link").style.display = "none";
     document.getElementById("user-panel").style.display = "block";
