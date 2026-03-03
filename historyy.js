@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://account.nro2024.workers.dev";
+const SCRIPT_URL = "https://api.nro2024.shop";
 
 async function loadHistoryTable() {
   const tbody = document.querySelector("#purchase-table tbody");
