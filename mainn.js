@@ -127,7 +127,10 @@ fetch(scriptURL + "?action=" + (isRegistering ? "register" : "login"), {
 
 const itemsPerPage = 5;
 let historyData = [];
-
+  
+function hasTokenCookie() {
+  return document.cookie.includes("token=");
+}
 function renderUI() {
 
   fetch(scriptURL + "?action=get_user", {
@@ -137,8 +140,12 @@ function renderUI() {
   .then(r => r.json())
   .then(info => {
 
-    if (!info.success) return; // chưa login thì thôi
-
+if (!info.success) {
+  if (!hasTokenCookie()) {
+    showCookieWarning();
+  }
+  return;
+}
     document.getElementById("form").style.display = "none";
     document.getElementById("switch-link").style.display = "none";
     document.getElementById("user-panel").style.display = "block";
@@ -299,3 +306,10 @@ function toggleHistory() {
     box.style.display = "none";
   }
 };
+function showCookieWarning() {
+  document.getElementById("cookieWarning").style.display = "flex";
+}
+
+function closeCookieWarning() {
+  document.getElementById("cookieWarning").style.display = "none";
+}
