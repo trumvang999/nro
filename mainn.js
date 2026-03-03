@@ -127,10 +127,7 @@ fetch(scriptURL + "?action=" + (isRegistering ? "register" : "login"), {
 
 const itemsPerPage = 5;
 let historyData = [];
-  
-function hasTokenCookie() {
-  return document.cookie.includes("token=");
-}
+
 function renderUI() {
 
   fetch(scriptURL + "?action=get_user", {
@@ -141,7 +138,6 @@ function renderUI() {
   .then(info => {
 
 if (!info.success) {
-  if (!hasTokenCookie()) {
     showCookieWarning();
   }
   return;
