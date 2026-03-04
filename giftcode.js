@@ -2,8 +2,8 @@ async function redeemGiftcode() {
   const accountId = localStorage.getItem("idgame");
   const code = document.getElementById("giftcodeInput")?.value?.trim();
 
-  if (!accountId) return alert("Vui lòng đăng nhập");
-  if (!code) return alert("Nhập giftcode");
+  if (!accountId) return showToast("Vui lòng đăng nhập", "error");
+  if (!code) return showToast("Nhập giftcode", "error");
 
   try {
     const resp = await fetch("https://index.nro2024.workers.dev/gift/redeem", {
@@ -15,24 +15,25 @@ async function redeemGiftcode() {
     const data = await resp.json();
 
     if (!data.ok) {
-      if (data.error === "invalid_code") return alert("Giftcode sai!");
-      if (data.error === "already_redeemed") return alert("Bạn đã nhập mã này rồi!");
-      if (data.error === "missing_user") return alert("Tài khoản không tồn tại!");
-      return alert("Lỗi: " + (data.error || "Không xác định"));
+      if (data.error === "invalid_code") return showToast("Giftcode sai!", "error");
+      if (data.error === "already_redeemed") return showToast("Bạn đã nhập mã này rồi!", "error");
+      if (data.error === "missing_user") return showToast("Tài khoản không tồn tại!", "error");
+      return showToast("Lỗi: " + (data.error || "Không xác định"), "error");
     }
 
-    // ✅ Cập nhật vàng mới vào UI
     const amount = data.amount || 0;
     const newBal = data.newBalance || 0;
 
     const span = document.getElementById("goldAmount");
     if (span) span.textContent = new Intl.NumberFormat().format(newBal);
 
-    alert(`Nhận thành công ${amount} vàng!`);
-    location.reload();
+    showToast(`Nhận thành công ${amount} vàng!`, "success");
+
+    setTimeout(() => location.reload(), 1200);
   } catch (err) {
     console.error(err);
-    alert("Lỗi mạng, thử lại sau!");
+    showToast("Lỗi mạng, thử lại sau!", "error");
   }
 }
+
 document.getElementById("redeemGiftBtn")?.addEventListener("click", redeemGiftcode);
