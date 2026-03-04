@@ -108,7 +108,8 @@ fetch(scriptURL + "?action=" + (isRegistering ? "register" : "login"), {
 
     alert("Đăng nhập thành công!");
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
-    location.reload();
+    success.innerText = "Đăng nhập thành công!";
+    setTimeout(location.reload(), 1000);
 
   }
 
