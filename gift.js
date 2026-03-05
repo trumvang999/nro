@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       if (!data.success) {
         showMsg(data.message || "Không thể nhận quà", "red");
-        btn.disabled = false;
+                btn.style.display = "none";
         return;
       }
 
@@ -40,7 +40,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       showMsg("Không thể kết nối server", "red");
-      btn.disabled = false;
+        msgBox.style.display = "none";
     }
   });
 });
