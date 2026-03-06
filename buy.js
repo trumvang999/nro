@@ -6,7 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const accId      = accNode?.textContent.trim() || "";
   const infoBox    = document.getElementById("acc-info");
   const confirmBtn = document.getElementById("confirm-buy");
-
+	const voucher = document.getElementById("voucher")?.value || "";
+	
   if (!accId) {
     infoBox.innerHTML = `<span style='color:red;'>Không lấy được acc ID</span>`;
     return;
