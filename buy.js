@@ -230,7 +230,7 @@ if (voucher) {
   if (data.voucher) {
 
     msg.innerHTML =
-`Áp dụng voucher giảm <b>${data.voucher.value}${data.voucher.type === "percent" ? "%" : "đ"}</b> thành công
+`Áp dụng voucher giảm <b>${data.voucher.value}${data.voucher.type === "percent" ? "%" : "đ"}</b> thành công! <\n>
 Số tiền cần trả: <b>${discountPrice}</b>`;
 
     msg.style.color = "green";
