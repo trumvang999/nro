@@ -158,11 +158,17 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================= CHECK INFO =================
 async function checkAccStatus(accId) {
   try {
+
+    const voucher = document.getElementById("voucher")?.value || "";
+
     const res = await fetch(`${SCRIPT_URL}?action=check_acc_status`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ acc_id: accId })
+      body: JSON.stringify({
+        acc_id: accId,
+        voucher: voucher
+      })
     });
 
     const data = await res.json();
@@ -175,6 +181,7 @@ async function checkAccStatus(accId) {
       return;
     }
 
+    // ===== STATUS =====
     statusEl.innerText = data.status;
 
     if (data.status === "Hết") {
@@ -186,6 +193,33 @@ async function checkAccStatus(accId) {
       buyBtn.disabled = false;
       buyBtn.innerText = "Xác nhận mua";
     }
+
+    // ===== PRICE =====
+    const productPrice = data.price;
+    const discountPrice = data.final_price;
+
+    // ===== GÁN CHUYỂN KHOẢN =====
+    document.getElementById("display-amount").innerText =
+      productPrice.toLocaleString() + " VNĐ";
+	  
+    document.getElementById("discount-amount").innerText =
+      discountPrice.toLocaleString() + " VNĐ";
+	  
+    const productName =
+      document.querySelector("#ttin .post-title-02 a")?.innerText ||
+      "Không rõ sản phẩm";
+
+    document.getElementById("display-content").innerText = productName;
+
+    // ===== TAB THẺ CÀO =====
+    document.getElementById("original-price").innerText =
+      productPrice.toLocaleString() + " VNĐ";
+
+    const increased = productPrice * 1.25;
+    const rounded = roundUpTo10k(increased);
+
+    document.getElementById("card-price").innerText =
+      rounded.toLocaleString() + " VNĐ";
 
   } catch (err) {
     console.error(err);
