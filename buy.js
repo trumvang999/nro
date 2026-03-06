@@ -69,15 +69,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // ================= LOAD LỊCH SỬ MUA =================
-  function copyTexts(text) {
+window.copyTexts = function(text) {
   navigator.clipboard.writeText(text)
     .then(() => alert("Đã copy"))
     .catch(() => alert("Copy thất bại"));
-}
-  
-function applyVoucher() {
+};
+
+window.applyVoucher = function() {
   checkAccStatus(currentAccId);
-}
+};
+	
   window.loadHistoryTable = async function () {
 
     const tbody = document.querySelector("#purchase-table tbody");
