@@ -5,7 +5,7 @@ function getAvatar(planet) {
     case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
     case "Namek": return "https://forum.ngocrongonline.com/avatar/small523.png";
     case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
-    default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
+    default: return "https://forum.ngocrongonline.com/avatar/small15538.png";
   }
 }
 
