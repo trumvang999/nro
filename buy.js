@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   checkAccStatus(accId);
-	const voucher = document.getElementById("voucher")?.value || "";
 
 
   // ================= MUA ACC =================
@@ -22,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmBtn.textContent = "Đang xử lý...";
 
     try {
-
+	const voucher = document.getElementById("voucher")?.value || "";
       const form = new URLSearchParams();
       form.append("acc_id", accId);
     form.append("voucher", voucher);   
