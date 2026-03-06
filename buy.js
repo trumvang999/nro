@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const form = new URLSearchParams();
       form.append("acc_id", accId);
+    form.append("voucher", voucher);   
 
       const res = await fetch(`${SCRIPT_URL}?action=buy`, {
         method: "POST",
@@ -220,7 +221,20 @@ async function checkAccStatus(accId) {
 
     document.getElementById("card-price").innerText =
       rounded.toLocaleString() + " VNĐ";
+const msg = document.getElementById("voucher-msg");
 
+if (voucher) {
+  if (data.voucher) {
+    msg.innerText = "Áp dụng voucher thành công";
+    msg.style.color = "green";
+  } else {
+    msg.innerText = "Voucher không hợp lệ";
+    msg.style.color = "red";
+  }
+} else {
+  msg.innerText = "";
+}
+	  
   } catch (err) {
     console.error(err);
   }
