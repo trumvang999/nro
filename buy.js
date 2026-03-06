@@ -226,15 +226,26 @@ async function checkAccStatus(accId) {
 const msg = document.getElementById("voucher-msg");
 
 if (voucher) {
+
   if (data.voucher) {
-    msg.innerText = "Áp dụng voucher giảm ${voucher.value} thành công \n Số tiền cần trả: ${discountPrice}";
+
+    msg.innerText =
+`Áp dụng voucher giảm ${data.voucher.value}${data.voucher.type === "percent" ? "%" : "đ"} thành công
+Số tiền cần trả: ${discountPrice.toLocaleString()} VNĐ`;
+
     msg.style.color = "green";
+
   } else {
+
     msg.innerText = "Voucher không hợp lệ";
     msg.style.color = "red";
+
   }
+
 } else {
+
   msg.innerText = "";
+
 }
 	  
   } catch (err) {
