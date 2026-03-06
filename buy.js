@@ -74,7 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(() => alert("Đã copy"))
     .catch(() => alert("Copy thất bại"));
 }
-
+  
+function applyVoucher() {
+  checkAccStatus(currentAccId);
+}
   window.loadHistoryTable = async function () {
 
     const tbody = document.querySelector("#purchase-table tbody");
