@@ -208,9 +208,6 @@ async function checkAccStatus(accId) {
     document.getElementById("display-amount").innerText =
       productPrice.toLocaleString() + " VNĐ";
 	  
-    document.getElementById("discount-amount").innerText =
-      discountPrice.toLocaleString() + " VNĐ";
-	  
     const productName =
       document.querySelector("#ttin .post-title-02 a")?.innerText ||
       "Không rõ sản phẩm";
@@ -230,7 +227,7 @@ const msg = document.getElementById("voucher-msg");
 
 if (voucher) {
   if (data.voucher) {
-    msg.innerText = "Áp dụng voucher thành công";
+    msg.innerText = "Áp dụng voucher giảm ${voucher.value} thành công \n Số tiền cần trả: ${discountPrice.toLocaleString() + " VNĐ"}";
     msg.style.color = "green";
   } else {
     msg.innerText = "Voucher không hợp lệ";
