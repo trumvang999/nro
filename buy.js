@@ -202,7 +202,7 @@ async function checkAccStatus(accId) {
 
     // ===== PRICE =====
     const productPrice = data.price;
-    const discountPrice = data.final_price;
+    const discountPrice = data.final_price.toLocaleString() + " VNĐ";
 
     // ===== GÁN CHUYỂN KHOẢN =====
     document.getElementById("display-amount").innerText =
@@ -227,7 +227,7 @@ const msg = document.getElementById("voucher-msg");
 
 if (voucher) {
   if (data.voucher) {
-    msg.innerText = "Áp dụng voucher giảm ${voucher.value} thành công \n Số tiền cần trả: ${discountPrice.toLocaleString() + " VNĐ"}";
+    msg.innerText = "Áp dụng voucher giảm ${voucher.value} thành công \n Số tiền cần trả: ${discountPrice}";
     msg.style.color = "green";
   } else {
     msg.innerText = "Voucher không hợp lệ";
