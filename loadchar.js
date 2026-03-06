@@ -14,7 +14,7 @@ async function main() {
       case "Trái Đất": return "https://forum.ngocrongonline.com/avatar/small1475.png";
       case "Namek": return "https://forum.ngocrongonline.com/avatar/small523.png";
       case "Xayda": return "https://forum.ngocrongonline.com/avatar/small5339.png";
-      default: return "https://www.pngplay.com/wp-content/uploads/12/Goku-No-Background.png";
+      default: return "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgP4ChmyLOtti8NL5pdMz4_22OOpfM-He-6leFrZyKkqz2Kx3i7mgLKX5UPa5n2cA-4EEzxLmDXvEFntF_qnhYX6EpBh-xZUTnMzwrPHxi50BvES-DHIitq89MGA4s0afiFX_I-Ta8YDmHcNl3bpFltuemYpwtr6qh5Vftv33FleFARLbkfQ4LGjbnrEUDK/s1600-rw/icon.png";
     }
   }
 
