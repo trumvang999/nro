@@ -76,7 +76,7 @@ window.copyTexts = function(text) {
 };
 
 window.applyVoucher = function() {
-  checkAccStatus(currentAccId);
+  checkAccStatus(accId);
 };
 	
   window.loadHistoryTable = async function () {
