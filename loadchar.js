@@ -117,14 +117,14 @@ async function main() {
     if (result.ok) {
       // Đăng nhập/Tạo thành công
       if (result.created) {
-        console.log("Hệ thống đã tự động tạo ID mới trong DB");
+        console.log("Hệ thống đã tự động tạo ID mới");
       }
       await loadCharacter();
     } else {
       status.innerHTML = `<span style="color:red">${result.error}</span>`;
     }
   } else {
-    status.innerHTML = "Không tìm thấy ID Game (idgame) trong hệ thống.";
+    status.innerHTML = "Chưa đăng nhập.";
   }
 }
 
