@@ -146,7 +146,7 @@ if (!info.success) {
     document.getElementById("switch-link").style.display = "none";
     document.getElementById("user-panel").style.display = "block";
     document.getElementById("user-display").innerText = info.username;
-    document.getElementById("user-gold").innerText = info.so_du_vang;
+    document.getElementById("user-gold").innerText = info.so_du_vang.toLocaleString() + " vàng";
     document.getElementById("form-title").textContent = "Thông tin tài khoản";
     localStorage.setItem("idgame", info.idgame);
     document.getElementById("email-user").innerText = info.email;
