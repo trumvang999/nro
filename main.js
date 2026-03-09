@@ -44,6 +44,9 @@
 
   // 3. Xử lý đăng ký / đăng nhập
   function handleSubmit() {
+    const captcha = document.querySelector(
+  'textarea[name="cf-turnstile-response"]'
+)?.value;
     const u       = document.getElementById("username").value.trim().toLowerCase();
     const p       = document.getElementById("password").value.trim();
     const email   = document.getElementById("email").value.trim();
@@ -71,7 +74,10 @@ if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
   msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
   return resetBtn();
 }
-
+if (!captcha) {
+  msg.innerText = "Vui lòng xác nhận captcha.";
+  return resetBtn();
+}
     if (isRegistering && p !== confirm) {
       msg.innerText = "Mật khẩu nhập lại không khớp.";
       return resetBtn();
@@ -82,6 +88,7 @@ if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
     data.append("action", isRegistering ? "register" : "login");
     data.append("username", u);
     data.append("password", p);
+    data.append("cf-turnstile-response", captcha);
     if (isRegistering) data.append("email", email);
 
     // fetch
@@ -93,10 +100,15 @@ fetch(scriptURL + "?action=" + (isRegistering ? "register" : "login"), {
 .then(r => r.json())
 .then(res => {
 
-  if (!res.success) {
-    msg.innerText = res.message || "Có lỗi xảy ra";
-    return;
+if (!res.success) {
+  msg.innerText = res.message || "Có lỗi xảy ra";
+
+  if (window.turnstile) {
+    turnstile.reset();
   }
+
+  return;
+}
 
   if (isRegistering) {
 
