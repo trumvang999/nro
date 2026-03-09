@@ -30,6 +30,9 @@
 
   // 2. Chuyển Đăng nhập ↔ Đăng ký
   function switchMode() {
+    if (window.turnstile) {
+  turnstile.reset();
+}
     isRegistering = !isRegistering;
     document.getElementById("form-title").innerText      = isRegistering ? "Đăng ký" : "Đăng nhập";
     document.getElementById("done").innerText            = isRegistering ? "Đăng ký" : "Đăng nhập";
@@ -45,10 +48,9 @@
   // 3. Xử lý đăng ký / đăng nhập
   function handleSubmit() {
   const captchaField = document.querySelector(
-  'textarea[name="cf-turnstile-response"]'
+  'input[name="cf-turnstile-response"]'
 );
 const captcha = captchaField ? captchaField.value : "";
-    
     const u       = document.getElementById("username").value.trim().toLowerCase();
     const p       = document.getElementById("password").value.trim();
     const email   = document.getElementById("email").value.trim();
@@ -76,7 +78,7 @@ if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
   msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
   return resetBtn();
 }
-if (isRegistering && !captcha) {
+if (isRegistering) {
   msg.innerText = "Vui lòng xác nhận captcha.";
   return resetBtn();
 }
@@ -90,9 +92,7 @@ if (isRegistering && !captcha) {
     data.append("action", isRegistering ? "register" : "login");
     data.append("username", u);
     data.append("password", p);
-if (isRegistering) {
   data.append("cf-turnstile-response", captcha);
-}
     if (isRegistering) data.append("email", email);
 
     // fetch
