@@ -44,9 +44,11 @@
 
   // 3. Xử lý đăng ký / đăng nhập
   function handleSubmit() {
-    const captcha = document.querySelector(
+  const captchaField = document.querySelector(
   'textarea[name="cf-turnstile-response"]'
-)?.value;
+);
+const captcha = captchaField ? captchaField.value : "";
+    
     const u       = document.getElementById("username").value.trim().toLowerCase();
     const p       = document.getElementById("password").value.trim();
     const email   = document.getElementById("email").value.trim();
@@ -74,7 +76,7 @@ if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
   msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
   return resetBtn();
 }
-if (!captcha) {
+if (isRegistering && !captcha) {
   msg.innerText = "Vui lòng xác nhận captcha.";
   return resetBtn();
 }
@@ -88,7 +90,9 @@ if (!captcha) {
     data.append("action", isRegistering ? "register" : "login");
     data.append("username", u);
     data.append("password", p);
-    data.append("cf-turnstile-response", captcha);
+if (isRegistering) {
+  data.append("cf-turnstile-response", captcha);
+}
     if (isRegistering) data.append("email", email);
 
     // fetch
@@ -115,13 +119,16 @@ if (!res.success) {
     alert("Đăng ký thành công!");
     success.innerText = "Đăng ký thành công! Vui lòng đăng nhập.";
     setTimeout(switchMode, 1000);
+    if (window.turnstile) {
+  turnstile.reset();
+}
 
   } else {
 
     alert("Đăng nhập thành công!");
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
     success.innerText = "Đăng nhập thành công!";
-    setTimeout(location.reload(), 1000);
+    setTimeout(() => location.reload(), 1000);
 
   }
 
