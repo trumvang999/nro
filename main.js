@@ -78,7 +78,7 @@ if (!/[a-zA-Z]/.test(u) || !/[a-zA-Z]/.test(p)) {
   msg.innerText = "Tài khoản và mật khẩu phải chứa ít nhất một chữ cái.";
   return resetBtn();
 }
-if (isRegistering) {
+if (!captcha) {
   msg.innerText = "Vui lòng xác nhận captcha.";
   return resetBtn();
 }
