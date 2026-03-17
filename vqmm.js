@@ -129,8 +129,8 @@ const logged = localStorage.getItem("idgame");
     if (!userData.success) throw new Error(userData.message);
 
     updateBalanceDisplay(userData.so_du_vang);
-    const user-gem = document.getElementById("user-gem");
-    user-gem.innerText = Number(userData.so_du_ngoc).toLocaleString("vi-VN") + " ngọc";
+    const userGem = document.getElementById("user-gem");
+    userGem.innerText = Number(userData.so_du_ngoc).toLocaleString("vi-VN") + " ngọc";
 
     // ===== LẤY LỊCH SỬ QUAY =====
     const historyRes = await fetch(`${API_BASE}?action=history-spin`, {
