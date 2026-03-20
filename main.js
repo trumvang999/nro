@@ -115,8 +115,6 @@ if (!res.success) {
 }
 
   if (isRegistering) {
-
-    alert("Đăng ký thành công!");
     success.innerText = "Đăng ký thành công! Vui lòng đăng nhập.";
     setTimeout(switchMode, 1000);
     if (window.turnstile) {
@@ -127,7 +125,6 @@ if (!res.success) {
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
     success.innerText = "Đăng nhập thành công!";
     loadUser();
-     alert("Đăng nhập thành công!");
 setTimeout(() => {
   location.href = "/p/tai-khoan.html";
 }, 1000);
