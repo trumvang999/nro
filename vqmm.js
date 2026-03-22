@@ -194,7 +194,6 @@ const logged = localStorage.getItem("idgame");
     const resultEl = document.getElementById("result");
     const wheel = document.getElementById("wheel");
     
-    if (!localStorage.getItem("idgame")) { alert("Vui lòng đăng nhập."); return; }
     if (rotating) return;
     
     rotating = true;
@@ -243,7 +242,7 @@ const logged = localStorage.getItem("idgame");
       }, 4100);
 
     } catch (err) {
-      alert(err.message);
+      resultEl.innerHTML(err.message);
       rotating = false;
       btnSpin.disabled = false;
     }
@@ -254,7 +253,6 @@ const logged = localStorage.getItem("idgame");
     const resultEl = document.getElementById("result");
     const wheel = document.getElementById("wheel");
     
-    if (!localStorage.getItem("idgame")) { alert("Vui lòng đăng nhập."); return; }
     if (rotating) return;
     
     rotating = true;
@@ -303,7 +301,7 @@ const logged = localStorage.getItem("idgame");
       }, 4100);
 
     } catch (err) {
-      alert(err.message);
+      resultEl.innerHTML(err.message);
       rotating = false;
       btnSpin.disabled = false;
     }
