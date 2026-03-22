@@ -242,7 +242,7 @@ const logged = localStorage.getItem("idgame");
       }, 4100);
 
     } catch (err) {
-      resultEl.innerHTML(err.message);
+      resultEl.innerHTML=`${err.message}`;
       rotating = false;
       btnSpin.disabled = false;
     }
@@ -301,7 +301,7 @@ const logged = localStorage.getItem("idgame");
       }, 4100);
 
     } catch (err) {
-      resultEl.innerHTML(err.message);
+      resultEl.innerHTML=`${err.message}`;
       rotating = false;
       btnSpin.disabled = false;
     }
