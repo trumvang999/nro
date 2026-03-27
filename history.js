@@ -2,7 +2,7 @@ const SCRIPT_URL = "https://api.nro2024.shop";
 
 async function loadHistoryTable() {
   const tbody = document.querySelector("#purchase-table tbody");
-    tbody.innerHTML = "<tr><td colspan='5'>Đang tải...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='6'>Đang tải...</td></tr>";
 
     try {
 
@@ -18,7 +18,7 @@ async function loadHistoryTable() {
 
       if (!data.data || data.data.length === 0) {
         tbody.innerHTML =
-          "<tr><td colspan='5' style='color:#666;'>Chưa có giao dịch</td></tr>";
+          "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
         return;
       }
 
@@ -60,6 +60,6 @@ async function loadHistoryTable() {
 
     } catch (err) {
       tbody.innerHTML =
-        "<tr><td colspan='5' style='color:red;'>Không tải được dữ liệu</td></tr>";
+        "<tr><td colspan='6' style='color:red;'>Không tải được dữ liệu</td></tr>";
     }
   };
