@@ -62,4 +62,5 @@ async function loadHistoryTable() {
       tbody.innerHTML =
         "<tr><td colspan='6' style='color:red;'>Không tải được dữ liệu</td></tr>";
     }
+  setupPagination();
   };
