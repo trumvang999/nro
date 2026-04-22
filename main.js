@@ -164,7 +164,12 @@ if (!info.success) {
     document.getElementById("user-panel").style.display = "block";
     document.getElementById("user-display").innerText = info.username;
     document.getElementById("user-id").innerText = info.id;
-    document.getElementById("role").innerText = info.role;
+    if (info.role == "ctv"){
+      document.getElementById("role").innerHTML = `<a href="/p/cong-tac-vien.html" class="role ctv">${info.role}</a>`
+    }
+    else{
+      document.getElementById("role").innerHTML = `<a class="role">${info.role}</a>`;
+    }
     document.getElementById("user-gold").innerText = info.so_du_vang.toLocaleString() + " vàng";
     document.getElementById("user-gem").innerText = info.so_du_ngoc.toLocaleString() + " ngọc";
     document.getElementById("form-title").textContent = "Thông tin tài khoản";
