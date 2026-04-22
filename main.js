@@ -165,7 +165,7 @@ if (!info.success) {
     document.getElementById("user-display").innerText = info.username;
     document.getElementById("user-id").innerText = info.id;
     if (info.role == "ctv"){
-      document.getElementById("role").innerHTML = `<a href="/p/cong-tac-vien.html" class="role ctv">${info.role}</a>`
+      document.getElementById("role").innerHTML = `<a href="/p/cong-tac-vien.html" class="role ctv">${info.role}</a>`;
     }
     else{
       document.getElementById("role").innerHTML = `<a class="role">${info.role}</a>`;
