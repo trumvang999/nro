@@ -193,7 +193,13 @@ async function checkAccStatus(accId) {
       statusEl.style.color = "red";
       buyBtn.disabled = true;
       buyBtn.innerText = "Đã bán";
-    } else {
+    } 
+	if (data.status === "Chờ") {
+      statusEl.style.color = "orange";
+      buyBtn.disabled = true;
+      buyBtn.innerText = "Chờ duyệt";
+    }
+	if (data.status === "Còn") {
       statusEl.style.color = "green";
       buyBtn.disabled = false;
       buyBtn.innerText = "Xác nhận mua";
