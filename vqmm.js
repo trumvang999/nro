@@ -1,4 +1,4 @@
-  const API_BASE = "https://api.nro2024.shop";
+  const API_BASE = "https://api.nro2024.com";
   let rotating = false;
   let currentAngle = 0;
 
