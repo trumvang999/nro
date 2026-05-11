@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  const SCRIPT_URL = "https://api.nro2024.shop";
+  const SCRIPT_URL = "https://api.nro2024.com";
 
   const accNode    = document.querySelector("._pt a");
   const accId      = accNode?.textContent.trim() || "";
