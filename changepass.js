@@ -1,4 +1,4 @@
-const API_URL = "https://api.nro2024.shop/";
+const API_URL = "https://api.nro2024.com/";
 
 const modal = document.getElementById("changePassModal");
 const btnOpen = document.getElementById("btnChangePass");
