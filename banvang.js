@@ -1,4 +1,4 @@
-const CLOUD_URL = "https://cloud.nro2024.workers.dev/";
+const CLOUD_URL = "https://api.nro2024.com/";
 let gia = [];
 let botStatus = {};     
 let allBotsDetail = []; 
