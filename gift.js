@@ -1,6 +1,6 @@
 const btn = document.getElementById("claim-gift-btn");
 const msgBox = document.getElementById("gift-message");
-const API_URL = "https://api.nro2024.shop";
+const API_URL = "https://api.nro2024.com";
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!btn || !msgBox) return;
