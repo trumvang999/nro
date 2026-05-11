@@ -1,5 +1,5 @@
 (function(){
-  const scriptURL = "https://api.nro2024.shop"; 
+  const scriptURL = "https://api.nro2024.com"; 
   let isRegistering = false;
 
   // 1. Delegated events
