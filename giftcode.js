@@ -18,6 +18,7 @@ async function redeemGiftcode() {
       if (data.error === "invalid_code") return showToast("Giftcode sai!", "error");
       if (data.error === "already_redeemed") return showToast("Bạn đã nhập mã này rồi!", "error");
       if (data.error === "missing_user") return showToast("Tài khoản không tồn tại!", "error");
+      if (data.error === "code_exhausted") return showToast("Giftcode hết lượt nhập!", "error");
       return showToast("Lỗi: " + (data.error || "Không xác định"), "error");
     }
 
