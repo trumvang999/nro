@@ -17,6 +17,10 @@ async function loadHistoryTable() {
         throw new Error(data.message || "Không load được lịch sử");
 
       if (!data.data || data.data.length === 0) {
+              tbody.innerHTML =
+          "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
+        return;
+      }
         const list = data.data || [];
 
 const totalPurchase = list.length;
@@ -37,7 +41,11 @@ document.getElementById("total-purchase").textContent =
 document.getElementById("total-money").textContent =
   totalMoney.toLocaleString("vi-VN") + "đ";
 
-
+      tbody.innerHTML =
+          "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
+        return;
+      }
+      
       tbody.innerHTML = "";
 
       data.data.forEach(item => {
