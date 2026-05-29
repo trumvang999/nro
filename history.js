@@ -34,20 +34,9 @@ const latest = list[0];
 document.getElementById("total-purchase").textContent =
   totalPurchase;
 
-document.getElementById("total-server").textContent =
-  uniqueServers;
-
 document.getElementById("total-money").textContent =
   totalMoney.toLocaleString("vi-VN") + "đ";
 
-document.getElementById("latest-purchase").textContent =
-  latest
-    ? new Date(latest.created_at).toLocaleDateString("vi-VN")
-    : "--";
-        tbody.innerHTML =
-          "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
-        return;
-      }
 
       tbody.innerHTML = "";
 
