@@ -40,11 +40,6 @@ document.getElementById("total-purchase").textContent =
 
 document.getElementById("total-money").textContent =
   totalMoney.toLocaleString("vi-VN") + "đ";
-
-      tbody.innerHTML =
-          "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
-        return;
-      }
       
       tbody.innerHTML = "";
 
