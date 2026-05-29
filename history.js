@@ -17,6 +17,33 @@ async function loadHistoryTable() {
         throw new Error(data.message || "Không load được lịch sử");
 
       if (!data.data || data.data.length === 0) {
+        const list = data.data || [];
+
+const totalPurchase = list.length;
+
+const totalMoney = list.reduce((sum, item) => {
+  return sum + Number(item.gia || 0);
+}, 0);
+
+const uniqueServers = new Set(
+  list.map(item => item.acc_username || "")
+).size;
+
+const latest = list[0];
+
+document.getElementById("total-purchase").textContent =
+  totalPurchase;
+
+document.getElementById("total-server").textContent =
+  uniqueServers;
+
+document.getElementById("total-money").textContent =
+  totalMoney.toLocaleString("vi-VN") + "đ";
+
+document.getElementById("latest-purchase").textContent =
+  latest
+    ? new Date(latest.created_at).toLocaleDateString("vi-VN")
+    : "--";
         tbody.innerHTML =
           "<tr><td colspan='6' style='color:#666;'>Chưa có giao dịch</td></tr>";
         return;
