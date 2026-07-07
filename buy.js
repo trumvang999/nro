@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       infoBox.innerHTML = `<span style='color:red;'>${err.message}</span>`;
-      confirmBtn.textContent = "XÁC NHẬN MUA";
+      confirmBtn.textContent = "XÁC NHẬN";
     }
 
     confirmBtn.disabled = false;
@@ -192,7 +192,7 @@ async function checkAccStatus(accId) {
     if (data.status === "Hết") {
       statusEl.style.color = "red";
       buyBtn.disabled = true;
-      buyBtn.innerText = "Đã bán";
+      buyBtn.innerText = "Đã bay";
     } 
 	if (data.status === "Chờ") {
       statusEl.style.color = "orange";
@@ -202,7 +202,7 @@ async function checkAccStatus(accId) {
 	if (data.status === "Còn") {
       statusEl.style.color = "green";
       buyBtn.disabled = false;
-      buyBtn.innerText = "Xác nhận mua";
+      buyBtn.innerText = "Xác nhận";
     }
 
     // ===== PRICE =====
