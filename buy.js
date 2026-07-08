@@ -211,7 +211,7 @@ async function checkAccStatus(accId) {
 
     // ===== GÁN CHUYỂN KHOẢN =====
     document.getElementById("display-amount").innerText =
-      productPrice.toLocaleString() + " VNĐ";
+      productPrice.toLocaleString() + "đ";
 	  
     const productName =
       document.querySelector("#ttin .post-title-02 a")?.innerText ||
@@ -221,13 +221,13 @@ async function checkAccStatus(accId) {
 
     // ===== TAB THẺ CÀO =====
     document.getElementById("original-price").innerText =
-      productPrice.toLocaleString() + " VNĐ";
+      productPrice.toLocaleString() + "đ";
 
     const increased = productPrice * 1.25;
     const rounded = roundUpTo10k(increased);
 
     document.getElementById("card-price").innerText =
-      rounded.toLocaleString() + " VNĐ";
+      rounded.toLocaleString() + "đ";
 const msg = document.getElementById("voucher-msg");
 
 if (voucher) {
