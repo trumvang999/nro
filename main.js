@@ -200,11 +200,11 @@ fetch(scriptURL + "?action=get_user", {
     .then(r => r.json())
     .then(info => {
       document.getElementById("balance").innerText =
-        parseInt(info.balance, 10).toLocaleString() + " VNĐ";
+        parseInt(info.balance, 10).toLocaleString() + "đ";
 // --- Đồng bộ số dư lên header ---
 const headerBalance = document.getElementById("header-balance");
 if (headerBalance) {
-  headerBalance.textContent = parseInt(info.balance, 10).toLocaleString() + " VNĐ";
+  headerBalance.textContent = parseInt(info.balance, 10).toLocaleString() + "đ";
 }
       // Xử lý lịch sử và kiểm tra dữ liệu đầu vào
       const raw = info.history || "";
