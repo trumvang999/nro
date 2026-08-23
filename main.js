@@ -223,7 +223,6 @@ if (headerBalance) {
       setTimeout(() => {
         container.classList.remove("loading");
         container.classList.add("loaded");
-        if (historySection) historySection.style.display = "none";
       }, 50);
     })
     .catch(err => {
