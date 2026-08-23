@@ -143,7 +143,7 @@ setTimeout(() => {
     }
   }
 
-const itemsPerPage = 5;
+const itemsPerPage = 10;
 let historyData = [];
 
 function renderUI() {
