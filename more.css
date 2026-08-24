@@ -893,9 +893,6 @@ padding:20px;
 
 /* Mobile */
 @media (max-width: 600px) {
-  .modal-content {
-    padding: 15px;
-  }
   .slider-btn {
     font-size: 14px;
   }
