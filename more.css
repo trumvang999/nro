@@ -1060,3 +1060,208 @@ font-size: 1.5em;}
     z-index: 100;
   }
 }
+
+/* =========================================================
+   DARK / LIGHT MODE — giữ tông xanh dương gốc (#007bff/#004aad).
+   Kích hoạt bằng cách thêm class "night-mode" vào <html> hoặc <body>
+   (dùng chung với nút bật/tắt #theme-toggle đã thêm ở theme Blogger).
+   Không xoá/đổi bất kỳ rule nào ở trên — chỉ thêm override bên dưới.
+   ========================================================= */
+
+.night-mode body {
+  background: #0f1115;
+  color: #e7e9ee;
+}
+
+.night-mode h2,
+.night-mode section h2 {
+  color: #e7e9ee;
+}
+
+/* Header */
+.night-mode .header {
+  background: #161922;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.night-mode .header .nav a {
+  color: #cfd3dc;
+}
+.night-mode .header .nav a:hover {
+  color: #3ea6ff;
+}
+.night-mode .nav a {
+  color: #6cb4ff;
+}
+.night-mode .nav a i {
+  color: #3ea6ff;
+}
+.night-mode .nav a:hover {
+  background: #1c2531;
+  color: #3ea6ff;
+}
+.night-mode .dropdown-menu {
+  background: #161922;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.night-mode .dropdown-menu a {
+  color: #cfd3dc;
+}
+.night-mode .dropdown-menu a:hover {
+  background: #1c2531;
+  color: #3ea6ff;
+}
+
+/* Menu mobile */
+.night-mode .menu-toggle {
+  color: #e7e9ee;
+}
+@media (max-width: 1024px) {
+  .night-mode .nav {
+    background: #161922;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.5);
+  }
+  .night-mode .nav a {
+    color: #e7e9ee;
+  }
+}
+
+/* Top + nạp thẻ: bảng xếp hạng, form nạp thẻ */
+.night-mode .leaderboard,
+.night-mode .recharge-box {
+  background: #161922;
+  border-color: #262a35;
+  color: #e7e9ee;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+}
+.night-mode .leaderboard h3,
+.night-mode .recharge-box h3 {
+  color: #e7e9ee;
+}
+.night-mode .leaderboard li {
+  background: #1c202b;
+}
+.night-mode .leaderboard li:hover {
+  background: #232838;
+}
+.night-mode .leaderboard li strong {
+  color: #e7e9ee;
+}
+.night-mode .leaderboard li:nth-child(1) {
+  background: linear-gradient(90deg, #3a3010, #4a3c14);
+}
+.night-mode .leaderboard li:nth-child(2) {
+  background: linear-gradient(90deg, #23262e, #2c2f38);
+}
+.night-mode .leaderboard li:nth-child(3) {
+  background: linear-gradient(90deg, #362c18, #453720);
+}
+.night-mode .recharge-box label {
+  color: #cfd3dc;
+}
+.night-mode .recharge-box input,
+.night-mode .recharge-box select {
+  background: #1c202b;
+  border-color: #262a35;
+  color: #e7e9ee;
+}
+.night-mode .recharge-box input:focus,
+.night-mode .recharge-box select:focus {
+  background: #20242f;
+  border-color: #3ea6ff;
+  box-shadow: 0 0 4px rgba(62,166,255,0.4);
+}
+
+/* Tab menu mobile */
+.night-mode .tab-menu .tab-btn {
+  background: #1c202b;
+  color: #e7e9ee;
+}
+.night-mode .tab-menu .tab-btn.active {
+  background: #3ea6ff;
+  color: #0f1115;
+}
+
+/* Sản phẩm / danh mục / dịch vụ */
+.night-mode .product-card,
+.night-mode .category-card,
+.night-mode .service-card {
+  background: #161922;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+.night-mode .product-card h3 {
+  color: #e7e9ee;
+}
+.night-mode .product-card .price {
+  color: #3ea6ff;
+}
+.night-mode .product-card p {
+  color: #a8adba;
+}
+.night-mode .btn-buy {
+  background: #3ea6ff;
+  color: #0f1115;
+}
+.night-mode .btn-buy:hover,
+.night-mode .product-card .btn-buy:hover {
+  background: #6cb4ff;
+}
+
+/* Footer */
+.night-mode .footer {
+  background: #161922;
+  color: #cfd3dc;
+  box-shadow: 0px 3px 10px 0px rgba(0,0,0,0.4);
+}
+.night-mode .footer h3 {
+  color: #3ea6ff;
+}
+.night-mode .footer h4 {
+  color: #6cb4ff;
+  border-left-color: #3ea6ff;
+}
+.night-mode .footer p,
+.night-mode .footer a,
+.night-mode .footer li {
+  color: #a8adba;
+}
+.night-mode .footer a {
+  color: #3ea6ff;
+}
+.night-mode .footer a:hover {
+  color: #6cb4ff;
+}
+.night-mode .footer ul li i {
+  color: #3ea6ff;
+}
+.night-mode .footer .socials a {
+  color: #3ea6ff;
+}
+.night-mode .footer .socials a:hover {
+  color: #6cb4ff;
+}
+.night-mode .footer-bottom {
+  border-top-color: #262a35;
+  color: #8b93a3;
+}
+
+/* Popup / modal / slider */
+.night-mode .modal-content {
+  background-color: #161922;
+  color: #e7e9ee;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+}
+.night-mode .close {
+  color: #8b93a3;
+}
+.night-mode .close:hover {
+  color: #e7e9ee;
+}
+.night-mode .modal .close:hover {
+  color: #ff6b6b;
+}
+.night-mode #detail-body h3 {
+  color: #3ea6ff;
+}
+.night-mode #detail-body p {
+  color: #cfd3dc;
+}
