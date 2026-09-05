@@ -22,7 +22,7 @@
     if (!badge) return;
     const lvl = Math.min(Math.max(parseInt(vipLevel, 10) || 0, 0), VIP_INFO.length - 1);
     const info = VIP_INFO[lvl];
-    badge.textContent = "VIP " + lvl + " · " + info.name;
+    badge.textContent = "VIP " + lvl;
     badge.style.color = info.color;
     badge.style.borderColor = info.color;
     badge.style.background = info.color + "22";
