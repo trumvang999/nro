@@ -1,6 +1,37 @@
 (function(){
   const scriptURL = "https://api.nro2024.com"; 
   let isRegistering = false;
+  const DEFAULT_AVATAR = "https://img.nro2024.com/blog/1782009714463-abb12c12-d0ce-4c1a-ae53-3fbbe2791e41.png";
+
+  /* ---------- Cấp VIP (đồng bộ ngưỡng hiển thị tên với backend) ---------- */
+  const VIP_INFO = [
+    { name: "Thành Viên",   color: "#888888" },
+    { name: "Đồng",         color: "#b5651d" },
+    { name: "Bạc",          color: "#9aa5b1" },
+    { name: "Vàng",         color: "#f1c40f" },
+    { name: "Bạch Kim",     color: "#00bcd4" },
+    { name: "Kim Cương",    color: "#3b82f6" },
+    { name: "Cao Thủ",      color: "#8e44ad" },
+    { name: "Đại Cao Thủ",  color: "#e74c3c" },
+    { name: "Chiến Thần",   color: "#ff5722" },
+    { name: "Huyền Thoại",  color: "#ff0090" }
+  ];
+
+  function renderVipBadge(vipLevel) {
+    const badge = document.getElementById("vip-badge");
+    if (!badge) return;
+    const lvl = Math.min(Math.max(parseInt(vipLevel, 10) || 0, 0), VIP_INFO.length - 1);
+    const info = VIP_INFO[lvl];
+    badge.textContent = "VIP " + lvl + " · " + info.name;
+    badge.style.color = info.color;
+    badge.style.borderColor = info.color;
+    badge.style.background = info.color + "22";
+  }
+
+  function applyAvatar(url) {
+    const img = document.getElementById("user-avatar");
+    if (img) img.src = url || DEFAULT_AVATAR;
+  }
 
   // 1. Delegated events
   document.addEventListener("click", e => {
@@ -177,6 +208,11 @@ if (!info.success) {
     document.getElementById("email-user").innerText = info.email;
     document.getElementById("name-user").innerText = info.username;
 
+    applyAvatar(info.avatar);
+    renderVipBadge(info.vip);
+    const totalNapEl = document.getElementById("total-nap");
+    if (totalNapEl) totalNapEl.innerText = (parseInt(info.tong_nap, 10) || 0).toLocaleString() + "đ";
+
     loadBalance();
 
   });
@@ -206,6 +242,12 @@ const headerBalance = document.getElementById("header-balance");
 if (headerBalance) {
   headerBalance.textContent = parseInt(info.balance, 10).toLocaleString() + "đ";
 }
+
+      applyAvatar(info.avatar);
+      renderVipBadge(info.vip);
+      const totalNapEl = document.getElementById("total-nap");
+      if (totalNapEl) totalNapEl.innerText = (parseInt(info.tong_nap, 10) || 0).toLocaleString() + "đ";
+
       // Xử lý lịch sử và kiểm tra dữ liệu đầu vào
       const raw = info.history || "";
 
@@ -301,8 +343,84 @@ function changePage(step) {
   });
 }
 
-  // 8. Khởi tạo
-  window.addEventListener("load", renderUI);
+  /* ---------- 8. Popup đổi avatar ---------- */
+  function bindAvatarModal() {
+    const openBtn   = document.getElementById("btnEditAvatar");
+    const modal     = document.getElementById("avatarModal");
+    const closeBtn  = document.getElementById("closeAvatarModal");
+    const submitBtn = document.getElementById("submitAvatar");
+    const input     = document.getElementById("avatarInput");
+    const preview   = document.getElementById("avatarPreview");
+    const msg       = document.getElementById("avatarMsg");
+    if (!openBtn || !modal) return;
+
+    openBtn.addEventListener("click", function () {
+      const current = document.getElementById("user-avatar");
+      const currentSrc = current ? current.src : DEFAULT_AVATAR;
+      input.value = currentSrc;
+      preview.src = currentSrc;
+      msg.innerText = "";
+      modal.classList.add("is-visible");
+    });
+
+    if (closeBtn) closeBtn.addEventListener("click", function () {
+      modal.classList.remove("is-visible");
+    });
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) modal.classList.remove("is-visible");
+    });
+
+    input.addEventListener("input", function () {
+      preview.src = input.value.trim();
+    });
+    preview.addEventListener("error", function () {
+      preview.src = DEFAULT_AVATAR;
+    });
+
+    submitBtn.addEventListener("click", function () {
+      const avatar = input.value.trim();
+      msg.innerText = "";
+
+      if (!/^https?:\/\/.+/i.test(avatar)) {
+        msg.innerText = "Link ảnh không hợp lệ (phải bắt đầu http:// hoặc https://).";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Đang lưu...";
+
+      fetch(scriptURL + "?action=update_avatar", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar })
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (!res.success) {
+            msg.innerText = res.message || "Cập nhật thất bại";
+            return;
+          }
+          applyAvatar(res.avatar || avatar);
+          msg.style.color = "var(--ns-success, #25c668)";
+          msg.innerText = "Cập nhật avatar thành công!";
+          setTimeout(function () { modal.classList.remove("is-visible"); }, 800);
+        })
+        .catch(function () {
+          msg.innerText = "Lỗi kết nối!";
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Lưu";
+        });
+    });
+  }
+
+  // 9. Khởi tạo
+  window.addEventListener("load", function () {
+    renderUI();
+    bindAvatarModal();
+  });
 })();
 
     function togglePurchase() {
