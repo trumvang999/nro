@@ -5,8 +5,8 @@
 
   /* ---------- Cấp VIP (đồng bộ ngưỡng hiển thị tên với backend) ---------- */
   const VIP_INFO = [
-    { name: "Thành Viên",   color: "#888888" },
-    { name: "Đồng",         color: "#b5651d" },
+    { name: "Thành Viên",   color: "#b5651d" },
+    { name: "Đồng",         color: "#888888" },
     { name: "Bạc",          color: "#9aa5b1" },
     { name: "Vàng",         color: "#f1c40f" },
     { name: "Bạch Kim",     color: "#00bcd4" },
