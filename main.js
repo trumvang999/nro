@@ -55,12 +55,6 @@
 
 
   // ================= SHARED USER INFO CACHE =================
-  // Nhiều hàm (loadUser, renderUI, loadBalance...) đều cần gọi
-  // action=get_user. Trước đây mỗi hàm tự fetch riêng => bị gọi
-  // API lặp lại 2-3 lần trên cùng 1 lượt tải trang.
-  // Giờ dùng chung 1 promise: gọi lần đầu thì fetch thật,
-  // các lần gọi sau (trong lúc promise còn "sống") sẽ tái sử
-  // dụng kết quả, không bắn thêm request nào.
   let __userInfoPromise = null;
 
   function getUserInfo(force) {
@@ -368,7 +362,6 @@ if (u.length < 3 || p.length < 3) {
   return resetBtn();
 }
 
-// ❌ Không cho chứa ký tự đặc biệt
 if (!/^[a-zA-Z0-9_]+$/.test(u)) {
   msg.innerText = "Tài khoản không được chứa kí tự đặc biệt.";
   return resetBtn();
@@ -424,9 +417,6 @@ if (!res.success) {
   } else {
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
     success.innerText = "Đăng nhập thành công!";
-    // Vừa đăng nhập xong -> thông tin cũ (nếu có) đã lỗi thời,
-    // buộc getUserInfo() lấy lại 1 lần duy nhất, sau đó loadUser()
-    // sẽ tái dùng đúng promise này chứ không fetch thêm lần nữa.
     getUserInfo(true);
     loadUser();
 setTimeout(() => {
