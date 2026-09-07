@@ -1,3 +1,242 @@
+  // ================= SMOOTH SCROLL =================
+  document.querySelectorAll('nav a').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+
+        const target = document.querySelector(href);
+
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+  });
+
+
+  // ================= TẠO HẠT NĂNG LƯỢNG =================
+  function createParticles() {
+    const particleContainer = document.body;
+    const particle = document.createElement('div');
+
+    particle.classList.add('ki-particle');
+
+    // Kích thước ngẫu nhiên: 5px - 15px
+    const size = Math.random() * 10 + 5;
+
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+
+    // Vị trí ngang ngẫu nhiên
+    particle.style.left = `${Math.random() * 100}vw`;
+
+    // Thời gian bay: 2 - 5 giây
+    particle.style.animationDuration = `${Math.random() * 3 + 2}s`;
+
+    particleContainer.appendChild(particle);
+
+    // Xóa sau khi animation kết thúc
+    setTimeout(() => {
+      particle.remove();
+    }, 5000);
+  }
+
+  // Nếu muốn bật hiệu ứng hạt thì bỏ // ở dòng dưới
+  // setInterval(createParticles, 200);
+
+
+  // ================= API =================
+  const scriptURL = "https://api.nro2024.com";
+  const path = location.pathname;
+
+
+  // ================= LOAD USER =================
+  function loadUser() {
+
+    const headerNav = document.querySelector(".nav");
+    const authSection = document.getElementById("user-auth-section");
+
+    // Không có khu vực user thì dừng
+    if (!headerNav || !authSection) {
+      return;
+    }
+
+    const logged = localStorage.getItem("idgame");
+
+    // Chưa có idgame => chưa đăng nhập
+    if (!logged) {
+      return;
+    }
+
+    fetch(scriptURL + "?action=get_user", {
+      method: "POST",
+      credentials: "include"
+    })
+      .then(r => r.json())
+      .then(info => {
+
+        // ================= CHƯA ĐĂNG NHẬP =================
+        if (!info.success) {
+
+          // Nếu đang ở trang tài khoản
+          if (path === "/p/tai-khoan.html") {
+            location.href = "/p/dang-nhap.html";
+            return;
+          }
+
+          authSection.innerHTML = `
+            <a class="dropdown-toggle login-popup" href="/p/dang-nhap.html">
+              <i class="fas fa-user"></i>
+              Tài khoản
+            </a>
+          `;
+
+          return;
+        }
+
+
+        // ================= ĐÃ ĐĂNG NHẬP =================
+
+        // Nếu đang ở trang đăng nhập thì chuyển sang tài khoản
+        if (path === "/p/dang-nhap.html") {
+          location.href = "/p/tai-khoan.html";
+          return;
+        }
+
+        // Ẩn khu vực đăng nhập
+        authSection.style.display = "none";
+
+
+        // ================= AVATAR TRANG TÀI KHOẢN =================
+        const profileAvt = document.querySelector("#user-avatar");
+
+        if (profileAvt) {
+          profileAvt.className = "ns-avatar " + (info.role || "");
+        }
+
+
+        // ================= MENU USER =================
+        const userMenu = document.createElement("div");
+
+        userMenu.className = "dropdown login-popup";
+
+        const avatar =
+          info.avatar ||
+          "https://img.nro2024.com/blog/1782009714463-abb12c12-d0ce-4c1a-ae53-3fbbe2791e41.png";
+
+        userMenu.innerHTML = `
+          <a class="dropdown-toggle logged" href="#">
+            <img
+              class="user-avt ${info.role || ""}"
+              src="${avatar}"
+              onerror="this.src='https://img.nro2024.com/blog/1782009714463-abb12c12-d0ce-4c1a-ae53-3fbbe2791e41.png'"
+            />
+
+            <b style="text-transform: capitalize">
+              ${info.username || "Tài khoản"}
+            </b>
+
+            <i class="fas fa-angle-down"></i>
+          </a>
+
+          <div class="dropdown-menu" style="left:auto;right:0;">
+
+            <a href="javascript:void(0)">
+              <i class="fas fa-wallet"></i>
+              Số dư:
+              <span id="header-balance">Đang tải...</span>
+            </a>
+
+            <a href="/p/tai-khoan.html">
+              <i class="fas fa-user"></i>
+              Thông tin tài khoản
+            </a>
+
+            <a href="/p/rut-thuong.html">
+              <i class="fas fa-archive"></i>
+              Rút thưởng
+            </a>
+
+            <a href="#" id="logoutBtn">
+              <i class="fas fa-sign-out-alt"></i>
+              Đăng xuất
+            </a>
+
+          </div>
+        `;
+
+
+        // Thêm menu vào navbar
+        headerNav.appendChild(userMenu);
+
+
+        // ================= HIỆN THÔNG BÁO =================
+        const notifDropdown = document.getElementById("notifDropdown");
+
+        if (notifDropdown) {
+          notifDropdown.style.display = "block";
+        }
+
+
+        // ================= HIỂN THỊ SỐ DƯ =================
+        const balanceElement = document.getElementById("header-balance");
+
+        if (balanceElement) {
+
+          const balance = parseInt(info.balance, 10) || 0;
+
+          balanceElement.innerText =
+            balance.toLocaleString("vi-VN") + "đ";
+        }
+
+
+        // ================= ĐĂNG XUẤT =================
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        if (logoutBtn) {
+
+          logoutBtn.onclick = function (e) {
+
+            e.preventDefault();
+
+            // Xóa thông tin đăng nhập local
+            localStorage.clear();
+
+            // Logout server
+            fetch(scriptURL + "?action=logout", {
+              method: "POST",
+              credentials: "include"
+            })
+              .finally(() => {
+                location.reload();
+              });
+          };
+        }
+
+      })
+      .catch(err => {
+        console.error("Lỗi loadUser:", err);
+      });
+  }
+
+
+  // ================= DOM READY =================
+  document.addEventListener("DOMContentLoaded", function () {
+
+    loadUser();
+
+    // Chỉ gọi nếu hàm đã tồn tại
+    if (typeof loadNumList === "function") {
+      loadNumList();
+    }
+
+  });
+
+
 (function(){
   const scriptURL = "https://api.nro2024.com"; 
   let isRegistering = false;
