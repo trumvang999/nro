@@ -1,4 +1,4 @@
-  // ================= SMOOTH SCROLL =================
+// ================= SMOOTH SCROLL =================
   document.querySelectorAll('nav a').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
       const href = this.getAttribute('href');
@@ -54,6 +54,40 @@
   const path = location.pathname;
 
 
+  // ================= SHARED USER INFO CACHE =================
+  // Nhiều hàm (loadUser, renderUI, loadBalance...) đều cần gọi
+  // action=get_user. Trước đây mỗi hàm tự fetch riêng => bị gọi
+  // API lặp lại 2-3 lần trên cùng 1 lượt tải trang.
+  // Giờ dùng chung 1 promise: gọi lần đầu thì fetch thật,
+  // các lần gọi sau (trong lúc promise còn "sống") sẽ tái sử
+  // dụng kết quả, không bắn thêm request nào.
+  let __userInfoPromise = null;
+
+  function getUserInfo(force) {
+    if (force) {
+      __userInfoPromise = null;
+    }
+
+    if (__userInfoPromise) {
+      return __userInfoPromise;
+    }
+
+    __userInfoPromise = fetch(scriptURL + "?action=get_user", {
+      method: "POST",
+      credentials: "include"
+    })
+      .then(r => r.json())
+      .catch(err => {
+        // Lỗi thì xóa cache để lần gọi kế tiếp được retry thay vì
+        // kẹt mãi với 1 promise bị reject.
+        __userInfoPromise = null;
+        throw err;
+      });
+
+    return __userInfoPromise;
+  }
+
+
   // ================= LOAD USER =================
   function loadUser() {
 
@@ -72,11 +106,7 @@
       return;
     }
 
-    fetch(scriptURL + "?action=get_user", {
-      method: "POST",
-      credentials: "include"
-    })
-      .then(r => r.json())
+    getUserInfo()
       .then(info => {
 
         // ================= CHƯA ĐĂNG NHẬP =================
@@ -394,6 +424,10 @@ if (!res.success) {
   } else {
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
     success.innerText = "Đăng nhập thành công!";
+    // Vừa đăng nhập xong -> thông tin cũ (nếu có) đã lỗi thời,
+    // buộc getUserInfo() lấy lại 1 lần duy nhất, sau đó loadUser()
+    // sẽ tái dùng đúng promise này chứ không fetch thêm lần nữa.
+    getUserInfo(true);
     loadUser();
 setTimeout(() => {
   location.href = "/p/tai-khoan.html";
@@ -418,11 +452,7 @@ let historyData = [];
 
 function renderUI() {
 
-  fetch(scriptURL + "?action=get_user", {
-    method: "POST",
-    credentials: "include"
-  })
-  .then(r => r.json())
+  getUserInfo()
   .then(info => {
 
 if (!info.success) {
@@ -465,14 +495,10 @@ function loadBalance(user) {
   container.classList.add("loading");
   container.classList.remove("loaded");
 
-const params = new URLSearchParams();
-params.append("action", "get_user");
-
-fetch(scriptURL + "?action=get_user", {
-  method: "POST",
-  credentials: "include"
-})
-    .then(r => r.json())
+  // Được gọi ngay sau renderUI() nên trong đa số trường hợp
+  // getUserInfo() sẽ trả về promise đã có sẵn (đang chạy hoặc đã
+  // xong) từ renderUI(), không bắn thêm request get_user mới.
+  getUserInfo()
     .then(info => {
       document.getElementById("balance").innerText =
         parseInt(info.balance, 10).toLocaleString() + "đ";
