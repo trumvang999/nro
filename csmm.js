@@ -1212,3 +1212,6 @@ function closeDisk(){
   cover.style.opacity = '1';
   cover.style.transform = 'translateY(0)';
 }
+document.getElementById("rowsPerPage").addEventListener("change", () => {
+  renderBetHistory(window.currentBetHistoryData);
+});
