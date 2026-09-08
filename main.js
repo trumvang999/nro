@@ -415,8 +415,8 @@ if (!res.success) {
     localStorage.setItem("expireTime", Date.now() + 180 * 60 * 1000);
     success.innerText = "Đăng nhập thành công!";
     getUserInfo(true);
-    loadUser();
 setTimeout(() => {
+      loadUser();
   location.href = "/p/tai-khoan.html";
 }, 1000);
   }
