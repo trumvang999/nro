@@ -84,12 +84,10 @@
 
   // ================= LOAD USER =================
   function loadUser() {
-
-    const headerNav = document.querySelector(".nav");
     const authSection = document.getElementById("user-auth-section");
 
     // Không có khu vực user thì dừng
-    if (!headerNav || !authSection) {
+    if ( !authSection) {
       return;
     }
 
@@ -131,8 +129,6 @@
           return;
         }
 
-        // Ẩn khu vực đăng nhập
-        authSection.style.display = "none";
 
 
         // ================= AVATAR TRANG TÀI KHOẢN =================
@@ -144,6 +140,7 @@
 
 
         // ================= MENU USER =================
+        authSection.innerHTML= ``;
         const userMenu = document.createElement("div");
 
         userMenu.className = "dropdown login-popup";
@@ -195,7 +192,7 @@
 
 
         // Thêm menu vào navbar
-        headerNav.appendChild(userMenu);
+        authSection.appendChild(userMenu);
 
 
         // ================= HIỆN THÔNG BÁO =================
