@@ -150,7 +150,7 @@
           "https://img.nro2024.com/blog/1782009714463-abb12c12-d0ce-4c1a-ae53-3fbbe2791e41.png";
 
         userMenu.innerHTML = `
-          <a class="dropdown-toggle logged" href="#">
+          <a class="btn-account dropdown-toggle logged" href="#">
             <img
               class="user-avt ${info.role || ""}"
               src="${avatar}"
