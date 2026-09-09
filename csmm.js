@@ -220,6 +220,11 @@ createAuxUI();
 // internal state (only temporary UI state)
 let goldBalance = 0; // chỉ dùng để hiển thị UI hiện tại
 const API_WORKER = "https://doan-so.nro2024.workers.dev"; // không có slash cuối
+
+let currentRoundId = null;
+let currentRoundEndTime = 0;
+let countdownTimer = null;
+let roundProcessing = false;
 const API_MAIN = "https://index.nro2024.workers.dev"; 
 
 async function persistToServer(key, value) {
@@ -532,76 +537,159 @@ function statusText(status) {
 let currentRem = 0;
 let nextTickAt = 0;
 
-function startCountdown() {
-  nextTickAt = Date.now() - (Date.now() % 60000) + 60000 + 2000;
+let hasClosedDiskThisRound = false;
 
-  let hasClosedDisk = false;
-  let hasHandledResult = false;
-  let isWaitingNextRound = false;
+function startCountdown(endTime) {
+    currentRoundEndTime = endTime;
+    hasClosedDiskThisRound = false;
 
-  async function tick() {
-    const now = Date.now();
-    let rem = Math.max(0, Math.round((nextTickAt - now) / 1000));
-    currentRem = rem;
-
-    // hiển thị countdown lên UI
-    const mm = String(Math.floor(rem / 60)).padStart(2, "0");
-    const ss = String(rem % 60).padStart(2, "0");
-    const cd = document.getElementById("countdown");
-    if (cd) cd.textContent = mm + ":" + ss;
-
-    // Đóng disk 1 lần khi rem <= 48
-    if (rem <= 48 && !hasClosedDisk) {
-      closeDisk();
-      canOpen = false;
-      hasClosedDisk = true;
-
-      const small = document.getElementById("fetchedNumberSmall");
-      if (small && resultHistory.length > 0) {
-        small.textContent = resultHistory[resultHistory.length - 1].number;
-      }
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
     }
 
-    // Xử lý kết quả ngay khi countdown về 0
-    if (rem <= 0 && !hasHandledResult) {
-      hasHandledResult = true;
+    function updateCountdown() {
+        const remaining = Math.max(
+            0,
+            Math.ceil((currentRoundEndTime - Date.now()) / 1000)
+        );
 
-      await handleNewResult();     // show kết quả
-      await loadgoldBalance();     // cập nhật số dư
-      await loadBetHistory();      // cập nhật cược
+        currentRem = remaining;
 
-      // Sau 10 giây mới lấy phiên mới
-      if (!isWaitingNextRound) {
-        isWaitingNextRound = true;
+        // hiển thị countdown lên UI
+        const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
+        const ss = String(remaining % 60).padStart(2, "0");
+        const countdownEl = document.getElementById("countdown");
+        if (countdownEl) {
+            countdownEl.textContent = mm + ":" + ss;
+        }
 
-        setTimeout(async () => {
-          const rn = await getCurrentRound(); // fetch round mới
-          roundName = rn.round;
-          renderRound();
-          await checkPending();
-          nextTickAt = rn.time + 60000;
+        // Đóng disk 1 lần khi còn <= 48s (giữ hành vi UI cũ)
+        if (remaining <= 48 && !hasClosedDiskThisRound) {
+            closeDisk();
+            canOpen = false;
+            hasClosedDiskThisRound = true;
 
-          // reset flags
-          hasClosedDisk = false;
-          hasHandledResult = false;
-          isWaitingNextRound = false;
-        }, 10000);
-      }
+            const small = document.getElementById("fetchedNumberSmall");
+            if (small && resultHistory.length > 0) {
+                small.textContent = resultHistory[resultHistory.length - 1].number;
+            }
+        }
+
+        if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            countdownTimer = null;
+
+            handleRoundFinished();
+        }
     }
 
-    setTimeout(tick, 1000);
-  }
-
-  tick();
+    updateCountdown();
+    countdownTimer = setInterval(updateCountdown, 250);
 }
-  
-  function updateCountdownOnce(nextTickAt){
-    const rem = Math.max(0, Math.round((nextTickAt - Date.now())/1000));
-    const mm = String(Math.floor(rem/60)).padStart(2,'0');
-    const ss = String(rem%60).padStart(2,'0');
-    const cd = document.getElementById('countdown');
-    if(cd) cd.textContent = mm + ':' + ss;
-  }
+
+async function syncRound() {
+    try {
+        const res = await fetch(`${API_WORKER}/random`);
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data?.round) {
+            throw new Error("Backend không trả round");
+        }
+
+        currentRoundId = data.round;
+        roundName = data.round;
+        renderRound();
+
+        /*
+         * Ưu tiên thời gian kết thúc backend trả về.
+         * Nếu backend chưa có thì fallback 60 giây.
+         */
+        if (data.endTime) {
+            currentRoundEndTime =
+                typeof data.endTime === "number"
+                    ? data.endTime
+                    : new Date(data.endTime).getTime();
+        } else if (data.time) {
+            currentRoundEndTime =
+                new Date(data.time).getTime() + 60000;
+        } else {
+            currentRoundEndTime = Date.now() + 60000;
+        }
+
+        startCountdown(currentRoundEndTime);
+
+        return data;
+
+    } catch (err) {
+        console.error("syncRound error:", err);
+        return null;
+    }
+}
+
+async function handleRoundFinished() {
+    if (roundProcessing) return;
+
+    roundProcessing = true;
+
+    // Quan trọng: snapshot ID trước khi gọi backend
+    const finishedRound = currentRoundId;
+
+    try {
+        if (!finishedRound) {
+            return;
+        }
+
+        /*
+         * Lấy kết quả của ĐÚNG round vừa kết thúc.
+         * Không gọi /random để lấy round mới ở đây.
+         */
+        const res = await fetch(
+            `${API_WORKER}/result?round=${encodeURIComponent(finishedRound)}`
+        );
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+
+        /*
+         * Chỉ xử lý kết quả nếu đúng round.
+         */
+        if (result?.round && result.round !== finishedRound) {
+            console.warn(
+                "Round mismatch:",
+                finishedRound,
+                result.round
+            );
+            return;
+        }
+
+        if (result) {
+            await handleNewResult(result);
+        }
+
+        await loadgoldBalance();
+        await loadBetHistory();
+
+        /*
+         * Sau khi round cũ đã xong mới sync round mới.
+         */
+        await syncRound();
+
+    } catch (err) {
+        console.error("handleRoundFinished error:", err);
+
+    } finally {
+        roundProcessing = false;
+    }
+}
 
 const mapType = { chan:'even', le:'odd', tai:'big', xiu:'small' };
 const typeToGroup = { even:'parity', odd:'parity', big:'size', small:'size', digit:'digit' };
@@ -1062,8 +1150,7 @@ placeBetBtn.addEventListener("click", async () => {
   if (amount > goldBalance) return alert("Không đủ vàng.");
   if (currentRem <= 3) return alert("Đã hết thời gian, vui lòng chờ phiên sau");
 
-  const rn = await getCurrentRound();
-  if (!rn?.round) return alert("Không lấy được phiên");
+  if (!currentRoundId) return alert("Không lấy được phiên");
 
   const accountId = localStorage.getItem("idgame");
   if (!accountId) return alert("Chưa đăng nhập");
@@ -1075,7 +1162,7 @@ placeBetBtn.addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         accountId,
-        round: rn.round,
+        round: currentRoundId,
         type,
         digit,
         amount
@@ -1112,11 +1199,6 @@ async function init() {
   await loadBetHistory();      // ✅ lấy lịch sử cược từ DB server
   renderResultTable();         // cập nhật bảng kết quả
 
-  // load round hiện tại từ backend
-  const rn = await getCurrentRound();
-  roundName = rn?.round || "—";
-  renderRound();
-
   // show latest result ngay nếu có
   if (resultHistory.length > 0) {
     const latest = resultHistory[resultHistory.length - 1];
@@ -1125,13 +1207,7 @@ async function init() {
     if (small) small.textContent = latest.number;
   }
 
-  // start countdown dựa trên backend
-  if (resultHistory.length > 0) {
-    const latest = resultHistory[resultHistory.length - 1];
-    startCountdown(latest.time + 50000); // 50s chạy ngầm, 10s show kết quả
-  } else {
-    startCountdown();
-  }
+  await syncRound();
 }
 
 init().catch(err => console.error('init failed', err));
