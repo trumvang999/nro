@@ -632,6 +632,30 @@ async function syncRound() {
     }
 }
 
+// Thử lấy result với retry — phòng trường hợp client gọi hơi sớm
+// (lệch đồng hồ client/server) khiến backend chưa kịp chốt round.
+async function fetchResultWithRetry(round, maxTries = 5, delayMs = 1000) {
+    for (let i = 0; i < maxTries; i++) {
+        try {
+            const res = await fetch(
+                `${API_WORKER}/result?round=${encodeURIComponent(round)}`
+            );
+            if (res.ok) {
+                return await res.json();
+            }
+            // 404/not_found => round chưa được chốt, đợi rồi thử lại
+        } catch (err) {
+            console.warn(`fetchResultWithRetry lỗi (lần ${i + 1}):`, err);
+        }
+        if (i < maxTries - 1) {
+            await new Promise(r => setTimeout(r, delayMs));
+        }
+    }
+    return null;
+}
+
+let lastHandledResultRound = null; // chống xử lý trùng 1 round 2 lần
+
 async function handleRoundFinished() {
     if (roundProcessing) return;
 
@@ -649,15 +673,7 @@ async function handleRoundFinished() {
          * Lấy kết quả của ĐÚNG round vừa kết thúc.
          * Không gọi /random để lấy round mới ở đây.
          */
-        const res = await fetch(
-            `${API_WORKER}/result?round=${encodeURIComponent(finishedRound)}`
-        );
-
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-
-        const result = await res.json();
+        const result = await fetchResultWithRetry(finishedRound);
 
         /*
          * Chỉ xử lý kết quả nếu đúng round.
@@ -668,26 +684,29 @@ async function handleRoundFinished() {
                 finishedRound,
                 result.round
             );
-            return;
-        }
-
-        if (result) {
+        } else if (result && result.round === lastHandledResultRound) {
+            // Round này đã được xử lý ở lượt trước (backend chưa kịp
+            // xoay round mới) => bỏ qua, không gọi lại settle-round lần nữa.
+        } else if (result) {
+            lastHandledResultRound = result.round;
             await handleNewResult(result);
+            await loadgoldBalance();
+            await loadBetHistory();
+        } else {
+            console.warn("Không lấy được result cho round:", finishedRound);
         }
-
-        await loadgoldBalance();
-        await loadBetHistory();
-
-        /*
-         * Sau khi round cũ đã xong mới sync round mới.
-         */
-        await syncRound();
 
     } catch (err) {
         console.error("handleRoundFinished error:", err);
 
     } finally {
         roundProcessing = false;
+
+        /*
+         * Luôn tự đồng bộ lại dù ở trên thành công hay lỗi,
+         * để client tự phục hồi thay vì bị "đứng" round.
+         */
+        await syncRound();
     }
 }
 
