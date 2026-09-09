@@ -564,8 +564,8 @@ function startCountdown(endTime) {
             countdownEl.textContent = mm + ":" + ss;
         }
 
-        // Đóng disk 1 lần khi còn <= 48s (giữ hành vi UI cũ)
-        if (remaining <= 48 && !hasClosedDiskThisRound) {
+        // Đóng disk 1 lần khi còn <= 50s (giữ hành vi UI cũ)
+        if (remaining <= 50 && !hasClosedDiskThisRound) {
             closeDisk();
             canOpen = false;
             hasClosedDiskThisRound = true;
