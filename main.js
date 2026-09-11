@@ -129,10 +129,6 @@ function getNotifType(type) {
           <a href="${notifLink(item)}" style="padding:0"><div class="notif-title">
             <i class="${type.icon}"></i>
             ${escapeHtml(item.title)}
-
-            <span class="notif-type">
-              ${type.name}
-            </span>
           </div></a>
 
           <div class="notif-msg">
@@ -143,6 +139,9 @@ function getNotifType(type) {
             ${timeAgo(item.created_at)}
           </div>
 
+            <span class="notif-type">
+              ${type.name}
+            </span>
         </span>
       </li>
     `;
