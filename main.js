@@ -1,3 +1,222 @@
+(function () {
+  // ====== CẤU HÌNH ======
+  const NOTIF_API_BASE = "https://api.nro2024.com";
+
+  let notifOpen = false;
+  let notifCache = [];
+
+  async function apiPost(action, body = {}) {
+    const res = await fetch(`${NOTIF_API_BASE}/?action=${action}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  function timeAgo(ts) {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return "Vừa xong";
+    if (diff < 3600) return Math.floor(diff / 60) + " phút trước";
+    if (diff < 86400) return Math.floor(diff / 3600) + " giờ trước";
+    return Math.floor(diff / 86400) + " ngày trước";
+  }
+
+  function notifLink(item) {
+    // Điều hướng theo loại thông báo
+    switch (item.type) {
+      case "ticket": return "/p/ho-tro.html?ticket=" + item.ref_id;
+      case "order":
+	  case "deposit":
+      case "deposit_card":
+      case "order_done": return "/p/tai-khoan.html";
+      case "withdraw_gold":
+      case "withdraw_gem": return "/p/rut-thuong.html";
+      case "spin": return "/p/vqmm.html";
+      case "lat_the": return "/p/random.html";
+      default: return "javascript:void(0)";
+    }
+  }
+function getNotifType(type) {
+  const types = {
+    system: {
+      name: "Hệ thống",
+      icon: "fas fa-bullhorn"
+    },
+	
+	warning: {
+      name: "Cảnh báo",
+      icon: "fas fa-exclamation-triangle"
+    },
+
+	promotion: {
+      name: "Khuyến mãi",
+      icon: "fas fa-tag"
+    },
+
+    ticket: {
+      name: "Hỗ trợ",
+      icon: "fas fa-headset"
+    },
+
+    order: {
+      name: "Đơn hàng",
+      icon: "fas fa-shopping-cart"
+    },
+
+    order_done: {
+      name: "Đơn hàng",
+      icon: "fas fa-check-circle"
+    },
+
+    withdraw_gold: {
+      name: "Rút vàng",
+      icon: "fas fa-coins"
+    },
+
+    withdraw_gem: {
+      name: "Rút ngọc",
+      icon: "fas fa-gem"
+    },
+
+    deposit: {
+      name: "Nạp tiền",
+      icon: "fas fa-wallet"
+    },
+
+    deposit_card: {
+      name: "Nạp thẻ",
+      icon: "fas fa-credit-card"
+    },
+
+    spin: {
+      name: "Vòng quay",
+      icon: "fas fa-dharmachakra"
+    },
+
+    lat_the: {
+      name: "Lật thẻ",
+      icon: "fas fa-clone"
+    }
+  };
+
+  return types[type] || {
+    name: "Thông báo",
+    icon: "fas fa-info-circle"
+  };
+}
+  function renderNotifications(list) {
+  const el = document.getElementById("notifList");
+	el.innerHTML = `Đang tải...`;
+
+  if (!list.length) {
+    el.innerHTML = `<div class="notif-empty">Chưa có thông báo nào</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(item => {
+    const type = getNotifType(item.type);
+
+    return `
+      <li class="notif-item ${item.is_read ? "" : "unread"}"
+          onclick="markOneNotifRead(${item.id})">
+
+        <span class="notif-dot"></span>
+
+        <span class="notif-body">
+
+          <a href="${notifLink(item)}" style="padding:0"><div class="notif-title">
+            <i class="${type.icon}"></i>
+            ${escapeHtml(item.title)}
+
+            <span class="notif-type">
+              ${type.name}
+            </span>
+          </div></a>
+
+          <div class="notif-msg">
+            ${escapeHtml(item.message)}
+          </div>
+
+          <div class="notif-time">
+            ${timeAgo(item.created_at)}
+          </div>
+
+        </span>
+      </li>
+    `;
+  }).join("");
+}
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.innerText = str ?? "";
+    return d.innerHTML;
+  }
+
+  function updateBadge(count) {
+    const badge = document.getElementById("notifBadge");
+    if (count > 0) {
+      badge.style.display = "flex";
+      badge.innerText = count > 9 ? "9+" : count;
+    } else {
+      badge.style.display = "none";
+    }
+  }
+function updateMsgBadge(count) {
+    const badge = document.getElementById("msgNotifBadge");
+    if (count > 0) {
+      badge.style.display = "flex";
+      badge.innerText = count > 9 ? "9+" : count;
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  async function loadNotifications() {
+    try {
+      const res = await apiPost("get_notifications");
+      if (!res.success) return;
+      notifCache = res.data || [];
+      renderNotifications(notifCache);
+      updateBadge(res.unread_count || 0);
+	  updateMsgBadge(res.msg_unread || 0);
+    } catch (e) {
+      console.error("Lỗi tải thông báo:", e);
+    }
+  }
+
+  window.toggleNotifDropdown = function (e) {
+    e.preventDefault();
+    notifOpen = !notifOpen;
+    document.getElementById("notifDropdown").classList.toggle("open", notifOpen);
+    if (notifOpen) loadNotifications();
+  };
+
+  window.markAllNotifRead = async function () {
+    await apiPost("mark_notif_read", { all: true });
+    loadNotifications();
+  };
+
+  window.markOneNotifRead = async function (id) {
+    apiPost("mark_notif_read", { notif_id: id }); // không cần chờ, để chuyển trang mượt
+  };
+
+  // đóng dropdown khi click ra ngoài
+  document.addEventListener("click", function (e) {
+    const dd = document.getElementById("notifDropdown");
+    if (dd && !dd.contains(e.target)) {
+      notifOpen = false;
+      dd.classList.remove("open");
+    }
+  });
+
+  // tải lần đầu + auto refresh badge định kỳ (không cần mở dropdown)
+  document.addEventListener("DOMContentLoaded", function () {
+    loadNotifications();
+
+  });
+})();
 // ================= SMOOTH SCROLL =================
   document.querySelectorAll('nav a').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -196,11 +415,7 @@
 
 
         // ================= HIỆN THÔNG BÁO =================
-        const notifDropdown = document.getElementById("notifDropdown");
-
-        if (notifDropdown) {
-          notifDropdown.style.display = "block";
-        }
+        setInterval(loadNotifications, 300000);
 
 
         // ================= HIỂN THỊ SỐ DƯ =================
@@ -247,7 +462,6 @@
 
   // ================= DOM READY =================
   document.addEventListener("DOMContentLoaded", function () {
-
     loadUser();
 
     // Chỉ gọi nếu hàm đã tồn tại
