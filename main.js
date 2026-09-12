@@ -213,7 +213,7 @@ function updateMsgBadge(count) {
   // tải lần đầu + auto refresh badge định kỳ (không cần mở dropdown)
   document.addEventListener("DOMContentLoaded", function () {
     loadNotifications();
-
+    setInterval(loadNotifications, 60000);
   });
 })();
 // ================= SMOOTH SCROLL =================
@@ -414,7 +414,6 @@ function updateMsgBadge(count) {
 
 
         // ================= HIỆN THÔNG BÁO =================
-        setInterval(loadNotifications, 300000);
 
 
         // ================= HIỂN THỊ SỐ DƯ =================
