@@ -126,7 +126,7 @@ function getNotifType(type) {
 
         <span class="notif-body">
 
-          <a href="${notifLink(item)}" style="padding:0"><div class="notif-title">
+          <a href="${notifLink(item)}" style="padding:0;height:auto;"><div class="notif-title">
             <i class="${type.icon}"></i>
             ${escapeHtml(item.title)}
           </div></a>
