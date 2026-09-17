@@ -329,7 +329,7 @@ function updateMsgBadge(count) {
           }
 
           authSection.innerHTML = `
-            <a class="dropdown-toggle login-popup" href="/p/dang-nhap.html">
+            <a class="btn-account dropdown-toggle login-popup" href="/p/dang-nhap.html">
               <i class="fas fa-user"></i>
               Tài khoản
             </a>
@@ -361,7 +361,7 @@ function updateMsgBadge(count) {
         authSection.innerHTML= ``;
         const userMenu = document.createElement("div");
 
-        userMenu.className = "dropdown login-popup";
+        userMenu.className = "dropdown login-popup btn-account";
 
         const avatar =
           info.avatar ||
