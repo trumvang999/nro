@@ -330,8 +330,8 @@ function updateMsgBadge(count) {
 
           authSection.innerHTML = `
             <a class="btn-account dropdown-toggle login-popup" href="/p/dang-nhap.html">
-              <i class="fas fa-user"></i>
-              Tài khoản
+              <span style="padding:0 15px;">
+				<i class="fas fa-user"></i> Tài khoản </span>
             </a>
           `;
 
